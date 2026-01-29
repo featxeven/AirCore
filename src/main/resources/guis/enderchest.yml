@@ -1,0 +1,10 @@
+# GUI title and size
+title: "Viewing %target%'s Enderchest"
+rows: 3
+
+# Dynamic slot groups
+# These define where the target's enderchest contents will be mirrored.
+player-enderchest: [0-26]
+
+# Custom items
+items: []

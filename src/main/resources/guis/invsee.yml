@@ -1,0 +1,51 @@
+# GUI title and size
+title: "Viewing %target%'s Inventory"
+rows: 6
+
+# Dynamic slot groups
+# These define where the target's inventory contents will be mirrored.
+player-hotbar: [45-53]
+player-inventory: [18-44]
+
+# Armor slots (order: boots, leggings, chestplate, helmet)
+player-armor: [4, 3, 2, 1]
+
+# Off-hand slot
+player-offhand: [7]
+
+# Custom filler items (shown when slots are empty)
+items:
+  fill-helmet:
+    slots: [1]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<gray>Helmet</gray>"
+    lore:
+      - "<dark_gray>Empty slot</dark_gray>"
+
+  fill-chestplate:
+    slots: [2]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<gray>Chestplate</gray>"
+    lore:
+      - "<dark_gray>Empty slot</dark_gray>"
+
+  fill-leggings:
+    slots: [3]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<gray>Leggings</gray>"
+    lore:
+      - "<dark_gray>Empty slot</dark_gray>"
+
+  fill-boots:
+    slots: [4]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<gray>Boots</gray>"
+    lore:
+      - "<dark_gray>Empty slot</dark_gray>"
+
+  fill-offhand:
+    slots: [7]
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "<gray>Off-hand</gray>"
+    lore:
+      - "<dark_gray>Empty slot</dark_gray>"

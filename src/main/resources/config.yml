@@ -1,0 +1,398 @@
+# -----------------------------
+# AirCore Configuration
+# -----------------------------
+
+# -----------------------------
+# GENERAL
+# -----------------------------
+# Global options that affect the whole plugin.
+lang: "en_US"                      # Locale file name (lang/messages/en_US.yml must exist)
+console-to-player-feedback: true   # Send feedback to players when console runs commands targeting them
+
+# Time formatting used across the plugin and in placeholders
+time-format:
+  # Modes: DETAILED | SEQUENTIAL | CUSTOM
+  # DETAILED   - show all relevant units ("2 days 3 hours 4 minutes")
+  # SEQUENTIAL - show one unit at a time (used for progressive messages)
+  # CUSTOM     - show up to `granularity` units (useful for short displays)
+  mode: DETAILED
+  granularity: 2   # Only used when mode = CUSTOM (1 = largest only, 4 = full breakdown)
+
+# -----------------------------
+# PERMISSION GROUPS
+# -----------------------------
+# Players with `aircore.group.<groupname>` will get the permissions below.
+permission-groups:
+  default:
+    - aircore.command.msg
+    - aircore.command.reply
+    - aircore.command.msgtoggle
+    - aircore.command.mentiontoggle
+    - aircore.command.chattoggle
+    - aircore.command.balance
+    - aircore.command.pay
+    - aircore.command.paytoggle
+    - aircore.command.tpa
+    - aircore.command.tpaccept
+    - aircore.command.tpdeny
+    - aircore.command.tptoggle
+    - aircore.command.sethome
+    - aircore.command.home
+    - aircore.command.delhome
+    - aircore.command.warp
+    - aircore.command.warp.*
+    - aircore.command.spawn
+    - aircore.command.afk
+    - aircore.command.block
+    - aircore.command.unblock
+    - aircore.command.kit
+    - aircore.chat.link
+    - aircore.chat.mention
+    - aircore.chat.display.*
+  admin:
+    - aircore.*
+
+# Disabled commands (main names only, do NOT list aliases)
+disabled-commands:
+# - msg
+# - socialspy
+
+# -----------------------------
+# CHAT
+# -----------------------------
+# All chat-related configuration (formats, cooldowns, mentions, tags)
+chat:
+  chat-cooldown: 3    # Seconds between messages (0 = disabled)
+
+  # Group formatting (requires LuckPerms)
+  group-format:
+    enabled: true
+    formats:
+      _DEFAULT_: "<gray>%player%</gray> <dark_gray>></dark_gray> <white>%message%</white>"
+      owner: "<dark_red><bold>OWNER</bold></dark_red> <red>%player%</red> <dark_gray>></dark_gray> <white>%message%</white>"
+      vip: "<dark_green><bold>VIP</bold></dark_green> <green>%player%</green> <dark_gray>></dark_gray> <white>%message%</white>"
+      custom: "<dark_gray>[%player_ping%ms] %luckperms_prefix% <yellow>%player%</yellow> <dark_gray>></dark_gray> <gold>%message%</gold>"
+
+  # Link detection and formatting
+  url-formatting:
+    enabled: true
+    format: "<gold><click:open_url:'%link%'><hover:show_text:'<gray>Click to open link:</gray> <gold>%link%</gold>'>%link%</hover></click></gold>"
+
+  # Mentions (@player)
+  chat-mentions:
+    enabled: true
+    format: "<gold>@%player%</gold>"     # How mention appears in chat
+    case-sensitive: true
+    sound:
+      name: "entity.experience_orb.pickup"
+      volume: 0.8
+      pitch: 2.0
+    # Title/subtitle/actionbar shown to mentioned player
+    title:
+      text: "<gold><bold>Mentioned!</bold></gold>"
+      fade-in: 10
+      stay: 40
+      fade-out: 10
+    subtitle:
+      text: "<yellow>%player% mentioned you in chat!</yellow>"
+    actionbar:
+      text: "<yellow>%player% mentioned you in chat!</yellow>"
+
+  # Display tags
+  display-tags:
+    show-item:
+      enabled: true
+      keys:
+        - "[i]"
+        - "[item]"
+      format: "<gold>[x%amount% %item%]</gold>"
+
+    # You can also create your own display tags.
+    balance-tag:
+      keys:
+        - "[bal]"
+        - "[balance]"
+      format: "<gold><hover:show_text:'<green>$%aircore_player_balance_FORMATTED%</green>'>[%player%'s balance]</hover></gold>"
+
+    playtime-tag:
+      keys:
+        - "[playtime]"
+        - "[pt]"
+      format: "<gold><hover:show_text:'<green>%statistic_hours_played% hours played</green>'>[%player%'s playtime]</hover></gold>"
+
+  # Private message behavior
+  reply-expire-after: 60        # Seconds before a /reply target expires (0 = never)
+  apply-chat-cooldown: true     # Apply chat cooldown to /msg and /reply
+  apply-url-formatting: true    # Detect & format URLs in private messages
+  apply-display-tags: true      # Apply display tags inside private messages
+
+# -----------------------------
+# ECONOMY (requires Vault)
+# -----------------------------
+economy:
+  allow-decimals: true          # Allow non-integer balances (e.g., 12.5)
+  number-format: FORMATTED      # SHORT | FORMATTED | RAW
+  format-short-suffix: ["", "k", "M", "B", "T", "Q"]
+  allow-format-short-in-command: false
+
+  # Balance / transaction limits
+  default-balance: 500
+  min-balance: 0
+  max-balance: 1000000000
+  min-pay-amount: 3
+  max-pay-amount: 1000000
+
+# -----------------------------
+# TELEPORT
+# -----------------------------
+teleport:
+  teleport-to-center: true      # Move players to center of blocks when teleporting
+
+  teleport-countdown:
+    duration: 5                 # Seconds before teleport executes (0 = instant)
+    repeat-message: true        # Repeat countdown messages each second
+
+  cancel-teleport-when:
+    move: true                  # Cancel if player moves
+    damage: true                # Cancel if player takes damage
+    command: false              # Cancel if player runs a command
+    interact: false             # Cancel on interaction (e.g., opening chest)
+
+  apply-immunity-after-teleport: 3  # Seconds of damage/teleport immunity after teleport
+
+  # Request-specific options
+  teleport-request-cooldown: 5       # Seconds between requests to same player
+  teleport-request-expire-time: 60   # Seconds before pending request expires
+  retain-request-state-on-logout: true
+
+  # Spawn behavior
+  teleport-to-spawn-on-first-join: true
+  teleport-to-spawn-on-join: false
+  teleport-to-spawn-on-death: true
+
+# -----------------------------
+# HOMES
+# -----------------------------
+homes:
+  max-homes: 3        # Max homes per player (bypass with aircore.bypass.home.limit.<#>)
+  disabled-worlds:
+    - "disabledworld" # Worlds where /sethome is disabled
+
+  # If true, players must name their homes.
+  allow-home-names: true
+  name-validation-regex: "^[A-Za-z0-9]+$"  # Regex used to validate home names
+  max-home-name-length: 16
+
+# -----------------------------
+# KITS
+# -----------------------------
+kits:
+  first-join-kit: ""    # Kit granted automatically on first join ("" = none)
+  auto-equip: false      # Auto-equip items if slots free
+  drop-items-when-full: false  # Drop extra items if inventory full (false = kit fails)
+
+# -----------------------------
+# MESSAGES & BROADCASTS
+# -----------------------------
+player-join-leave:
+  # Message shown only on a player's first join.
+  motd-first-join: "<newline><green>Welcome <yellow>%player%</yellow> for the very first time!</green><newline><gray>We're excited to have you here.</gray><newline>"
+
+  # Per-group join messages. _DEFAULT_ used when no group matches.
+  motd-join:
+    _DEFAULT_: "<newline><green>Welcome back <yellow>%player%</yellow> to the server!</green><newline><gray>Glad to see you again.</gray><newline>"
+    # vip: "<newline><aqua>Welcome back VIP <yellow>%player%</yellow>!</aqua><newline>"
+
+  broadcast-first-join: "<green>[+] <yellow>%player%</yellow> joined for the first time! Member <yellow>#%unique%</yellow>.</green>"
+
+  broadcast-join:
+    _DEFAULT_: "<green>[+] <yellow>%player%</yellow> joined the game.</green>"
+    # vip: "<aqua>[+] %luckperms_prefix% <yellow>%player%</yellow> joined the game. Say hi!</aqua>"
+
+  broadcast-leave:
+    _DEFAULT_: "<red>[-] <yellow>%player%</yellow> left the game.</red>"
+
+death-messages:
+  enabled: true    # If disabled, use vanilla death messages.
+  disabled-worlds:
+    - "disabledworld" # Worlds where death messages are disabled.
+
+# -----------------------------
+# COMMANDS, COOLDOWNS & LIMITS
+# -----------------------------
+command-cooldowns:
+  # Items are matched strictly; use "*" for wildcards (e.g. "*repair")
+  - "*repair": 60
+  - "*repair all": 120
+  - heal: 120
+  - feed: 60
+
+max-blocks: 20   # Max players a player may block (bypass with aircore.bypass.block.limit.<#>)
+
+# -----------------------------
+# COMMAND USAGES
+# -----------------------------
+command-usages:
+  msg:
+    usage: "/%label% <player> <message>"
+    aliases: [pm, tell, whisper]
+  reply:
+    usage: "/%label% <message>"
+    aliases: [r]
+  msgtoggle:
+    aliases: []
+  mentiontoggle:
+    aliases: []
+  socialspy:
+    aliases: [msgspy]
+  chattoggle:
+    aliases: []
+
+  eco:
+    usage: "/%label% <type> <player> [amount]"
+    usage-give: "/%label% give <player> <amount>"
+    usage-take: "/%label% take <player> <amount>"
+    usage-set: "/%label% set <player> <amount>"
+    usage-reset: "/%label% reset <player>"
+    aliases: [economy]
+  pay:
+    usage: "/%label% <player> <amount>"
+    aliases: []
+  paytoggle:
+    aliases: []
+  balance:
+    aliases: [bal, money]
+  sell:
+    aliases: []
+
+  tpa:
+    usage: "/%label% <player>"
+    aliases: [tpask]
+  tpahere:
+    usage: "/%label% <player>"
+    aliases: []
+  tpaccept:
+    aliases: [tpyes]
+  tpdeny:
+    aliases: [tpno]
+  tptoggle:
+    aliases: []
+  tp:
+    usage: "/%label% <player>"
+    usage-others: "/%label% <player> [player]"
+    aliases: []
+  tphere:
+    usage: "/%label% <player>"
+    aliases: []
+  tppos:
+    usage: "/%label% <x> <y> <z>"
+    aliases: [tpcoords]
+  tpoffline:
+    usage: "/%label% <player>"
+    aliases: [tpoff]
+
+  home:
+    usage: "/%label% <homename>"
+    usage-others: "/%label% @p <player> <homename>"
+    aliases: [homes]
+  sethome:
+    usage: "/%label% <homename>"
+    aliases: [createhome]
+  delhome:
+    usage: "/%label% <homename>"
+    usage-others: "/%label% @p <player> <homename>"
+    aliases: [deletehome, removehome]
+
+  createkit:
+    usage: "/%label% <kitname> [parameters] [cooldown]"
+    aliases: []
+  delkit:
+    usage: "/%label% <kitname>"
+    aliases: [deletekit]
+  editkit:
+    usage: "/%label% <kitname> [parameters] [cooldown]"
+    aliases: []
+  kit:
+    usage: "/%label% <kitname>"
+    aliases: [kits]
+
+  block:
+    usage: "/%label% <player>"
+    aliases: [ignore]
+  unblock:
+    usage: "/%label% <player>"
+    aliases: [unignore]
+  spawn:
+    aliases: []
+  setspawn:
+    aliases: []
+  warp:
+    usage: "/%label% <warpname>"
+    aliases: [warps]
+  setwarp:
+    usage: "/%label% <warpname>"
+    aliases: [createwarp]
+  delwarp:
+    usage: "/%label% <warpname>"
+    aliases: [deletewarp, removewarp]
+  clearinventory:
+    aliases: [clear, clearinv]
+  feed:
+    aliases: []
+  heal:
+    aliases: []
+  time:
+    usage: "/%label% <type> <time>"
+    usage-world: "/%label% <type> <time> [world]"
+    usage-set: "/%label% set <time>"
+    usage-add: "/%label% add <time>"
+    usage-set-world: "/%label% set <time> [world]"
+    usage-add-world: "/%label% add <time> [world]"
+    aliases: []
+  weather:
+    usage: "/%label% <type>"
+    usage-world: "/%label% <type> [world]"
+    aliases: []
+  craftingtable:
+    aliases: [craft]
+  anvil:
+    aliases: []
+  cartography:
+    aliases: []
+  loom:
+    aliases: []
+  smithingtable:
+    aliases: []
+  stonecutter:
+    aliases: []
+  grindstone:
+    aliases: []
+  enderchest:
+    aliases: [ec]
+  invsee:
+    usage: "/%label% <player>"
+    aliases: [inventorysee]
+  gamemode:
+    usage: "/%label% <mode>"
+    usage-others: "/%label% <mode> [player]"
+    aliases: [gm]
+  kill:
+    aliases: []
+  afk:
+    aliases: []
+  god:
+    aliases: [godmode]
+  speed:
+    usage: "/%label% [type] <speed>"
+    usage-others: "/%label% [type] <speed> [player]"
+    aliases: []
+  fly:
+    aliases: []
+  repair:
+    aliases: [fix]
+  give:
+    usage: "/%label% <item> [amount]"
+    usage-others: "/%label% <item> [amount] [player]"
+    aliases: []
+  back:
+    aliases: []

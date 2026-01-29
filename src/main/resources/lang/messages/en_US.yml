@@ -1,0 +1,511 @@
+# -------------------------------
+# AirCore Language Configuration
+# -------------------------------
+# General Notes:
+# - Set a message to "" to disable it (nothing will be sent).
+# - All messages support full MiniMessage formatting.
+# - External placeholders are supported when PlaceholderAPI is installed.
+#
+# Supported Inline Tags (usable inside any message):
+#   <sound:NAME:VOLUME:PITCH>
+#       - Plays a sound to the player
+#
+#   <title:'TEXT':fadeIn:stay:fadeOut>
+#       - Shows a title with timing values (in ticks)
+#
+#   <subtitle:'TEXT'>
+#       - Shows a subtitle (uses the last title timings)
+#
+#   <actionbar:'TEXT'>
+#       - Shows text in the action bar
+#
+#   <bossbar:'TEXT':duration:color:progress:countdown>
+#       TEXT      = message displayed in the boss bar
+#       duration  = how long to display (ticks, 20 ticks = 1 second)
+#       color     = boss bar color (e.g., RED, BLUE, GREEN)
+#       progress  = initial progress (0.0–1.0, used in static mode)
+#       countdown = true/false: true animates progress toward 0, false keeps it static
+
+# -----------------------------
+# GENERAL
+# -----------------------------
+general:
+  prefix: "<gray>[<gradient:#00ffcc:#0066ff>AirCore</gradient>]</gray>"
+
+  plugin-usage: "%prefix% <green>Available commands:</green>
+    <newline> <yellow>/aircore reload</yellow> <gray>- Reload configuration and messages</gray>
+    <newline> <yellow>/aircore version</yellow> <gray>- Show plugin version</gray>"
+  plugin-reloaded: "%prefix% <green>Configuration successfully reloaded.</green>"
+  plugin-version: "%prefix% <green>Plugin version:</green> <gray>%version%</gray>"
+
+  console-name: "@Console"
+
+# -----------------------------
+# CHAT & MESSAGING
+# -----------------------------
+chat:
+  cooldown: "%prefix% <red>Please wait <yellow>%time%</yellow> before chatting again.</red>"
+
+  private-messages:
+    to: "<gold>[MSG] <yellow>%player%</yellow> → <yellow>%target%</yellow>: %message%</gold>"
+    from: "<sound:entity.chicken.egg:1:2><gold>[MSG] <yellow>%player%</yellow> → <yellow>%target%</yellow>: %message%</gold>"
+    everyone: "<gold>[MSG] <yellow>%player%</yellow> → <yellow>everyone</yellow>: %message%</gold>"
+    error-nobody: "%prefix% <red>There's no one to reply to.</red>"
+    error-self: "%prefix% <red>You can't message yourself.</red>"
+    error-blocked: "%prefix% <red>Current players have private messages disabled or have blocked you.</red>"
+    error-disabled: "%prefix% <red><yellow>%player%</yellow> has private messages turned off.</red>"
+
+  toggles:
+    messages:
+      enabled: "%prefix% <green>Private messages are now on.</green>"
+      disabled: "%prefix% <green>Private messages are now off.</green>"
+      enabled-for: "%prefix% <green>Private messages enabled for <yellow>%player%</yellow>.</green>"
+      disabled-for: "%prefix% <green>Private messages disabled for <yellow>%player%</yellow>.</green>"
+      enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled private messages for you.</green>"
+      disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled private messages for you.</green>"
+
+    mentions:
+      enabled: "%prefix% <green>Mentions are now on.</green>"
+      disabled: "%prefix% <green>Mentions are now off.</green>"
+      enabled-for: "%prefix% <green>Mentions enabled for <yellow>%player%</yellow>.</green>"
+      disabled-for: "%prefix% <green>Mentions disabled for <yellow>%player%</yellow>.</green>"
+      enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled mentions for you.</green>"
+      disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled mentions for you.</green>"
+
+    chat:
+      enabled: "%prefix% <green>Chat is now on.</green>"
+      disabled: "%prefix% <green>Chat is now off.</green>"
+      enabled-for: "%prefix% <green>Chat enabled for <yellow>%player%</yellow>.</green>"
+      disabled-for: "%prefix% <green>Chat disabled for <yellow>%player%</yellow>.</green>"
+      enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled chat for you.</green>"
+      disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled chat for you.</green>"
+
+  socialspy:
+    to: "<gray>[SPY] <yellow>%player%</yellow> → <yellow>%target%</yellow>: %message%</gray>"
+    everyone: "<gray>[SPY] <yellow>%player%</yellow> → <yellow>everyone</yellow>: %message%</gray>"
+    enabled: "%prefix% <green>Social spy is now on.</green>"
+    disabled: "%prefix% <green>Social spy is now off.</green>"
+    enabled-for: "%prefix% <green>Social spy enabled for <yellow>%player%</yellow>.</green>"
+    disabled-for: "%prefix% <green>Social spy disabled for <yellow>%player%</yellow>.</green>"
+    enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled social spy for you.</green>"
+    disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled social spy for you.</green>"
+
+  blocking:
+    added: "%prefix% <green>You have blocked <yellow>%player%</yellow>.</green>"
+    already: "%prefix% <red><yellow>%player%</yellow> is already blocked.</red>"
+    removed: "%prefix% <green>You have unblocked <yellow>%player%</yellow>.</green>"
+    limit: "%prefix% <red>You've reached the maximum number of blocks (%limit%).</red>"
+    not-blocked: "%prefix% <red><yellow>%player%</yellow> is not blocked.</red>"
+    error-cannot: "%prefix% <red>You cannot block <yellow>%player%</yellow>.</red>"
+    error-self: "%prefix% <red>You cannot block yourself.</red>"
+    error-blocked-by: "%prefix% <red>You cannot interact with <yellow>%player%</yellow> because they blocked you.</red>"
+
+# -----------------------------
+# ECONOMY
+# -----------------------------
+economy:
+  give:
+    self: "%prefix% <green>$%amount% has been added to your balance.</green>"
+    player: "%prefix% <green>You gave <yellow>$%amount%</yellow> to <yellow>%player%</yellow>.</green>"
+    online: "%prefix% <green>You gave <yellow>$%amount%</yellow> to everyone online.</green>"
+    all: "%prefix% <green>You gave <yellow>$%amount%</yellow> to everyone online and offline.</green>"
+    by: "%prefix% <green><yellow>%player%</yellow> has added <yellow>$%amount%</yellow> to your balance.</green>"
+    error-exceed: "%prefix% <red>Giving that amount to <yellow>%player%</yellow> would exceed the maximum balance limit (<yellow>$%amount%</yellow>).</red>"
+
+  take:
+    self: "%prefix% <green>$%amount% has been taken from your balance.</green>"
+    player: "%prefix% <green>You took <yellow>$%amount%</yellow> from <yellow>%player%</yellow>.</green>"
+    online: "%prefix% <green>You took <yellow>$%amount%</yellow> from everyone online.</green>"
+    all: "%prefix% <green>You took <yellow>$%amount%</yellow> from everyone online and offline.</green>"
+    by: "%prefix% <red><yellow>%player%</yellow> took <yellow>$%amount%</yellow> from your balance.</red>"
+    error-insufficient: "%prefix% <red><yellow>%player%</yellow> doesn't have enough money.</red>"
+    error-max-amount: "%prefix% <red>The maximum amount you can take is <yellow>$%amount%</yellow>.</red>"
+
+  set:
+    self: "%prefix% <green>Your balance has been set to <yellow>$%amount%</yellow>.</green>"
+    player: "%prefix% <green>You set <yellow>%player%</yellow>'s balance to <yellow>$%amount%</yellow>.</green>"
+    online: "%prefix% <green>You set everyone's balance online to <yellow>$%amount%</yellow>.</green>"
+    all: "%prefix% <green>You set everyone's balance (online and offline) to <yellow>$%amount%</yellow>.</green>"
+    by: "%prefix% <green><yellow>%player%</yellow> has set your balance to <yellow>$%amount%</yellow>.</green>"
+
+  reset:
+    self: "%prefix% <green>Your balance has been reset.</green>"
+    player: "%prefix% <green>You reset <yellow>%player%</yellow>'s balance.</green>"
+    online: "%prefix% <green>You reset everyone's balance online.</green>"
+    all: "%prefix% <green>You reset everyone's balance (online and offline).</green>"
+    by: "%prefix% <red><yellow>%player%</yellow> has reset your balance.</red>"
+
+  error-min: "%prefix% <red>Amount cannot go below <yellow>$%amount%</yellow>.</red>"
+  error-max: "%prefix% <red>Amount cannot exceed <yellow>$%amount%</yellow>.</red>"
+
+  balance:
+    self: "%prefix% <green>Your balance is <yellow>$%balance%</yellow>.</green>"
+    player: "%prefix% <green><yellow>%player%</yellow>'s balance is <yellow>$%balance%</yellow>.</green>"
+
+  payments:
+    send: "%prefix% <green>You sent <yellow>$%amount%</yellow> to <yellow>%player%</yellow>.</green>"
+    receive: "%prefix% <green>You received <yellow>$%amount%</yellow> from <yellow>%player%</yellow>.</green>"
+    error-exceed: "%prefix% <red>Paying that amount to <yellow>%player%</yellow> would exceed the maximum balance limit (<yellow>$%amount%</yellow>).</red>"
+    error-min: "%prefix% <red>The minimum pay amount is <yellow>$%amount%</yellow>.</red>"
+    error-max: "%prefix% <red>The maximum pay amount is <yellow>$%amount%</yellow>.</red>"
+    error-self: "%prefix% <red>You cannot pay yourself.</red>"
+    error-insufficient: "%prefix% <red>You don't have enough money. You need <yellow>$%amount%</yellow>.</red>"
+    error-disabled: "%prefix% <red><yellow>%player%</yellow> has payments disabled.</red>"
+
+    toggles:
+      enabled: "%prefix% <green>Payments are now on.</green>"
+      disabled: "%prefix% <green>Payments are now off.</green>"
+      enabled-for: "%prefix% <green>Payments enabled for <yellow>%player%</yellow>.</green>"
+      disabled-for: "%prefix% <green>Payments disabled for <yellow>%player%</yellow>.</green>"
+      enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled payments for you.</green>"
+      disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled payments for you.</green>"
+
+  sell:
+    success: "%prefix% <green>Items sold for <yellow>$%amount%</yellow>.</green>"
+    error-failed: "%prefix% <red>There are some items that cannot be sold.</red>"
+    error-invalid: "%prefix% <red>You need to sell at least one item.</red>"
+
+# -----------------------------
+# TELEPORT
+# -----------------------------
+teleport:
+  requests:
+    tpa-to: "%prefix% <green>Teleport request sent to <yellow>%player%</yellow>.</green>"
+    tpa-from: "%prefix% <green>You got a teleport request from <yellow>%player%</yellow>.</green>"
+    tpahere-to: "%prefix% <green>You asked <yellow>%player%</yellow> to teleport here.</green>"
+    tpahere-from: "%prefix% <green><yellow>%player%</yellow> asked you to teleport to them.</green>"
+    tpahere-everyone: "%prefix% <green>You asked everyone to teleport to you.</green>"
+    error-self: "%prefix% <red>You can't send a request to yourself.</red>"
+    error-cooldown: "%prefix% <red>Wait %time% before sending another request.</red>"
+    error-disabled: "%prefix% <red><yellow>%player%</yellow> isn't accepting teleport requests.</red>"
+
+  actions:
+    accepted-player: "%prefix% <green>You accepted <yellow>%player%</yellow>'s request.</green>"
+    accepted-from: "%prefix% <green><yellow>%player%</yellow> accepted your request.</green>"
+    accepted-all: "%prefix% <green>You accepted all pending requests.</green>"
+    denied-player: "%prefix% <red>You denied <yellow>%player%</yellow>'s request.</red>"
+    denied-from: "%prefix% <red><yellow>%player%</yellow> denied your request.</red>"
+    denied-all: "%prefix% <red>You denied all pending requests.</red>"
+
+  lifecycle:
+    expired-to: "%prefix% <red>Your request to <yellow>%player%</yellow> expired.</red>"
+    expired-from: "%prefix% <red><yellow>%player%</yellow>'s request to you expired.</red>"
+    cancelled-to: "%prefix% <red>Your request to <yellow>%player%</yellow> was cancelled.</red>"
+    cancelled-from: "%prefix% <red><yellow>%player%</yellow> cancelled their request.</red>"
+
+  toggles:
+    enabled: "%prefix% <green>Teleport requests are now on.</green>"
+    disabled: "%prefix% <green>Teleport requests are now off.</green>"
+    enabled-for: "%prefix% <green>Teleport requests enabled for <yellow>%player%</yellow>.</green>"
+    disabled-for: "%prefix% <green>Teleport requests disabled for <yellow>%player%</yellow>.</green>"
+    enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled teleport requests for you.</green>"
+    disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled teleport requests for you.</green>"
+
+  direct:
+    to-player: "%prefix% <green>You teleported to <yellow>%player%</yellow>.</green>"
+    to-player-by: "%prefix% <green><yellow>%player%</yellow> teleported you to <yellow>%target%</yellow>.</green>"
+    to-player-last: "%prefix% <green>Teleported to <yellow>%player%</yellow>'s last location.</green>"
+    player-to-target: "%prefix% <green>You teleported <yellow>%player%</yellow> to <yellow>%target%</yellow>.</green>"
+    player-to-self: "%prefix% <green>You teleported <yellow>%player%</yellow> to yourself.</green>"
+    everyone-to-self: "%prefix% <green>You teleported everyone to yourself.</green>"
+
+  coords:
+    success: "%prefix% <green>You teleported to <yellow>X:%x% Y:%y% Z:%z%</yellow>.</green>"
+    invalid: "%prefix% <red>Invalid coordinates.</red>"
+
+  errors:
+    no-requests: "%prefix% <red>You don't have any pending requests.</red>"
+    no-request-from: "%prefix% <red>No pending request from <yellow>%player%</yellow>.</red>"
+    location-not-found: "%prefix% <red>No last location stored for <yellow>%player%</yellow>.</red>"
+
+  countdown: "<sound:entity.experience_orb.pickup:0.8:2.0>%prefix% <green>Teleporting in %time%...</green>"
+
+# -----------------------------
+# HOMES
+# -----------------------------
+homes:
+  management:
+    created: "%prefix% <green>Home <yellow>%name%</yellow> has been created.</green>"
+    deleted: "%prefix% <red>Home <yellow>%name%</yellow> deleted.</red>"
+    deleted-for: "%prefix% <red>Deleted home <yellow>%name%</yellow> for <yellow>%player%</yellow>.</red>"
+    deleted-by: "%prefix% <red>Your home <yellow>%name%</yellow> was deleted by <yellow>%player%</yellow>.</red>"
+    already-exists: "%prefix% <red>Home <yellow>%name%</yellow> already exists.</red>"
+
+  teleport:
+    success: "%prefix% <green>You teleported to home <yellow>%name%</yellow>.</green>"
+    other: "%prefix% <green>You teleported to <yellow>%player%</yellow>'s home <yellow>%name%</yellow>.</green>"
+    cancelled: "%prefix% <red>Teleport to home <yellow>%name%</yellow> cancelled.</red>"
+
+  validation:
+    limit-reached: "%prefix% <red>You've reached the maximum number of homes (%limit%).</red>"
+    invalid-name: "%prefix% <red>Invalid home name.</red>"
+    name-too-long: "%prefix% <red>Home name is too long (max %max% characters).</red>"
+    cannot-set: "%prefix% <red>You can't set a home here.</red>"
+
+  errors:
+    not-found: "%prefix% <red>Home not found.</red>"
+    not-found-for: "%prefix% <red>Home not found for <yellow>%player%</yellow>.</red>"
+    none-yet: "%prefix% <red>You don't have any homes yet. Create one first!</red>"
+
+# -----------------------------
+# KITS
+# -----------------------------
+kits:
+  management:
+    created: "%prefix% <green>Kit <yellow>%name%</yellow> has been created.</green>"
+    deleted: "%prefix% <red>Kit <yellow>%name%</yellow> deleted.</red>"
+    edited: "%prefix% <green>Kit <yellow>%name%</yellow> edited successfully.</green>"
+    already-exists: "%prefix% <red>Kit <yellow>%name%</yellow> already exists. To edit, use <yellow>/editkit %name%</yellow></red>"
+
+  usage:
+    claimed: "%prefix% <green>You claimed kit <yellow>%name%</yellow>.</green>"
+    cooldown: "%prefix% <red>You must wait <yellow>%time%</yellow> before claiming kit <yellow>%name%</yellow> again.</red>"
+    no-permission: "%prefix% <red>You don't have permission to claim kit <yellow>%name%</yellow>.</red>"
+    inventory-full: "%prefix% <red>Your inventory is full. Clear space before claiming kit <yellow>%name%</yellow>.</red>"
+
+  errors:
+    not-found: "%prefix% <red>Kit not found.</red>"
+    cannot-claim-again: "%prefix% <red>You cannot claim kit <yellow>%name%</yellow> again.</red>"
+
+# -----------------------------
+# UTILITIES
+# -----------------------------
+utilities:
+  time:
+    get: "%prefix% <green>Time is <yellow>%time-formatted%</yellow> or <yellow>%ticks%</yellow> ticks.</green>"
+    set: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>).</green>"
+    add: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time.</green>"
+    set-in: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow>.</green>"
+    add-in: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time in <yellow>%world%</yellow>.</green>"
+
+    placeholders:
+      ticks: " ticks"
+      second: " second"
+      seconds: " seconds"
+      minute: " minute"
+      minutes: " minutes"
+      hour: " hour"
+      hours: " hours"
+      day: " day"
+      days: " days"
+
+  gamemode:
+    set: "%prefix% <green>Gamemode set to <yellow>%gamemode%</yellow>.</green>"
+    set-for: "%prefix% <green>Gamemode set to <yellow>%gamemode%</yellow> for <yellow>%player%</yellow>.</green>"
+    set-by: "%prefix% <green><yellow>%player%</yellow> set your gamemode to <yellow>%gamemode%</yellow>.</green>"
+
+    placeholders:
+      creative: "creative"
+      survival: "survival"
+      adventure: "adventure"
+      spectator: "spectator"
+
+  warp:
+    created: "%prefix% <green>Warp <yellow>%name%</yellow> has been created.</green>"
+    deleted: "%prefix% <red>Warp <yellow>%name%</yellow> deleted.</red>"
+    already-exists: "%prefix% <red>Warp <yellow>%name%</yellow> already exists.</red>"
+    teleported: "%prefix% <green>You teleported to warp <yellow>%name%</yellow>.</green>"
+    cancelled: "%prefix% <red>Teleport to warp <yellow>%name%</yellow> cancelled.</red>"
+    not-found: "%prefix% <red>Warp not found.</red>"
+    no-permission: "%prefix% <red>You don't have permission to access warp <yellow>%name%</yellow>.</red>"
+
+  spawn:
+    set: "%prefix% <green>Spawn set successfully.</green>"
+    teleported: "%prefix% <green>You teleported to spawn.</green>"
+    cancelled: "%prefix% <red>Teleport to spawn cancelled.</red>"
+    none-set: "%prefix% <red>There is no spawn yet.</red>"
+
+  weather:
+    set: "%prefix% <green>Weather set to <yellow>%type%</yellow>.</green>"
+    set-in: "%prefix% <green>Weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
+
+    placeholders:
+      clear: "clear"
+      rain: "rain"
+      thunder: "thunder"
+
+  heal:
+    self: "%prefix% <green>You healed yourself.</green>"
+    for: "%prefix% <green>You healed <yellow>%player%</yellow>.</green>"
+    by: "%prefix% <green><yellow>%player%</yellow> healed you.</green>"
+    everyone: "%prefix% <green>You healed everyone.</green>"
+
+  give:
+    self: "%prefix% <green>Item <yellow>x%amount% %item%</yellow> given.</green>"
+    for: "%prefix% <green>You gave <yellow>x%amount% %item%</yellow> to <yellow>%player%</yellow>.</green>"
+    by: "%prefix% <green><yellow>%player%</yellow> gave you <yellow>x%amount% %item%</yellow>.</green>"
+    everyone: "%prefix% <green>You gave <yellow>x%amount% %item%</yellow> to everyone.</green>"
+    invalid-item: "%prefix% <red>That's an invalid item to give.</red>"
+
+  feed:
+    self: "%prefix% <green>You fed yourself.</green>"
+    for: "%prefix% <green>You fed <yellow>%player%</yellow>.</green>"
+    by: "%prefix% <green><yellow>%player%</yellow> fed you.</green>"
+    everyone: "%prefix% <green>You fed everyone.</green>"
+
+  back:
+    success: "%prefix% <green>Successfully teleported you to your last death location."
+    success-by: "%prefix% <green><yellow>%player%</yellow> successfully teleported to your last death location."
+    cancelled: "%prefix% <red>Teleport to last death location cancelled.</red>"
+    no-location: "%prefix% <red>You have no previous death location.</red>"
+
+  inventory:
+    cleared: "%prefix% <green>Your inventory was cleared."
+    cleared-for: "%prefix% <green><yellow>%player%</yellow>'s inventory was cleared."
+    cleared-by: "%prefix% <green><yellow>%player%</yellow> cleared your inventory.</green>"
+    cleared-everyone: "%prefix% <green>You cleared inventory for everyone.</green>"
+
+  kill:
+    self: "%prefix% <red>You killed yourself.</red>"
+    other: "%prefix% <red>You killed <yellow>%player%</yellow>.</red>"
+    by: "%prefix% <red><yellow>%player%</yellow> killed you.</red>"
+    everyone: "%prefix% <red>You killed everyone.</red>"
+
+  afk:
+    set: "%prefix% <green>You are now <yellow>AFK</yellow>.</green>"
+    set-notify: "%prefix% <yellow>%player%</yellow> <green>is now AFK.</green>"
+    stop: "%prefix% <green>You are no longer AFK. <gray>AFK time:</gray> <yellow>%time%</yellow></green>"
+    stop-notify: "%prefix% <yellow>%player%</yellow> <green>is no longer AFK. <gray>AFK time:</gray> <yellow>%time%</yellow></green>"
+    interaction-notify: "%prefix% <yellow>%player%</yellow> <green>is currently AFK and may not respond.</green>"
+
+  fly:
+    enabled: "%prefix% <green>Fly is now on.</green>"
+    disabled: "%prefix% <green>Fly is now off.</green>"
+    enabled-for: "%prefix% <green>Fly enabled for <yellow>%player%</yellow>.</green>"
+    disabled-for: "%prefix% <green>Fly disabled for <yellow>%player%</yellow>.</green>"
+    enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled fly for you.</green>"
+    disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled fly for you.</green>"
+
+  godmode:
+    enabled: "%prefix% <green>God mode is now on.</green>"
+    disabled: "%prefix% <green>God mode is now off.</green>"
+    enabled-for: "%prefix% <green>God mode enabled for <yellow>%player%</yellow>.</green>"
+    disabled-for: "%prefix% <green>God mode disabled for <yellow>%player%</yellow>.</green>"
+    enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled god mode for you.</green>"
+    disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled god mode for you.</green>"
+
+  speed:
+    set: "%prefix% <green>Speed set to <yellow>%speed%</yellow> (<yellow>%type%</yellow>).</green>"
+    set-for: "%prefix% <green>Speed set to <yellow>%speed%</yellow> (<yellow>%type%</yellow>) for <yellow>%player%</yellow>.</green>"
+    set-by: "%prefix% <green><yellow>%player%</yellow> set your speed to <yellow>%speed%</yellow> (<yellow>%type%</yellow>).</green>"
+    limit: "%prefix% <red>Speed value must be between <yellow>%min%</yellow> and <yellow>%max%</yellow>.</red>"
+
+    placeholders:
+      walking: "walking"
+      flying: "flying"
+
+  repair:
+    item: "%prefix% <green>Item repaired successfully.</green>"
+    inventory: "%prefix% <green>Inventory repaired successfully.</green>"
+    item-not-damaged: "%prefix% <red>This item is not damaged.</red>"
+    cannot-repair: "%prefix% <red>This item cannot be repaired.</red>"
+    invalid-item: "%prefix% <red>You must hold an item in your hand to repair.</red>"
+    inventory-not-damaged: "%prefix% <red>You have no damaged items in your inventory.</red>"
+
+  errors:
+    invsee-self: "%prefix% <red>You can only view other players' inventory.</red>"
+
+# -----------------------------
+# DEATH MESSAGES
+# -----------------------------
+death:
+  generic: "<red>☠ %player% has died.</red>"
+  by-player: "<red>☠ %player% was slain by %killer%.</red>"
+  by-mob: "<red>☠ %player% was slain by a %mob%.</red>"
+
+  environmental:
+    fall: "<red>☠ %player% fell from a high place.</red>"
+    void: "<red>☠ %player% fell into the void.</red>"
+    lava: "<red>☠ %player% tried to swim in lava.</red>"
+    fire: "<red>☠ %player% burned to death.</red>"
+    drowning: "<red>☠ %player% drowned.</red>"
+    lightning: "<red>☠ %player% was struck by lightning.</red>"
+    suffocation: "<red>☠ %player% suffocated in a wall.</red>"
+    starvation: "<red>☠ %player% starved to death.</red>"
+    poison: "<red>☠ %player% was poisoned.</red>"
+    magic: "<red>☠ %player% was killed by magic.</red>"
+    withering: "<red>☠ %player% withered away.</red>"
+
+  explosions:
+    generic: "<red>☠ %player% blew up.</red>"
+    crystal: "<red>☠ %player% was killed by an end crystal explosion.</red>"
+
+  special:
+    suicide: "<red>☠ %player% took their own life.</red>"
+
+  mob-names:
+    hostile:
+      ZOMBIE: "Zombie"
+      ZOMBIE_VILLAGER: "Zombie Villager"
+      ZOMBIFIED_PIGLIN: "Zombified Piglin"
+      HUSK: "Husk"
+      DROWNED: "Drowned"
+      SKELETON: "Skeleton"
+      STRAY: "Stray"
+      SPIDER: "Spider"
+      CAVE_SPIDER: "Cave Spider"
+      WITCH: "Witch"
+      SLIME: "Slime"
+      CREEPER: "Creeper"
+      CHARGED_CREEPER: "Charged Creeper"
+      PHANTOM: "Phantom"
+      SILVERFISH: "Silverfish"
+      ENDERMITE: "Endermite"
+      BLAZE: "Blaze"
+      GHAST: "Ghast"
+      MAGMA_CUBE: "Magma Cube"
+      WITHER_SKELETON: "Wither Skeleton"
+      HOGLIN: "Hoglin"
+      PIGLIN: "Piglin"
+      PIGLIN_BRUTE: "Piglin Brute"
+      PILLAGER: "Pillager"
+      VINDICATOR: "Vindicator"
+      EVOKER: "Evoker"
+      ILLUSIONER: "Illusioner"
+      RAVAGER: "Ravager"
+      VEX: "Vex"
+      ENDER_DRAGON: "Ender Dragon"
+      WITHER: "Wither"
+      ELDER_GUARDIAN: "Elder Guardian"
+      GUARDIAN: "Guardian"
+      SHULKER: "Shulker"
+      WARDEN: "Warden"
+      IRON_GOLEM: "Iron Golem"
+      ENDERMAN: "Enderman"
+      BOGGED: "Bogged"
+      BREEZE: "Breeze"
+
+    projectiles:
+      ARROW: "Arrow"
+      TRIDENT: "Trident"
+      FIREBALL: "Fireball"
+      SMALL_FIREBALL: "Small Fireball"
+      DRAGON_FIREBALL: "Dragon Fireball"
+      WITHER_SKULL: "Wither Skull"
+      SNOWBALL: "Snowball"
+      EGG: "Egg"
+      LLAMA_SPIT: "Llama Spit"
+      SHULKER_BULLET: "Shulker Bullet"
+      FIREWORK_ROCKET: "Firework Rocket"
+      SPLASH_POTION: "Splash Potion"
+      LINGERING_POTION: "Lingering Potion"
+      AREA_EFFECT_CLOUD: "Area Effect Cloud"
+      PRIMED_TNT: "TNT"
+      ENDER_CRYSTAL: "End Crystal"
+      MINECART_TNT: "TNT Minecart"
+      BED: "Bed"
+      RESPAWN_ANCHOR: "Respawn Anchor"
+
+# -----------------------------
+# GENERAL ERRORS
+# -----------------------------
+errors:
+  no-permission: "%prefix% <red>You need <dark_red>%permission%</dark_red> to do that.</red>"
+  incorrect-usage: "%prefix% <red>Correct usage: <dark_red>%usage%</dark_red></red>"
+  player-not-found: "%prefix% <red>Player not found.</red>"
+  player-never-joined: "%prefix% <red>That player never joined the server before.</red>"
+  none-online: "%prefix% <red>No players are online right now.</red>"
+  invalid-format: "%prefix% <red>That's an invalid format.</red>"
+  invalid-amount: "%prefix% <red>That's an invalid amount.</red>"
+  world-not-found: "%prefix% <red>World not found.</red>"
+  command-cooldown: "%prefix% <red>You must wait <yellow>%time%</yellow> before using this command again.</red>"

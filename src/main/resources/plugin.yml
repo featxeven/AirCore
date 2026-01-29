@@ -1,0 +1,807 @@
+name: AirCore
+main: com.ftxeven.aircore.AirCore
+version: 1.0.0
+api-version: "1.21"
+author: ftxeven
+description: Core commands and features for all servers.
+load: STARTUP
+softdepend:
+  - PlaceholderAPI
+  - LuckPerms
+  - WorldGuard
+  - Vault
+folia-supported: true
+
+commands:
+  aircore:
+    description: Main plugin command.
+    usage: /aircore <reload|version>
+    permission: aircore.command.admin
+
+  # Chat commands
+  msg:
+    description: Sends a private message to a player.
+    usage: /msg <player> <message>
+    permission: aircore.command.msg
+
+  reply:
+    description: Replies to the last private message.
+    usage: /reply <message>
+    permission: aircore.command.reply
+
+  msgtoggle:
+    description: Toggles private messages on or off.
+    usage: /msgtoggle [player]
+    permission: aircore.command.msgtoggle
+
+  mentiontoggle:
+    description: Toggles mention notifications.
+    usage: /mentiontoggle [player]
+    permission: aircore.command.mentiontoggle
+
+  socialspy:
+    description: Toggles Social Spy on or off.
+    usage: /socialspy [player]
+    permission: aircore.command.socialspy
+
+  chattoggle:
+    description: Toggles global chat visibility.
+    usage: /chattoggle [player]
+    permission: aircore.command.chattoggle
+
+  # Economy commands
+  eco:
+    description: Economy administration command (give, take, set, reset).
+    usage: /eco <give|take|set|reset> <player> [amount]
+    permission: aircore.command.eco
+
+  pay:
+    description: Send money to another player.
+    usage: /pay <player> <amount>
+    permission: aircore.command.pay
+
+  paytoggle:
+    description: Toggles whether you can receive payments.
+    usage: /paytoggle [player]
+    permission: aircore.command.paytoggle
+
+  balance:
+    description: Check your current balance.
+    usage: /balance [player]
+    permission: aircore.command.balance
+
+  # Teleport commands
+  tpa:
+    description: Sends a teleport request to a player.
+    usage: /tpa <player>
+    permission: aircore.command.tpa
+
+  tpahere:
+    description: Sends a teleport-here request to a player.
+    usage: /tpahere <player>
+    permission: aircore.command.tpahere
+
+  tpaccept:
+    description: Accepts a player's teleport request.
+    usage: /tpaccept [player]
+    permission: aircore.command.tpaccept
+
+  tpdeny:
+    description: Declines a player's teleport request.
+    usage: /tpdeny [player]
+    permission: aircore.command.tpdeny
+
+  tptoggle:
+    description: Toggles whether you can receive teleport requests.
+    usage: /tptoggle [player]
+    permission: aircore.command.tptoggle
+
+  tp:
+    description: Teleports to a player.
+    usage: /tp <player> [player]
+    permission: aircore.command.tp
+
+  tphere:
+    description: Teleports a player to your location.
+    usage: /tphere <player>
+    permission: aircore.command.tphere
+
+  tppos:
+    description: Teleports to a specific location.
+    usage: /tppos <x> <y> <z>
+    permission: aircore.command.tppos
+
+  tpoffline:
+    description: Teleports to a player's last location.
+    usage: /tpoffline <player>
+    permission: aircore.command.tpoffline
+
+  # Home commands
+  sethome:
+    description: Set a home at your current location.
+    usage: /sethome <homename>
+    permission: aircore.command.sethome
+
+  delhome:
+    description: Delete one of your homes.
+    usage: /delhome <homename>
+    permission: aircore.command.delhome
+
+  home:
+    description: Teleports to your home.
+    usage: /home <homename>
+    permission: aircore.command.home
+
+  # Kit commands
+  kit:
+    description: Claim a kit.
+    usage: /kit <kitname>
+    permission: aircore.command.kit
+
+  createkit:
+    description: Create a new kit from your inventory.
+    usage: /createkit <kitname> [parameters] [cooldown]
+    permission: aircore.command.createkit
+
+  delkit:
+    description: Delete a kit.
+    usage: /delkit <kitname>
+    permission: aircore.command.delkit
+
+  editkit:
+    description: Edit a kit.
+    usage: /editkit <kitname> [parameters] [cooldown]
+    permission: aircore.command.editkit
+
+  # Utility commands
+  spawn:
+    description: Teleport to spawn.
+    usage: /spawn
+    permission: aircore.command.spawn
+
+  setspawn:
+    description: Set a spawn.
+    usage: /setspawn
+    permission: aircore.command.setspawn
+
+  warp:
+    description: Teleport to a warp.
+    usage: /warp <warpname>
+    permission: aircore.command.warp
+
+  setwarp:
+    description: Set a warp.
+    usage: /setwarp <warpname>
+    permission: aircore.command.setwarp
+
+  delwarp:
+    description: Delete a warp.
+    usage: /delwarp <warpname>
+    permission: aircore.command.delwarp
+
+  block:
+    description: Blocks a player from interacting with you.
+    usage: /block <player>
+    permission: aircore.command.block
+
+  unblock:
+    description: Removes a player from your block list.
+    usage: /unblock <player>
+    permission: aircore.command.unblock
+
+  clearinventory:
+    description: Clears inventory.
+    usage: /clearinventory [player]
+    permission: aircore.command.clearinventory
+
+  feed:
+    description: Feed yourself or other players.
+    usage: /feed [player]
+    permission: aircore.command.feed
+
+  heal:
+    description: Heal yourself or other players.
+    usage: /heal [player]
+    permission: aircore.command.heal
+
+  time:
+    description: Set the time.
+    usage: /time <set|add> <time> [world]
+    permission: aircore.command.time
+
+  weather:
+    description: Change the weather.
+    usage: /weather <sun|rain|thunder> [world]
+    permission: aircore.command.weather
+
+  craftingtable:
+    description: Opens a virtual crafting table.
+    usage: /craftingtable
+    permission: aircore.command.craftingtable
+
+  anvil:
+    description: Opens a virtual anvil.
+    usage: /anvil
+    permission: aircore.command.anvil
+
+  cartography:
+    description: Opens a virtual cartography table.
+    usage: /cartography
+    permission: aircore.command.cartography
+
+  loom:
+    description: Opens a virtual loom.
+    usage: /loom
+    permission: aircore.command.loom
+
+  smithingtable:
+    description: Opens a virtual smithing table.
+    usage: /smithingtable
+    permission: aircore.command.smithingtable
+
+  stonecutter:
+    description: Opens a virtual stonecutter.
+    usage: /stonecutter
+    permission: aircore.command.stonecutter
+
+  grindstone:
+    description: Opens a virtual grindstone.
+    usage: /grindstone
+    permission: aircore.command.grindstone
+
+  enderchest:
+    description: Opens your ender chest or another player's.
+    usage: /enderchest [player]
+    permission: aircore.command.enderchest
+
+  gamemode:
+    description: Change your gamemode or another player's.
+    usage: /gamemode <mode> [player]
+    permission: aircore.command.gamemode
+
+  invsee:
+    description: View other player's inventory.
+    usage: /invsee <player>
+    permission: aircore.command.invsee
+
+  kill:
+    description: Kill yourself or other players.
+    usage: /kill [player]
+    permission: aircore.command.kill
+
+  afk:
+    description: Toggle AFK status.
+    usage: /afk
+    permission: aircore.command.afk
+
+  god:
+    description: Toggles god mode (invulnerability).
+    usage: /god [player]
+    permission: aircore.command.god
+
+  speed:
+    description: Set your walk/fly speed.
+    usage: /speed [walking/flying] <speed> [player]
+    permission: aircore.command.speed
+
+  fly:
+    description: Toggles fly.
+    usage: /fly [player]
+    permission: aircore.command.fly
+
+  repair:
+    description: Repair an item.
+    usage: /repair
+    permission: aircore.command.repair
+
+  give:
+    description: Give an item.
+    usage: /give <item> [amount] [player]
+    permission: aircore.command.give
+
+  back:
+    description: Teleport to the last death location.
+    usage: /back
+    permission: aircore.command.back
+
+  sell:
+    description: Sell items.
+    usage: /sell
+    permission: aircore.command.sell
+
+permissions:
+  # Main permission
+  aircore.command.admin:
+    description: Allows the player to use /aircore.
+    default: op
+
+  # Chat permissions
+  aircore.command.msg:
+    description: Allows the player to use /msg.
+    default: op
+
+  aircore.command.msg.all:
+    description: Allows sending a private message to everyone using /msg @a.
+    default: op
+
+  aircore.command.reply:
+    description: Allows the player to use /reply.
+    default: op
+
+  aircore.command.msgtoggle:
+    description: Allows toggling private messages.
+    default: op
+
+  aircore.command.msgtoggle.others:
+    description: Allows toggling private messages for others.
+    default: op
+
+  aircore.command.mentiontoggle:
+    description: Allows toggling mention notifications.
+    default: op
+
+  aircore.command.mentiontoggle.others:
+    description: Allows toggling mention notifications for others.
+    default: op
+
+  aircore.command.socialspy:
+    description: Allows toggling Social Spy.
+    default: op
+
+  aircore.command.socialspy.others:
+    description: Allows toggling Social Spy for others.
+    default: op
+
+  aircore.command.chattoggle:
+    description: Allows toggling global chat.
+    default: op
+
+  aircore.command.chattoggle.others:
+    description: Allows toggling global chat for others.
+    default: op
+
+  aircore.chat.link:
+    description: Allows clickable links in chat.
+    default: op
+
+  aircore.chat.display.*:
+    description: Grants access to all display tags.
+    default: op
+
+  aircore.chat.mention:
+    description: Allows mentioning players.
+    default: op
+
+  aircore.chat.color.*:
+    description: Allows all MiniMessage color tags.
+    default: op
+    children:
+      aircore.chat.color.black: true
+      aircore.chat.color.dark_blue: true
+      aircore.chat.color.dark_green: true
+      aircore.chat.color.dark_aqua: true
+      aircore.chat.color.dark_red: true
+      aircore.chat.color.dark_purple: true
+      aircore.chat.color.gold: true
+      aircore.chat.color.gray: true
+      aircore.chat.color.dark_gray: true
+      aircore.chat.color.blue: true
+      aircore.chat.color.green: true
+      aircore.chat.color.aqua: true
+      aircore.chat.color.red: true
+      aircore.chat.color.light_purple: true
+      aircore.chat.color.yellow: true
+      aircore.chat.color.white: true
+      aircore.chat.color.hex: true
+
+  aircore.chat.format.*:
+    description: Allows all MiniMessage formatting tags.
+    default: op
+    children:
+      aircore.chat.format.bold: true
+      aircore.chat.format.italic: true
+      aircore.chat.format.underlined: true
+      aircore.chat.format.strikethrough: true
+      aircore.chat.format.obfuscated: true
+      aircore.chat.format.rainbow: true
+
+  # Economy permissions
+  aircore.command.eco:
+    description: Allows use of /eco.
+    default: op
+
+  aircore.command.eco.*:
+    description: Grants access to all /eco subcommands.
+    default: op
+    children:
+      aircore.command.eco: true
+      aircore.command.eco.give: true
+      aircore.command.eco.give.online: true
+      aircore.command.eco.give.all: true
+      aircore.command.eco.take: true
+      aircore.command.eco.take.online: true
+      aircore.command.eco.take.all: true
+      aircore.command.eco.set: true
+      aircore.command.eco.set.online: true
+      aircore.command.eco.set.all: true
+      aircore.command.eco.reset: true
+      aircore.command.eco.reset.online: true
+      aircore.command.eco.reset.all: true
+
+  aircore.command.pay:
+    description: Allows the player to use /pay
+    default: op
+
+  aircore.command.paytoggle:
+    description: Allows toggling payment receiving.
+    default: op
+
+  aircore.command.paytoggle.others:
+    description: Allows toggling payment receiving for others.
+    default: op
+
+  aircore.command.balance:
+    description: Allows checking own balance.
+    default: op
+
+  aircore.command.balance.others:
+    description: Allows checking other players' balances.
+    default: op
+
+  # Teleport permissions
+  aircore.command.tpa:
+    description: Allows the player to use /tpa.
+    default: op
+
+  aircore.command.tpahere:
+    description: Allows the player to use /tpahere.
+    default: op
+
+  aircore.command.tpaccept:
+    description: Allows the player to use /tpaccept.
+    default: op
+
+  aircore.command.tpaccept.all:
+    description: Allows the player to accept all requests at once.
+    default: op
+
+  aircore.command.tpdeny:
+    description: Allows the player to use /tpdeny.
+    default: op
+
+  aircore.command.tpdeny.all:
+    description: Allows the player to deny all requests at once.
+    default: op
+
+  aircore.command.tptoggle:
+    description: Allows toggling teleport requests.
+    default: op
+
+  aircore.command.tptoggle.others:
+    description: Allows toggling teleport requests for others.
+    default: op
+
+  aircore.command.tp:
+    description: Allows the player to use /tp.
+    default: op
+
+  aircore.command.tphere:
+    description: Allows the player to use /tphere.
+    default: op
+
+  aircore.command.tp.others:
+    description: Allows the player to teleport a player to another player.
+    default: op
+
+  aircore.command.tppos:
+    description: Allows the player to use /tppos.
+    default: op
+
+  aircore.command.tpoffline:
+    description: Allows the player to use /tpoffline.
+    default: op
+
+  # Home permissions
+  aircore.command.sethome:
+    description: Allows the player to use /sethome.
+    default: op
+
+  aircore.command.delhome:
+    description: Allows the player to use /delhome.
+    default: op
+
+  aircore.command.delhome.others:
+    description: Allows the player to delete another player's home.
+    default: op
+
+  aircore.command.home:
+    description: Allows the player to use /home.
+    default: op
+  aircore.command.home.others:
+    description: Allows the player to teleport to another player's home.
+    default: op
+
+  # Kit permissions
+  aircore.command.kit:
+    description: Allows the player to use of /kit.
+    default: op
+
+  aircore.command.kit.*:
+    description: Access the player to all kits.
+    default: op
+
+  aircore.command.createkit:
+    description: Allows the player to use /createkit.
+    default: op
+  aircore.command.delkit:
+    description: Allows the player to use /delkit.
+    default: op
+  aircore.command.editkit:
+    description: Allows the player to use /editkit.
+    default: op
+
+  # Utility permissions
+  aircore.command.block:
+    description: Allows blocking a player.
+    default: op
+
+  aircore.command.unblock:
+    description: Allows unblocking a player.
+    default: op
+
+  aircore.command.spawn:
+    description: Allows the player to use /spawn.
+    default: op
+
+  aircore.command.setspawn:
+    description: Allows the player to use /setspawn.
+    default: op
+
+  aircore.command.setwarp:
+    description: Allows the player to use /setwarp.
+    default: op
+
+  aircore.command.delwarp:
+    description: Allows the player to use /delwarp.
+    default: op
+
+  aircore.command.warp:
+    description: Allows the player to use /warp.
+    default: op
+
+  aircore.command.warp.*:
+    description: Access the player to all warps.
+    default: op
+
+  aircore.command.clearinventory:
+    description: Allows the player to use /clearinventory.
+    default: op
+
+  aircore.command.clearinventory.others:
+    description: Allows the player to clear other player's inventory.
+    default: op
+
+  aircore.command.clearinventory.all:
+    description: Allows the player to clear everyone's inventory.
+    default: op
+
+  aircore.command.feed:
+    description: Allows the player to use /feed.
+    default: op
+
+  aircore.command.feed.others:
+    description: Allows the player to feed other players.
+    default: op
+
+  aircore.command.feed.all:
+    description: Allows the player to feed everyone.
+    default: op
+
+  aircore.command.heal:
+    description: Allows the player to use /heal.
+    default: op
+
+  aircore.command.heal.others:
+    description: Allows the player to heal other players.
+    default: op
+
+  aircore.command.heal.all:
+    description: Allows the player to heal everyone.
+    default: op
+
+  aircore.command.time:
+    description: Allows the player to use /time.
+    default: op
+
+  aircore.command.time.world:
+    description: Allows the player to set the time for a specific world.
+    default: op
+
+  aircore.command.weather:
+    description: Allows player to use /weather in their current world.
+    default: op
+
+  aircore.command.weather.world:
+    description: Allows player to specify a world with /weather.
+    default: op
+
+  aircore.command.craftingtable:
+    description: Allows the player to use /craftingtable.
+    default: op
+
+  aircore.command.anvil:
+    description: Allows the player to use /anvil.
+    default: op
+
+  aircore.command.cartography:
+    description: Allows the player to use /cartography.
+    default: op
+
+  aircore.command.loom:
+    description: Allows the player to use /loom.
+    default: op
+
+  aircore.command.smithingtable:
+    description: Allows the player to use /smithingtable.
+    default: op
+
+  aircore.command.stonecutter:
+    description: Allows the player to use /stonecutter.
+    default: op
+
+  aircore.command.grindstone:
+    description: Allows the player to use /grindstone.
+    default: op
+
+  aircore.command.enderchest:
+    description: Allows the player to open their own ender chest.
+    default: op
+
+  aircore.command.enderchest.others:
+    description: Allows the player to open another player's ender chest.
+    default: op
+
+  aircore.command.enderchest.others.modify:
+    description: Allows the player to open and modify another player's ender chest.
+    default: op
+
+  aircore.command.gamemode:
+    description: Allows the player to change their own gamemode.
+    default: op
+
+  aircore.command.gamemode.others:
+    description: Allows the player to change other players' gamemode.
+    default: op
+
+  aircore.command.invsee:
+    description: Allows the player to use /invsee.
+    default: op
+
+  aircore.command.invsee.modify:
+    description: Allows the player to modify target's inventory.
+    default: op
+
+  aircore.command.kill:
+    description: Allows the player to use /kill.
+    default: op
+
+  aircore.command.kill.others:
+    description: Allows the player to kill other players.
+    default: op
+
+  aircore.command.kill.all:
+    description: Allows the player to kill everyone.
+    default: op
+
+  aircore.command.afk:
+    description: Allows the player to use /afk.
+    default: op
+
+  aircore.command.afk.notify:
+    description: Allows the player to see AFK notifications when others go AFK or return.
+    default: op
+
+  aircore.command.god:
+    description: Allows the player to use /god.
+    default: op
+
+  aircore.command.god.others:
+    description: Allows toggling god mode for other players.
+    default: op
+
+  aircore.command.speed:
+    description: Allows the player to use /speed.
+    default: op
+
+  aircore.command.speed.others:
+    description: Allows the player to set speed for other players.
+    default: op
+
+  aircore.command.fly:
+    description: Allows the player to use /fly.
+    default: op
+
+  aircore.command.fly.others:
+    description: Allows toggling fly for other players.
+    default: op
+
+  aircore.command.repair:
+    description: Allows the player to use /repair.
+    default: op
+
+  aircore.command.repair.all:
+    description: Allows the player to use /repair all to repair their entire inventory.
+    default: op
+
+  aircore.command.give:
+    description: Allows the player to use /give.
+    default: op
+
+  aircore.command.give.others:
+    description: Allows giving items to other players.
+    default: op
+
+  aircore.command.give.all:
+    description: Allows giving items to all players.
+    default: op
+
+  aircore.command.back:
+    description: Allows the player to use /back.
+    default: op
+
+  aircore.command.back.others:
+    description: Allows the player to use /back for other players.
+    default: op
+
+  aircore.command.sell:
+    description: Allows the player to use /sell.
+    default: op
+
+  # Bypass permissions
+  aircore.bypass.chat.cooldown:
+    description: Bypass chat cooldown.
+    default: op
+
+  aircore.bypass.chat.toggle:
+    description: Bypass PM toggles.
+    default: op
+
+  aircore.bypass.command.cooldown:
+    description: Bypass command cooldowns.
+    default: op
+
+  aircore.bypass.block:
+    description: Bypass player blocks.
+    default: op
+
+  aircore.bypass.pay.toggle:
+    description: Bypass payment toggles.
+    default: op
+
+  aircore.bypass.teleport.toggle:
+    description: Bypass teleport toggles.
+    default: op
+
+  aircore.bypass.teleport.countdown:
+    description: Bypass teleport countdown.
+    default: op
+
+  aircore.bypass.block.limit.*:
+    description: Grants unlimited blocks (or specific limits via aircore.bypass.block.limit.<#>).
+    default: op
+
+  aircore.bypass.home.limit.*:
+    description: Grants unlimited homes (or specific limits via aircore.bypass.home.limit.<#>).
+    default: op
+
+  aircore.bypass.home.worlds:
+    description: Bypass /sethome in disabled worlds.
+    default: op
+
+  aircore.bypass.kit.cooldown:
+    description: Bypass kit cooldowns.
+    default: op
+
+  aircore.bypass.kit.onetime:
+    description: Bypass kit one-time uses.
+    default: op

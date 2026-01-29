@@ -1,0 +1,84 @@
+# -------------------------------
+# Worth Modifiers Configuration
+# -------------------------------
+# All modifiers are multiplied with the base worth from items.yml
+
+# -------------------------------
+# Enchantment Modifiers
+# -------------------------------
+# Each enchantment level adds this multiplier to the item's worth
+# Example: Sharpness I = base * (1 + 0.12) = base * 1.12
+#          Sharpness II = base * (1 + 0.24) = base * 1.24
+# Applies to both enchanted items and enchanted books
+enchantments:
+  # Armor enchantments
+  protection: 0.08
+  fire_protection: 0.07
+  feather_falling: 0.06
+  blast_protection: 0.09
+  projectile_protection: 0.08
+  respiration: 0.10
+  aqua_affinity: 0.08
+  thorns: 0.12
+  depth_strider: 0.08
+  frost_walker: 0.09
+  soul_speed: 0.10
+  swift_sneak: 0.12
+
+  # Weapon enchantments
+  sharpness: 0.12
+  smite: 0.10
+  bane_of_arthropods: 0.10
+  knockback: 0.08
+  fire_aspect: 0.10
+  looting: 0.15
+  sweeping_edge: 0.08
+
+  # Tool enchantments
+  efficiency: 0.10
+  unbreaking: 0.06
+  fortune: 0.15
+  silk_touch: 0.20
+
+  # Bow & projectile enchantments
+  power: 0.12
+  punch: 0.08
+  flame: 0.08
+  infinity: 0.25
+
+  # Fishing rod enchantments
+  luck_of_the_sea: 0.10
+  lure: 0.08
+
+  # Trident enchantments
+  impaling: 0.12
+  riptide: 0.12
+  loyalty: 0.08
+
+  # Crossbow enchantments
+  multishot: 0.12
+  piercing: 0.10
+  quick_charge: 0.08
+
+  # Mace enchantments
+  density: 0.15
+  breach: 0.14
+
+  # Spear enchantments
+  lunge: 0.10
+
+  # Utility enchantments
+  mending: 0.25
+  curse_of_binding: -0.05
+  curse_of_vanishing: -0.03
+  channeling: 0.15
+  wind_burst: 0.10
+
+# -------------------------------
+# Durability Modifiers
+# -------------------------------
+# How much value an item loses when damaged
+durability:
+  # Minimum worth when item is nearly broken (as % of base worth)
+  # Example: A diamond sword worth 60 with 10% min = minimum sell value of 6
+  min-worth-percent: 0.10
