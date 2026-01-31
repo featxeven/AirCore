@@ -148,6 +148,10 @@ public final class ConfigManager {
         return config.getConfigurationSection("chat.display-tags");
     }
 
+    public boolean displayTagEnabled(String tagId) {
+        return config.getBoolean("chat.display-tags." + tagId + ".enabled", true);
+    }
+
     // URL formatting
     public boolean urlFormattingEnabled() {
         return config.getBoolean("chat.url-formatting.enabled", true);

@@ -45,30 +45,37 @@ public final class ChatControlListener implements Listener {
 
         String plain = PlainTextComponentSerializer.plainText().serialize(event.message());
 
+        if (!plugin.config().groupFormatEnabled()) {
+            return;
+        }
+
         Component formatted = plugin.chat().formats().format(sender, plain);
 
-        if (formatted != null) {
+        if (formatted == null) {
             event.setCancelled(true);
-
-            plugin.getServer().getOnlinePlayers().forEach(recipient -> {
-                if (recipient.equals(sender)) {
-                    recipient.sendMessage(formatted);
-                    return;
-                }
-
-                UUID senderId = sender.getUniqueId();
-                UUID recipientId = recipient.getUniqueId();
-
-                // Chat toggle
-                if (!plugin.core().toggles().isEnabled(recipientId, ToggleService.Toggle.CHAT)) return;
-
-                // Block list
-                if (plugin.core().blocks().isBlocked(recipientId, senderId)) return;
-
-                recipient.sendMessage(formatted);
-            });
-
-            plugin.getServer().getConsoleSender().sendMessage(formatted);
+            return;
         }
+
+        event.setCancelled(true);
+
+        plugin.getServer().getOnlinePlayers().forEach(recipient -> {
+            if (recipient.equals(sender)) {
+                recipient.sendMessage(formatted);
+                return;
+            }
+
+            UUID senderId = sender.getUniqueId();
+            UUID recipientId = recipient.getUniqueId();
+
+            // Chat toggle
+            if (!plugin.core().toggles().isEnabled(recipientId, ToggleService.Toggle.CHAT)) return;
+
+            // Block list
+            if (plugin.core().blocks().isBlocked(recipientId, senderId)) return;
+
+            recipient.sendMessage(formatted);
+        });
+
+        plugin.getServer().getConsoleSender().sendMessage(formatted);
     }
 }

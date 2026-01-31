@@ -2,7 +2,7 @@
 # AirCore Language Configuration
 # -------------------------------
 # General Notes:
-# - Set a message to "" to disable it (nothing will be sent).
+# - Set a message to "" to hide it.
 # - All messages support full MiniMessage formatting.
 # - External placeholders are supported when PlaceholderAPI is installed.
 #

@@ -26,6 +26,8 @@ public final class DisplayTagsService {
                 ConfigurationSection tagSec = section.getConfigurationSection(tagId);
                 if (tagSec == null) continue;
 
+                if (!plugin.config().displayTagEnabled(tagId)) continue;
+
                 List<String> keys = tagSec.getStringList("keys");
                 String format = tagSec.getString("format", "");
 

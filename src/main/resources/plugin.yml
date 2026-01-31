@@ -1,6 +1,6 @@
 name: AirCore
 main: com.ftxeven.aircore.AirCore
-version: 1.0.0
+version: 1.0.1
 api-version: "1.21"
 author: ftxeven
 description: Core commands and features for all servers.
@@ -69,6 +69,11 @@ commands:
     description: Check your current balance.
     usage: /balance [player]
     permission: aircore.command.balance
+
+  sell:
+    description: Sell items.
+    usage: /sell
+    permission: aircore.command.sell
 
   # Teleport commands
   tpa:
@@ -303,11 +308,6 @@ commands:
     description: Teleport to the last death location.
     usage: /back
     permission: aircore.command.back
-
-  sell:
-    description: Sell items.
-    usage: /sell
-    permission: aircore.command.sell
 
 permissions:
   # Main permission

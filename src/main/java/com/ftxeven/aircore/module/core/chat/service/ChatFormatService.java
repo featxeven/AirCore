@@ -56,8 +56,6 @@ public final class ChatFormatService {
         return plugin.chat().displayTags().apply(player, withMentions);
     }
 
-
-
     private String resolveGroupFormat(Player player) {
         if (!groupFormatEnabled) {
             return plugin.config().getGroupFormat(null);

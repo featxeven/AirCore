@@ -52,8 +52,8 @@ permission-groups:
   admin:
     - aircore.*
 
-# Disabled commands (main names only, do NOT list aliases)
-disabled-commands:
+# Disabled commands (main names only, do not list aliases)
+disabled-commands: []
 # - msg
 # - socialspy
 
@@ -68,6 +68,7 @@ chat:
   group-format:
     enabled: true
     formats:
+      # _DEFAULT_ used when no group matches.
       _DEFAULT_: "<gray>%player%</gray> <dark_gray>></dark_gray> <white>%message%</white>"
       owner: "<dark_red><bold>OWNER</bold></dark_red> <red>%player%</red> <dark_gray>></dark_gray> <white>%message%</white>"
       vip: "<dark_green><bold>VIP</bold></dark_green> <green>%player%</green> <dark_gray>></dark_gray> <white>%message%</white>"
@@ -221,7 +222,7 @@ death-messages:
 # COMMANDS, COOLDOWNS & LIMITS
 # -----------------------------
 command-cooldowns:
-  # Items are matched strictly; use "*" for wildcards (e.g. "*repair")
+  # Use "*" to match commands strictly.
   - "*repair": 60
   - "*repair all": 120
   - heal: 120
