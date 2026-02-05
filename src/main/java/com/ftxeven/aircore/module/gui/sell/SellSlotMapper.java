@@ -30,6 +30,8 @@ public final class SellSlotMapper {
         // Place confirm button
         GuiDefinition.GuiItem confirm = def.items().get("confirm");
         if (confirm != null) {
+            String headOwner = processHeadOwner(confirm.headOwner(), viewer, placeholders);
+
             ItemStack button = new ItemComponent(confirm.material())
                     .amount(confirm.amount() != null ? confirm.amount() : 1)
                     .glow(confirm.glow())
@@ -38,7 +40,7 @@ public final class SellSlotMapper {
                     .damage(confirm.damage())
                     .enchants(confirm.enchants())
                     .flags(confirm.flags() != null ? confirm.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                    .skullOwner(confirm.skullOwner())
+                    .skullOwner(headOwner)
                     .hideTooltip(confirm.hideTooltip())
                     .tooltipStyle(confirm.tooltipStyle())
                     .build();
@@ -57,6 +59,8 @@ public final class SellSlotMapper {
         // Place confirm-all button
         GuiDefinition.GuiItem confirmAll = def.items().get("confirm-all");
         if (confirmAll != null) {
+            String headOwner = processHeadOwner(confirmAll.headOwner(), viewer, placeholders);
+
             ItemStack button = new ItemComponent(confirmAll.material())
                     .amount(confirmAll.amount() != null ? confirmAll.amount() : 1)
                     .glow(confirmAll.glow())
@@ -65,7 +69,7 @@ public final class SellSlotMapper {
                     .damage(confirmAll.damage())
                     .enchants(confirmAll.enchants())
                     .flags(confirmAll.flags() != null ? confirmAll.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                    .skullOwner(confirmAll.skullOwner())
+                    .skullOwner(headOwner)
                     .hideTooltip(confirmAll.hideTooltip())
                     .tooltipStyle(confirmAll.tooltipStyle())
                     .build();
@@ -76,18 +80,17 @@ public final class SellSlotMapper {
                 }
             }
 
-            // Update display name and lore with combined worth
             double totalAll = calculateWorthAll(inv, plugin.economy().worth(), def, viewer);
             updateConfirmButton(confirmAll, inv, viewer, totalAll, placeholders, plugin.economy().formats());
         }
 
-        // Place custom items
         for (Map.Entry<String, GuiDefinition.GuiItem> entry : def.items().entrySet()) {
             String key = entry.getKey();
             GuiDefinition.GuiItem item = entry.getValue();
 
-            // Skip reserved groups
             if ("sell-slots".equalsIgnoreCase(key) || "confirm".equalsIgnoreCase(key) || "confirm-all".equalsIgnoreCase(key)) continue;
+
+            String headOwner = processHeadOwner(item.headOwner(), viewer, placeholders);
 
             ItemComponent builder = new ItemComponent(item.material())
                     .amount(item.amount() != null ? item.amount() : 1)
@@ -97,7 +100,7 @@ public final class SellSlotMapper {
                     .damage(item.damage())
                     .enchants(item.enchants())
                     .flags(item.flags() != null ? item.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                    .skullOwner(item.skullOwner())
+                    .skullOwner(headOwner)
                     .hideTooltip(item.hideTooltip())
                     .tooltipStyle(item.tooltipStyle());
 
@@ -105,8 +108,8 @@ public final class SellSlotMapper {
 
             if (item.displayName() != null) {
                 String raw = mm.serialize(item.displayName());
-                raw = PlaceholderUtil.apply(viewer, raw);
                 raw = raw.replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
+                raw = PlaceholderUtil.apply(viewer, raw);
 
                 final String finalRaw = raw;
                 stack.editMeta(meta -> meta.displayName(mm.deserialize(finalRaw)));
@@ -116,8 +119,8 @@ public final class SellSlotMapper {
                 List<Component> lore = new ArrayList<>();
                 for (Component comp : item.lore()) {
                     String raw = mm.serialize(comp);
-                    raw = PlaceholderUtil.apply(viewer, raw);
                     raw = raw.replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
+                    raw = PlaceholderUtil.apply(viewer, raw);
                     lore.add(mm.deserialize(raw));
                 }
                 stack.editMeta(meta -> meta.lore(lore));
@@ -134,6 +137,24 @@ public final class SellSlotMapper {
         }
     }
 
+    private static String processHeadOwner(String headOwner, Player viewer, Map<String, String> placeholders) {
+        if (headOwner == null || headOwner.isBlank()) return null;
+
+        headOwner = headOwner.replace("%player%", viewer.getName());
+        String targetName = placeholders.get("target");
+        if (targetName != null && !targetName.isBlank()) {
+            headOwner = headOwner.replace("%target%", targetName);
+        }
+
+        headOwner = PlaceholderUtil.apply(viewer, headOwner);
+
+        if (headOwner.isBlank()) {
+            return null;
+        }
+
+        return headOwner;
+    }
+
     public static void updateConfirmButton(GuiDefinition.GuiItem confirm,
                                            Inventory inv,
                                            Player viewer,
@@ -147,20 +168,19 @@ public final class SellSlotMapper {
         Component name = null;
         if (confirm.displayName() != null) {
             String raw = mm.serialize(confirm.displayName());
-            raw = PlaceholderUtil.apply(viewer, raw);
             raw = raw.replace("%worth%", formattedWorth)
                     .replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
+            raw = PlaceholderUtil.apply(viewer, raw);
             name = mm.deserialize(raw);
         }
 
-        // Replace placeholders in lore
         List<Component> lore = new ArrayList<>();
         if (confirm.lore() != null) {
             for (Component comp : confirm.lore()) {
                 String raw = mm.serialize(comp);
-                raw = PlaceholderUtil.apply(viewer, raw);
                 raw = raw.replace("%worth%", formattedWorth)
                         .replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
+                raw = PlaceholderUtil.apply(viewer, raw);
                 lore.add(mm.deserialize(raw));
             }
         }

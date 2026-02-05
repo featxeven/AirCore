@@ -57,7 +57,7 @@ public final class InvseeCommand implements TabExecutor {
         String targetName = target.getName() != null ? target.getName() : args[0];
 
         plugin.scheduler().runEntityTask(player, () ->
-                guiManager.openGui("invsee", player,
+                guiManager.openGui("inventory", player,
                         Map.of("player", player.getName(), "target", targetName))
         );
 

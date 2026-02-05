@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.enderchest;
+package com.ftxeven.aircore.module.gui.invsee.enderchest;
 
 import com.ftxeven.aircore.AirCore;
 import org.bukkit.entity.Player;

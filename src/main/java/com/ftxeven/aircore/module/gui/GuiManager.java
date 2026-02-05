@@ -1,8 +1,8 @@
 package com.ftxeven.aircore.module.gui;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.module.gui.enderchest.EnderchestManager;
-import com.ftxeven.aircore.module.gui.invsee.InvseeManager;
+import com.ftxeven.aircore.module.gui.invsee.enderchest.EnderchestManager;
+import com.ftxeven.aircore.module.gui.invsee.inventory.InventoryManager;
 import com.ftxeven.aircore.module.gui.sell.SellManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -42,7 +42,7 @@ public final class GuiManager {
 
         // Unregister listeners
         for (CustomGuiManager mgr : customManagers.values()) {
-            if (mgr instanceof InvseeManager invsee) {
+            if (mgr instanceof InventoryManager invsee) {
                 invsee.unregisterListeners();
             } else if (mgr instanceof EnderchestManager enderchest) {
                 enderchest.unregisterListeners();
@@ -59,7 +59,7 @@ public final class GuiManager {
     }
 
     public void loadAll() {
-        register("invsee", new InvseeManager(plugin, itemAction));
+        register("inventory", new InventoryManager(plugin, itemAction));
         register("enderchest", new EnderchestManager(plugin, itemAction));
         register("sell", new SellManager(plugin, itemAction));
     }

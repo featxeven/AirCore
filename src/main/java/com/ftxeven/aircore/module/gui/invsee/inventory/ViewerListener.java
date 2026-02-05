@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.invsee;
+package com.ftxeven.aircore.module.gui.invsee.inventory;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.database.player.PlayerInventories;
@@ -18,16 +18,16 @@ import java.util.Set;
 public final class ViewerListener implements Listener {
 
     private final AirCore plugin;
-    private final InvseeManager invseeManager;
+    private final InventoryManager invseeManager;
 
-    public ViewerListener(AirCore plugin, InvseeManager invseeManager) {
+    public ViewerListener(AirCore plugin, InventoryManager inventoryManager) {
         this.plugin = plugin;
-        this.invseeManager = invseeManager;
+        this.invseeManager = inventoryManager;
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getInventory().getHolder() instanceof InvseeManager.InvseeHolder)) return;
+        if (!(event.getInventory().getHolder() instanceof InventoryManager.InvseeHolder)) return;
 
         Player viewer = event.getWhoClicked() instanceof Player p ? p : null;
         if (viewer == null) return;
@@ -60,9 +60,9 @@ public final class ViewerListener implements Listener {
             }
 
             boolean registered =
-                    InvseeSlotMapper.findItem(invseeManager.definition(), rawSlot) != null;
+                    InventorySlotMapper.findItem(invseeManager.definition(), rawSlot) != null;
             boolean dynamic =
-                    InvseeSlotMapper.isDynamicSlot(invseeManager.definition(), rawSlot);
+                    InventorySlotMapper.isDynamicSlot(invseeManager.definition(), rawSlot);
 
             if (!registered || !dynamic) {
                 invalidSlots.add(rawSlot);
@@ -155,13 +155,13 @@ public final class ViewerListener implements Listener {
 
     private void syncInventory(Inventory top, Object whoClicked) {
         InventoryHolder holder = top.getHolder();
-        if (!(holder instanceof InvseeManager.InvseeHolder ih)) return;
+        if (!(holder instanceof InventoryManager.InvseeHolder ih)) return;
 
         Player player = whoClicked instanceof Player p ? p : null;
         invseeManager.refreshFillers(top, player);
 
         PlayerInventories.InventoryBundle bundle =
-                InvseeSlotMapper.extractBundle(top, invseeManager.definition());
+                InventorySlotMapper.extractBundle(top, invseeManager.definition());
 
         invseeManager.applyBundleToTarget(ih.targetUUID(), bundle);
     }

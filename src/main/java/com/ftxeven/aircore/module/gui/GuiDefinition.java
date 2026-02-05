@@ -71,7 +71,7 @@ public record GuiDefinition(String title,
                           Integer damage,
                           Map<String, Integer> enchants,
                           List<ItemFlag> flags,
-                          String skullOwner,
+                          String headOwner,
                           Boolean hideTooltip,
                           String tooltipStyle) {
 
@@ -98,8 +98,17 @@ public record GuiDefinition(String title,
         }
 
         public static GuiItem fromSection(String key, ConfigurationSection sec, MiniMessage mm) {
-            Material material = Material.matchMaterial(sec.getString("material", "STONE"));
-            if (material == null) material = Material.STONE;
+            String materialStr = sec.getString("material", "STONE");
+            Material material;
+            String headOwner = null;
+
+            if (materialStr.startsWith("head-")) {
+                material = Material.PLAYER_HEAD;
+                headOwner = materialStr.substring(5);
+            } else {
+                material = Material.matchMaterial(materialStr);
+                if (material == null) material = Material.STONE;
+            }
 
             String displayName = sec.getString("display-name");
             Component name = displayName != null && !displayName.isBlank()
@@ -131,7 +140,7 @@ public record GuiDefinition(String title,
                     sec.contains("damage") ? sec.getInt("damage") : null,
                     Collections.emptyMap(),
                     Collections.emptyList(),
-                    sec.getString("skull-owner"),
+                    headOwner,
                     sec.contains("hide-tooltip") ? sec.getBoolean("hide-tooltip") : null,
                     sec.getString("tooltip-style")
             );

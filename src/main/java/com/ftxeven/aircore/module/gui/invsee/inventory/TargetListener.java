@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.invsee;
+package com.ftxeven.aircore.module.gui.invsee.inventory;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.database.player.PlayerInventories;
@@ -24,12 +24,12 @@ import java.util.*;
 
 public final class TargetListener implements Listener {
     private final AirCore plugin;
-    private final InvseeManager invseeManager;
+    private final InventoryManager inventoryManager;
     private final Map<UUID, List<Player>> viewers = new HashMap<>();
 
-    public TargetListener(AirCore plugin, InvseeManager invseeManager) {
+    public TargetListener(AirCore plugin, InventoryManager inventoryManager) {
         this.plugin = plugin;
-        this.invseeManager = invseeManager;
+        this.inventoryManager = inventoryManager;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -58,17 +58,17 @@ public final class TargetListener implements Listener {
 
         for (Player viewer : list) {
             Inventory inv = viewer.getOpenInventory().getTopInventory();
-            if (inv.getHolder() instanceof InvseeManager.InvseeHolder holder) {
+            if (inv.getHolder() instanceof InventoryManager.InvseeHolder holder) {
                 for (int i = 0; i < inv.getSize(); i++) {
                     inv.setItem(i, null);
                 }
-                InvseeSlotMapper.fill(inv, invseeManager.definition(), bundle);
-                InvseeSlotMapper.fillCustom(
+                InventorySlotMapper.fill(inv, inventoryManager.definition(), bundle);
+                InventorySlotMapper.fillCustom(
                         inv,
-                        invseeManager.definition(),
+                        inventoryManager.definition(),
                         viewer,
                         Map.of("player", viewer.getName(), "target", holder.targetName()),
-                        invseeManager
+                        inventoryManager
                 );
             }
         }
@@ -80,17 +80,17 @@ public final class TargetListener implements Listener {
 
         for (Player viewer : list) {
             Inventory inv = viewer.getOpenInventory().getTopInventory();
-            if (inv.getHolder() instanceof InvseeManager.InvseeHolder holder) {
+            if (inv.getHolder() instanceof InventoryManager.InvseeHolder holder) {
                 for (int i = 0; i < inv.getSize(); i++) {
                     inv.setItem(i, null);
                 }
-                InvseeSlotMapper.fill(inv, invseeManager.definition(), bundle);
-                InvseeSlotMapper.fillCustom(
+                InventorySlotMapper.fill(inv, inventoryManager.definition(), bundle);
+                InventorySlotMapper.fillCustom(
                         inv,
-                        invseeManager.definition(),
+                        inventoryManager.definition(),
                         viewer,
                         Map.of("player", viewer.getName(), "target", holder.targetName()),
-                        invseeManager
+                        inventoryManager
                 );
             }
         }
@@ -98,7 +98,7 @@ public final class TargetListener implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
-        if (e.getInventory().getHolder() instanceof InvseeManager.InvseeHolder holder) {
+        if (e.getInventory().getHolder() instanceof InventoryManager.InvseeHolder holder) {
             Player viewer = (Player) e.getPlayer();
             unregisterViewer(holder.targetUUID(), viewer);
         }

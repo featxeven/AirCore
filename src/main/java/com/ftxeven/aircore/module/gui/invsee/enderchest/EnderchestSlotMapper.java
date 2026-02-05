@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.enderchest;
+package com.ftxeven.aircore.module.gui.invsee.enderchest;
 
 import com.ftxeven.aircore.module.gui.GuiDefinition;
 import com.ftxeven.aircore.module.gui.ItemComponent;
@@ -38,19 +38,17 @@ public final class EnderchestSlotMapper {
             for (int slot : itemDef.slots()) {
                 ItemStack currentItem = inv.getItem(slot);
 
-                // For dynamic slots, only place if it's a filler slot (empty or already has the filler)
                 boolean isDynamic = isDynamicSlot(def, slot);
                 if (isDynamic && currentItem != null && !currentItem.getType().isAir()) {
                     continue;
                 }
 
-                // Build with placeholder replacement
                 Component name = null;
                 if (itemDef.displayName() != null) {
                     String raw = mm.serialize(itemDef.displayName());
-                    raw = PlaceholderUtil.apply(viewer, raw);
                     raw = raw.replace("%player%", viewer.getName())
-                            .replace("%target%", placeholders.get("target"));
+                            .replace("%target%", placeholders.getOrDefault("target", ""));
+                    raw = PlaceholderUtil.apply(viewer, raw);
                     name = mm.deserialize(raw);
                 }
 
@@ -59,10 +57,25 @@ public final class EnderchestSlotMapper {
                     lore = new ArrayList<>(itemDef.lore().size());
                     for (Component comp : itemDef.lore()) {
                         String raw = mm.serialize(comp);
-                        raw = PlaceholderUtil.apply(viewer, raw);
                         raw = raw.replace("%player%", viewer.getName())
-                                .replace("%target%", placeholders.get("target"));
+                                .replace("%target%", placeholders.getOrDefault("target", ""));
+                        raw = PlaceholderUtil.apply(viewer, raw);
                         lore.add(mm.deserialize(raw));
+                    }
+                }
+
+                String headOwner = itemDef.headOwner();
+                if (headOwner != null && !headOwner.isBlank()) {
+                    headOwner = headOwner.replace("%player%", viewer.getName());
+                    String targetName = placeholders.get("target");
+                    if (targetName != null && !targetName.isBlank()) {
+                        headOwner = headOwner.replace("%target%", targetName);
+                    }
+
+                    headOwner = PlaceholderUtil.apply(viewer, headOwner);
+
+                    if (headOwner.isBlank()) {
+                        headOwner = null;
                     }
                 }
 
@@ -76,7 +89,7 @@ public final class EnderchestSlotMapper {
                         .damage(itemDef.damage())
                         .enchants(itemDef.enchants())
                         .flags(itemDef.flags() != null ? itemDef.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                        .skullOwner(itemDef.skullOwner())
+                        .skullOwner(headOwner)
                         .hideTooltip(itemDef.hideTooltip())
                         .tooltipStyle(itemDef.tooltipStyle())
                         .build();
@@ -94,7 +107,7 @@ public final class EnderchestSlotMapper {
     }
 
     public static ItemStack[] extractContents(Inventory inv, GuiDefinition def) {
-        ItemStack[] contents = new ItemStack[27]; // Enderchest is always 27 slots
+        ItemStack[] contents = new ItemStack[27];
 
         List<Integer> invSlots = def.items().get("player-enderchest").slots();
         for (int i = 0; i < invSlots.size() && i < contents.length; i++) {
@@ -113,10 +126,8 @@ public final class EnderchestSlotMapper {
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, ItemStack current) {
         if (current == null || current.getType().isAir()) return false;
 
-        // If this slot is not dynamic, we don't treat its item as overlay
         if (!isDynamicSlot(def, slot)) return false;
 
-        // Scan custom items (non-dynamic keys) that declare this slot
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
             String key = e.getKey();
             GuiDefinition.GuiItem gi = e.getValue();
@@ -124,7 +135,6 @@ public final class EnderchestSlotMapper {
             if (key.startsWith("player-")) continue; // skip dynamic groups
             if (!gi.slots().contains(slot)) continue;
 
-            // Check if material matches
             if (current.getType() == gi.material()) return true;
         }
         return false;

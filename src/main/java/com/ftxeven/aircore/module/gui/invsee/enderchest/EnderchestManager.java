@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.enderchest;
+package com.ftxeven.aircore.module.gui.invsee.enderchest;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.module.gui.GuiDefinition;
@@ -53,8 +53,8 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
     }
 
     private void loadDefinition() {
-        File file = new File(plugin.getDataFolder(), "guis/enderchest.yml");
-        if (!file.exists()) plugin.saveResource("guis/enderchest.yml", false);
+        File file = new File(plugin.getDataFolder(), "guis/invsee/enderchest.yml");
+        if (!file.exists()) plugin.saveResource("guis/invsee/enderchest.yml", false);
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 

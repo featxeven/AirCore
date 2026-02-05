@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.invsee;
+package com.ftxeven.aircore.module.gui.invsee.inventory;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.module.gui.GuiDefinition;
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.*;
 
-public final class InvseeManager implements GuiManager.CustomGuiManager {
+public final class InventoryManager implements GuiManager.CustomGuiManager {
 
     private final AirCore plugin;
     private final ItemAction itemAction;
@@ -41,7 +41,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
     private final TargetListener targetListener;
     private final ViewerListener viewerListener;
 
-    public InvseeManager(AirCore plugin, ItemAction itemAction) {
+    public InventoryManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
 
@@ -60,8 +60,8 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
     }
 
     private void loadDefinition() {
-        File file = new File(plugin.getDataFolder(), "guis/invsee.yml");
-        if (!file.exists()) plugin.saveResource("guis/invsee.yml", false);
+        File file = new File(plugin.getDataFolder(), "guis/invsee/inventory.yml");
+        if (!file.exists()) plugin.saveResource("guis/invsee/inventory.yml", false);
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
@@ -141,8 +141,8 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
         Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize(rawTitle));
         holder.setInventory(inv);
 
-        InvseeSlotMapper.fill(inv, definition, bundle);
-        InvseeSlotMapper.fillCustom(inv, definition, viewer, placeholders, this);
+        InventorySlotMapper.fill(inv, definition, bundle);
+        InventorySlotMapper.fillCustom(inv, definition, viewer, placeholders, this);
 
         targetListener.registerViewer(targetUUID, viewer);
 
@@ -184,9 +184,9 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
 
         if (clicked != top) return;
 
-        boolean dynamic = InvseeSlotMapper.isDynamicSlot(definition, slot);
-        boolean isFillerHere = InvseeSlotMapper.isCustomFillerAt(definition, slot, current);
-        boolean registered = InvseeSlotMapper.findItem(definition, slot) != null;
+        boolean dynamic = InventorySlotMapper.isDynamicSlot(definition, slot);
+        boolean isFillerHere = InventorySlotMapper.isCustomFillerAt(definition, slot, current);
+        boolean registered = InventorySlotMapper.findItem(definition, slot) != null;
 
         if (!registered) {
             event.setCancelled(true);
@@ -201,7 +201,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
 
                     InventoryHolder holder = top.getHolder();
                     if (holder instanceof InvseeHolder ih) {
-                        GuiDefinition.GuiItem custom = InvseeSlotMapper.findCustomItemAt(definition, slot);
+                        GuiDefinition.GuiItem custom = InventorySlotMapper.findCustomItemAt(definition, slot);
                         if (custom != null) {
                             List<String> actionsToExecute = custom.getActionsForClick(event.getClick());
                             if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
@@ -225,7 +225,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
                 InventoryHolder holder = top.getHolder();
                 if (!(holder instanceof InvseeHolder ih)) return;
 
-                GuiDefinition.GuiItem item = InvseeSlotMapper.findItem(definition, slot);
+                GuiDefinition.GuiItem item = InventorySlotMapper.findItem(definition, slot);
                 if (item == null) return;
 
                 List<String> actionsToExecute = item.getActionsForClick(event.getClick());
@@ -276,7 +276,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
 
                 InventoryHolder holder = top.getHolder();
                 if (holder instanceof InvseeHolder ih) {
-                    GuiDefinition.GuiItem custom = InvseeSlotMapper.findCustomItemAt(definition, slot);
+                    GuiDefinition.GuiItem custom = InventorySlotMapper.findCustomItemAt(definition, slot);
                     if (custom != null) {
                         List<String> actionsToExecute = custom.getActionsForClick(event.getClick());
                         if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
@@ -330,12 +330,12 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
         InventoryHolder holder = top.getHolder();
         if (!(holder instanceof InvseeHolder ih)) return;
 
-        GuiDefinition.GuiItem item = InvseeSlotMapper.findItem(definition, slot);
+        GuiDefinition.GuiItem item = InventorySlotMapper.findItem(definition, slot);
         if (item == null) return;
 
-        if (InvseeSlotMapper.isDynamicSlot(definition, slot)) {
+        if (InventorySlotMapper.isDynamicSlot(definition, slot)) {
             // Dynamic slot
-            if (InvseeSlotMapper.isCustomFillerAt(definition, slot, current)) {
+            if (InventorySlotMapper.isCustomFillerAt(definition, slot, current)) {
                 List<String> actionsToExecute = item.getActionsForClick(event.getClick());
                 if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
                     itemAction.executeAll(
@@ -389,7 +389,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
         for (int slot : armor) {
             ItemStack it = top.getItem(slot);
             if ((it == null || it.getType().isAir()
-                    || InvseeSlotMapper.isCustomFillerAt(def, slot, it))
+                    || InventorySlotMapper.isCustomFillerAt(def, slot, it))
                     && isValidArmorForSlot(moving, slot, def)) {
                 top.setItem(slot, moving.clone());
                 sourceInv.setItem(sourceSlot, null);
@@ -414,7 +414,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
         for (int slot : offhand) {
             ItemStack it = top.getItem(slot);
             if (it == null || it.getType().isAir()
-                    || InvseeSlotMapper.isCustomFillerAt(def, slot, it)) {
+                    || InventorySlotMapper.isCustomFillerAt(def, slot, it)) {
                 top.setItem(slot, moving.clone());
                 sourceInv.setItem(sourceSlot, null);
                 return;
@@ -438,7 +438,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
         for (int slot : contents) {
             ItemStack it = top.getItem(slot);
             if (it == null || it.getType().isAir()
-                    || InvseeSlotMapper.isCustomFillerAt(def, slot, it)) {
+                    || InventorySlotMapper.isCustomFillerAt(def, slot, it)) {
                 top.setItem(slot, moving.clone());
                 sourceInv.setItem(sourceSlot, null);
                 return;
@@ -462,7 +462,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
         for (int slot : hotbar) {
             ItemStack it = top.getItem(slot);
             if (it == null || it.getType().isAir()
-                    || InvseeSlotMapper.isCustomFillerAt(def, slot, it)) {
+                    || InventorySlotMapper.isCustomFillerAt(def, slot, it)) {
                 top.setItem(slot, moving.clone());
                 sourceInv.setItem(sourceSlot, null);
                 return;
@@ -546,7 +546,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
             refreshFillers(top, viewer);
 
             PlayerInventories.InventoryBundle bundle =
-                    InvseeSlotMapper.extractBundle(top, definition);
+                    InventorySlotMapper.extractBundle(top, definition);
 
             applyBundleToTarget(ih.targetUUID(), bundle);
 
@@ -561,7 +561,7 @@ public final class InvseeManager implements GuiManager.CustomGuiManager {
             return;
         }
 
-        InvseeSlotMapper.fillCustom(
+        InventorySlotMapper.fillCustom(
                 top,
                 definition,
                 viewer,

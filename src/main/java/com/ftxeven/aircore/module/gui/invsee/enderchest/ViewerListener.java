@@ -1,7 +1,6 @@
-package com.ftxeven.aircore.module.gui.enderchest;
+package com.ftxeven.aircore.module.gui.invsee.enderchest;
 
 import com.ftxeven.aircore.AirCore;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

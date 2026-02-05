@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.gui.invsee;
+package com.ftxeven.aircore.module.gui.invsee.inventory;
 
 import com.ftxeven.aircore.module.gui.GuiDefinition;
 import com.ftxeven.aircore.module.gui.ItemComponent;
@@ -6,6 +6,7 @@ import com.ftxeven.aircore.database.player.PlayerInventories;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -15,8 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public final class InvseeSlotMapper {
-    private InvseeSlotMapper() {}
+public final class InventorySlotMapper {
+    private InventorySlotMapper() {}
 
     public static void fill(Inventory inv, GuiDefinition def, PlayerInventories.InventoryBundle bundle) {
         // Hotbar
@@ -47,7 +48,7 @@ public final class InvseeSlotMapper {
         }
     }
 
-    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String,String> placeholders, InvseeManager manager) {
+    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String,String> placeholders, InventoryManager manager) {
         MiniMessage mm = MiniMessage.miniMessage();
 
         for (Map.Entry<String, GuiDefinition.GuiItem> entry : def.items().entrySet()) {
@@ -64,12 +65,27 @@ public final class InvseeSlotMapper {
                     continue;
                 }
 
+                Material resolvedMaterial = resolveMaterial(def, key, viewer, placeholders);
+
+                String headOwner = itemDef.headOwner();
+                if (headOwner != null && !headOwner.isBlank()) {
+                    headOwner = headOwner.replace("%player%", viewer.getName());
+                    String targetName = placeholders.get("target");
+                    if (targetName != null && !targetName.isBlank()) {
+                        headOwner = headOwner.replace("%target%", targetName);
+                    }
+                    headOwner = PlaceholderUtil.apply(viewer, headOwner);
+                    if (headOwner.isBlank()) {
+                        headOwner = null;
+                    }
+                }
+
                 Component name = null;
                 if (itemDef.displayName() != null) {
                     String raw = mm.serialize(itemDef.displayName());
-                    raw = PlaceholderUtil.apply(viewer, raw);
                     raw = raw.replace("%player%", viewer.getName())
-                            .replace("%target%", placeholders.get("target"));
+                            .replace("%target%", placeholders.getOrDefault("target", ""));
+                    raw = PlaceholderUtil.apply(viewer, raw);
                     name = mm.deserialize(raw);
                 }
 
@@ -78,14 +94,14 @@ public final class InvseeSlotMapper {
                     lore = new ArrayList<>(itemDef.lore().size());
                     for (Component comp : itemDef.lore()) {
                         String raw = mm.serialize(comp);
-                        raw = PlaceholderUtil.apply(viewer, raw);
                         raw = raw.replace("%player%", viewer.getName())
-                                .replace("%target%", placeholders.get("target"));
+                                .replace("%target%", placeholders.getOrDefault("target", ""));
+                        raw = PlaceholderUtil.apply(viewer, raw);
                         lore.add(mm.deserialize(raw));
                     }
                 }
 
-                ItemStack custom = new ItemComponent(itemDef.material())
+                ItemStack custom = new ItemComponent(resolvedMaterial)
                         .amount(itemDef.amount() != null ? itemDef.amount() : 1)
                         .name(name)
                         .lore(lore)
@@ -95,7 +111,7 @@ public final class InvseeSlotMapper {
                         .damage(itemDef.damage())
                         .enchants(itemDef.enchants())
                         .flags(itemDef.flags() != null ? itemDef.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                        .skullOwner(itemDef.skullOwner())
+                        .skullOwner(headOwner)
                         .hideTooltip(itemDef.hideTooltip())
                         .tooltipStyle(itemDef.tooltipStyle())
                         .build();
@@ -103,6 +119,22 @@ public final class InvseeSlotMapper {
                 inv.setItem(slot, custom);
             }
         }
+    }
+
+    private static Material resolveMaterial(GuiDefinition def, String itemKey, Player viewer, Map<String,String> placeholders) {
+        String materialStr = def.config().getString("items." + itemKey + ".material", "");
+
+        if (materialStr.startsWith("head-")) {
+            String playerPart = materialStr.substring(5);
+            playerPart = playerPart.replace("%player%", viewer.getName());
+            playerPart = playerPart.replace("%target%", placeholders.getOrDefault("target", ""));
+
+            if (!playerPart.isEmpty() && !playerPart.isBlank() && !playerPart.contains("%")) {
+                return Material.PLAYER_HEAD;
+            }
+        }
+
+        return def.items().get(itemKey) != null ? def.items().get(itemKey).material() : Material.STONE;
     }
 
     public static GuiDefinition.GuiItem findItem(GuiDefinition def, int slot) {
@@ -170,7 +202,6 @@ public final class InvseeSlotMapper {
             if (key.startsWith("player-")) continue; // skip dynamic groups
             if (!gi.slots().contains(slot)) continue;
 
-            // Check if material matches
             if (current.getType() == gi.material()) return true;
         }
         return false;
