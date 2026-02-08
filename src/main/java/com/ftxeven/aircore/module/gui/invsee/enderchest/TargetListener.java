@@ -49,13 +49,16 @@ public final class TargetListener implements Listener {
                     inv.setItem(i, null);
                 }
                 EnderchestSlotMapper.fill(inv, manager.definition(), contents);
-                EnderchestSlotMapper.fillCustom(
-                        inv,
-                        manager.definition(),
-                        viewer,
-                        Map.of("player", viewer.getName(), "target", holder.targetName()),
-                        manager
-                );
+
+                if (inv.getSize() != 27) {
+                    EnderchestSlotMapper.fillCustom(
+                            inv,
+                            manager.definition(),
+                            viewer,
+                            Map.of("player", viewer.getName(), "target", holder.targetName()),
+                            manager
+                    );
+                }
             }
         }
     }
@@ -71,13 +74,16 @@ public final class TargetListener implements Listener {
                     inv.setItem(i, null);
                 }
                 EnderchestSlotMapper.fill(inv, manager.definition(), contents);
-                EnderchestSlotMapper.fillCustom(
-                        inv,
-                        manager.definition(),
-                        viewer,
-                        Map.of("player", viewer.getName(), "target", holder.targetName()),
-                        manager
-                );
+
+                if (inv.getSize() != 27) {
+                    EnderchestSlotMapper.fillCustom(
+                            inv,
+                            manager.definition(),
+                            viewer,
+                            Map.of("player", viewer.getName(), "target", holder.targetName()),
+                            manager
+                    );
+                }
             }
         }
     }
@@ -86,23 +92,71 @@ public final class TargetListener implements Listener {
     public void onInventoryClose(InventoryCloseEvent e) {
         if (e.getInventory().getHolder() instanceof EnderchestManager.EnderchestHolder holder) {
             Player viewer = (Player) e.getPlayer();
+
+            if (e.getInventory().getSize() == 27) {
+                ItemStack[] contents = new ItemStack[27];
+                for (int i = 0; i < 27; i++) {
+                    contents[i] = e.getInventory().getItem(i);
+                }
+                manager.applyEnderchestToTarget(holder.targetUUID(), contents);
+            }
+
             unregisterViewer(holder.targetUUID(), viewer);
         }
     }
 
     @EventHandler
     public void onTargetClick(InventoryClickEvent e) {
-        if (e.getWhoClicked() instanceof Player target) {
-            plugin.scheduler().runEntityTask(target, () -> refreshViewers(target));
+        if (!(e.getWhoClicked() instanceof Player target)) return;
+
+        Inventory topInv = target.getOpenInventory().getTopInventory();
+
+        if (topInv.getHolder() instanceof EnderchestManager.EnderchestHolder holder) {
+            plugin.scheduler().runEntityTaskDelayed(target, () -> {
+                ItemStack[] contents = new ItemStack[topInv.getSize()];
+                for (int i = 0; i < topInv.getSize(); i++) {
+                    contents[i] = topInv.getItem(i);
+                }
+                manager.applyEnderchestToTarget(holder.targetUUID(), contents);
+                refreshViewers(holder.targetUUID(), contents);
+            }, 1L);
+            return;
+        }
+
+        if (topInv.getType() == org.bukkit.event.inventory.InventoryType.ENDER_CHEST) {
+            plugin.scheduler().runEntityTaskDelayed(target, () -> {
+                ItemStack[] contents = target.getEnderChest().getContents();
+                refreshViewers(target.getUniqueId(), contents);
+            }, 1L);
         }
     }
 
     @EventHandler
     public void onTargetDrag(InventoryDragEvent e) {
-        if (e.getWhoClicked() instanceof Player target) {
-            plugin.scheduler().runEntityTask(target, () -> refreshViewers(target));
+        if (!(e.getWhoClicked() instanceof Player target)) return;
+
+        Inventory topInv = target.getOpenInventory().getTopInventory();
+
+        if (topInv.getHolder() instanceof EnderchestManager.EnderchestHolder holder) {
+            plugin.scheduler().runEntityTaskDelayed(target, () -> {
+                ItemStack[] contents = new ItemStack[topInv.getSize()];
+                for (int i = 0; i < topInv.getSize(); i++) {
+                    contents[i] = topInv.getItem(i);
+                }
+                manager.applyEnderchestToTarget(holder.targetUUID(), contents);
+                refreshViewers(holder.targetUUID(), contents);
+            }, 1L);
+            return;
+        }
+
+        if (topInv.getType() == org.bukkit.event.inventory.InventoryType.ENDER_CHEST) {
+            plugin.scheduler().runEntityTaskDelayed(target, () -> {
+                ItemStack[] contents = target.getEnderChest().getContents();
+                refreshViewers(target.getUniqueId(), contents);
+            }, 1L);
         }
     }
+
 
     @EventHandler
     public void onEnderchestOpen(PlayerInteractEvent e) {

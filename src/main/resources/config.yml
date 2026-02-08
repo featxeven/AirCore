@@ -122,6 +122,7 @@ chat:
       format: "<gold><hover:show_text:'<green>%statistic_hours_played% hours played</green>'>[%player%'s playtime]</hover></gold>"
 
   # Private message behavior
+  allow-self-message: false     # Allow player to send private messages to self
   reply-expire-after: 60        # Seconds before a /reply target expires (0 = never)
   apply-chat-cooldown: true     # Apply chat cooldown to /msg and /reply
   apply-url-formatting: true    # Detect & format URLs in private messages

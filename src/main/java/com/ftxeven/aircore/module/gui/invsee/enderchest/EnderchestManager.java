@@ -27,6 +27,7 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
     private final AirCore plugin;
     private final ItemAction itemAction;
     private GuiDefinition definition;
+    private String titleOwn;
     private final MiniMessage mm = MiniMessage.miniMessage();
 
     private final Set<String> dynamicGroups = Set.of("player-enderchest");
@@ -59,6 +60,7 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
         String title = cfg.getString("title", "Enderchest");
+        this.titleOwn = cfg.getString("title-own", "Ender Chest");
         int rows = cfg.getInt("rows", 3);
 
         Map<String, GuiDefinition.GuiItem> items = new HashMap<>();
@@ -136,6 +138,26 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         EnderchestSlotMapper.fillCustom(inv, definition, viewer, placeholders, this);
 
         targetListener.registerViewer(targetUUID, viewer);
+        return inv;
+    }
+
+    public Inventory buildOwn(Player viewer) {
+        ItemStack[] enderchestContents = viewer.getEnderChest().getContents();
+
+        String rawTitle = PlaceholderUtil.apply(viewer, titleOwn);
+
+        Inventory inv = Bukkit.createInventory(
+                new EnderchestHolder(viewer.getUniqueId(), viewer.getName()),
+                27,
+                mm.deserialize(rawTitle)
+        );
+
+        for (int i = 0; i < enderchestContents.length && i < 27; i++) {
+            ItemStack item = enderchestContents[i];
+            if (item != null) inv.setItem(i, item);
+        }
+
+        targetListener.registerViewer(viewer.getUniqueId(), viewer);
         return inv;
     }
 
@@ -379,6 +401,10 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
     public void refreshFillers(Inventory top, Player viewer) {
         InventoryHolder holder = top.getHolder();
         if (!(holder instanceof EnderchestHolder eh)) {
+            return;
+        }
+
+        if (top.getSize() == 27) {
             return;
         }
 

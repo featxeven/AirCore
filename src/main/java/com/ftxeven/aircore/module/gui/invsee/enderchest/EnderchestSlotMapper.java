@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class EnderchestSlotMapper {
-    private EnderchestSlotMapper() {}
+    private EnderchestSlotMapper() {
+    }
 
     public static void fill(Inventory inv, GuiDefinition def, ItemStack[] contents) {
         List<Integer> slots = def.items().get("player-enderchest").slots();

@@ -51,6 +51,14 @@ public final class ReplyCommand implements TabExecutor {
             return true;
         }
 
+        // Self-message
+        if (target.equals(player)) {
+            if (!plugin.config().pmAllowSelfMessage()) {
+                MessageUtil.send(player, "chat.private-messages.error-self", Map.of());
+                return true;
+            }
+        }
+
         // Block check
         if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
             MessageUtil.send(player, "chat.blocking.error-blocked-by",

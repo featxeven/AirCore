@@ -65,7 +65,7 @@ public final class EnderchestCommand implements TabExecutor {
 
         if (targetName.equalsIgnoreCase(player.getName())) {
             plugin.scheduler().runEntityTask(player, () ->
-                    player.openInventory(player.getEnderChest())
+                    player.openInventory(guiManager.getEnderchestManager().buildOwn(player))
             );
         } else {
             plugin.scheduler().runEntityTask(player, () ->

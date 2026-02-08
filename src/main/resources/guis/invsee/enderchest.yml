@@ -2,6 +2,8 @@
 title: "Viewing %target%'s Enderchest"
 rows: 3
 
+title-own: "Ender Chest"  # When opening own enderchest with /enderchest
+
 # Dynamic slot groups
 # These define where the target's enderchest contents will be mirrored.
 player-enderchest: [0-26]

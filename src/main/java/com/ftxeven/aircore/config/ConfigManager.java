@@ -80,6 +80,7 @@ public final class ConfigManager {
     public boolean pmApplyDisplayTags() {
         return config.getBoolean("chat.apply-display-tags", true);
     }
+    public boolean pmAllowSelfMessage() { return config.getBoolean("chat.allow-self-message", false); }
 
     // Group formatting
     public boolean groupFormatEnabled() {

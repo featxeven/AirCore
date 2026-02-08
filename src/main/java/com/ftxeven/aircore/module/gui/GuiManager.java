@@ -93,6 +93,10 @@ public final class GuiManager {
         return customManagers.get(id.toLowerCase());
     }
 
+    public EnderchestManager getEnderchestManager() {
+        return (EnderchestManager) customManagers.get("enderchest");
+    }
+
     public interface CustomGuiManager {
         Inventory build(Player viewer, Map<String, String> placeholders);
         void handleClick(InventoryClickEvent event, Player viewer);

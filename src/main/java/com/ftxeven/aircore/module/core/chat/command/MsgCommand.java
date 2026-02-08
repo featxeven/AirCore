@@ -106,7 +106,6 @@ public final class MsgCommand implements TabExecutor {
 
                 int onlineOthers = Bukkit.getOnlinePlayers().size() - 1;
 
-                // Use plugin.scheduler() for Folia safety
                 plugin.scheduler().runTask(() -> {
                     if (recipients.isEmpty()) {
                         if (onlineOthers <= 0) {
@@ -129,9 +128,12 @@ public final class MsgCommand implements TabExecutor {
             return true;
         }
 
+        // Self-message
         if (target.equals(player)) {
-            MessageUtil.send(player, "chat.private-messages.error-self", Map.of());
-            return true;
+            if (!plugin.config().pmAllowSelfMessage()) {
+                MessageUtil.send(player, "chat.private-messages.error-self", Map.of());
+                return true;
+            }
         }
 
         // Block check
@@ -177,6 +179,13 @@ public final class MsgCommand implements TabExecutor {
         if (args.length != 1) return List.of();
 
         String input = args[0].toLowerCase();
+
+        if (sender instanceof Player player) {
+            if (!player.hasPermission("aircore.command.msg")) {
+                return List.of();
+            }
+        }
+
         List<String> completions = new ArrayList<>();
 
         boolean canSeeAll = !(sender instanceof Player)
@@ -186,16 +195,11 @@ public final class MsgCommand implements TabExecutor {
             completions.add("@a");
         }
 
-        boolean canSeeNames = !(sender instanceof Player)
-                || sender.hasPermission("aircore.command.msg");
-
-        if (canSeeNames) {
-            Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(input))
-                    .limit(20)
-                    .forEach(completions::add);
-        }
+        completions.addAll(Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .filter(name -> name.toLowerCase().startsWith(input))
+                .limit(20)
+                .toList());
 
         return completions;
     }
