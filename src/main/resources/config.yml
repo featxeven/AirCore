@@ -14,14 +14,14 @@ time-format:
   # Modes: DETAILED | SEQUENTIAL | CUSTOM
   # DETAILED   - show all relevant units ("2 days 3 hours 4 minutes")
   # SEQUENTIAL - show one unit at a time (used for progressive messages)
-  # CUSTOM     - show up to `granularity` units (useful for short displays)
+  # CUSTOM     - show up to 'granularity' units (useful for short displays)
   mode: DETAILED
   granularity: 2   # Only used when mode = CUSTOM (1 = largest only, 4 = full breakdown)
 
 # -----------------------------
 # PERMISSION GROUPS
 # -----------------------------
-# Players with `aircore.group.<groupname>` will get the permissions below.
+# Players with 'aircore.group.<groupname>' will get the permissions below.
 permission-groups:
   default:
     - aircore.command.msg

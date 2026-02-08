@@ -62,7 +62,7 @@ public final class RepairCommand implements TabExecutor {
                 }
 
                 if (repairedAny) {
-                    MessageUtil.send(player, "utilities.repair.inventory-repaired", Map.of());
+                    MessageUtil.send(player, "utilities.repair.inventory", Map.of());
                 } else {
                     MessageUtil.send(player, "utilities.repair.inventory-not-damaged", Map.of());
                 }
@@ -92,7 +92,7 @@ public final class RepairCommand implements TabExecutor {
             if (currentDamage > 0) {
                 damageable.setDamage(0);
                 item.setItemMeta(damageable);
-                MessageUtil.send(player, "utilities.repair.item-repaired", Map.of());
+                MessageUtil.send(player, "utilities.repair.item", Map.of());
             } else {
                 MessageUtil.send(player, "utilities.repair.item-not-damaged", Map.of());
             }
