@@ -390,6 +390,20 @@ public final class EcoCommand implements TabExecutor {
 
     private void handleSet(Player sender, Scope scope, OfflinePlayer target, String targetArg, double amount) {
         if (scope == Scope.SINGLE) {
+            // Validate min and max limits before attempting to set
+            double min = plugin.config().economyMinBalance();
+            double max = plugin.config().economyMaxBalance();
+
+            if (min != -1 && amount < min) {
+                sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(min)));
+                return;
+            }
+
+            if (max >= 0 && amount > max) {
+                sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(max)));
+                return;
+            }
+
             EconomyManager.Result res = manager.transactions().setBalance(target.getUniqueId(), amount);
             // notify target only if actor is not the same player
             if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
