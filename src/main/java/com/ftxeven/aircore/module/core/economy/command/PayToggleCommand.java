@@ -4,6 +4,7 @@ import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.service.ToggleService;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -11,7 +12,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public final class PayToggleCommand implements TabExecutor {
 
@@ -36,18 +39,16 @@ public final class PayToggleCommand implements TabExecutor {
                 return true;
             }
 
-            Player target = Bukkit.getPlayerExact(args[0]);
-            if (target == null) {
-                sender.sendMessage(plugin.lang().get("errors.player-not-found"));
-                return true;
-            }
+            OfflinePlayer target = resolve(null, args[0]);
+            if (target == null) return true;
 
             boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.PAY);
+            String targetName = target.getName() != null ? target.getName() : args[0];
 
-            sender.sendMessage("Payments for " + target.getName() + " -> " + (newState ? "enabled" : "disabled"));
+            sender.sendMessage("Payments for " + targetName + " -> " + (newState ? "enabled" : "disabled"));
 
-            if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target,
+            if (target.isOnline() && plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(target.getPlayer(),
                         newState ? "economy.payments.toggles.enabled-by" : "economy.payments.toggles.disabled-by",
                         Map.of("player", consoleName));
             }
@@ -77,21 +78,21 @@ public final class PayToggleCommand implements TabExecutor {
             return true;
         }
 
-        Player target = Bukkit.getPlayerExact(args[0]);
-        if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of());
-            return true;
-        }
+        OfflinePlayer target = resolve(player, args[0]);
+        if (target == null) return true;
 
         boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.PAY);
+        String targetName = target.getName() != null ? target.getName() : args[0];
 
         MessageUtil.send(player,
                 newState ? "economy.payments.toggles.enabled-for" : "economy.payments.toggles.disabled-for",
-                Map.of("player", target.getName()));
+                Map.of("player", targetName));
 
-        MessageUtil.send(target,
-                newState ? "economy.payments.toggles.enabled-by" : "economy.payments.toggles.disabled-by",
-                Map.of("player", player.getName()));
+        if (target.isOnline()) {
+            MessageUtil.send(target.getPlayer(),
+                    newState ? "economy.payments.toggles.enabled-by" : "economy.payments.toggles.disabled-by",
+                    Map.of("player", player.getName()));
+        }
 
         return true;
     }
@@ -117,5 +118,25 @@ public final class PayToggleCommand implements TabExecutor {
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)
                 .toList();
+    }
+
+    private OfflinePlayer resolve(CommandSender sender, String name) {
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.getName().equalsIgnoreCase(name)) {
+                return online;
+            }
+        }
+
+        UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
+        if (cached != null) {
+            return Bukkit.getOfflinePlayer(cached);
+        }
+
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
+        } else {
+            sender.sendMessage("Player not found");
+        }
+        return null;
     }
 }

@@ -4,6 +4,7 @@ import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.service.ToggleService;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -11,7 +12,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 public final class SocialSpyCommand implements TabExecutor {
 
@@ -36,19 +39,17 @@ public final class SocialSpyCommand implements TabExecutor {
                 return true;
             }
 
-            Player target = Bukkit.getPlayerExact(args[0]);
-            if (target == null) {
-                sender.sendMessage(plugin.lang().get("errors.player-not-found"));
-                return true;
-            }
+            OfflinePlayer target = resolve(null, args[0]);
+            if (target == null) return true;
 
             boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.SOCIALSPY);
+            String targetName = target.getName() != null ? target.getName() : args[0];
 
-            sender.sendMessage("SocialSpy status for " + target.getName() + " -> "
+            sender.sendMessage("SocialSpy status for " + targetName + " -> "
                     + (newState ? "enabled" : "disabled"));
 
-            if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target,
+            if (target.isOnline() && plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(target.getPlayer(),
                         newState ? "chat.socialspy.enabled-by" : "chat.socialspy.disabled-by",
                         Map.of("player", consoleName));
             }
@@ -73,10 +74,11 @@ public final class SocialSpyCommand implements TabExecutor {
         }
 
         // /socialspy <player>
-        Player target = Bukkit.getPlayerExact(args[0]);
+        OfflinePlayer resolved = resolve(player, args[0]);
+        if (resolved == null) return true;
 
         // Self-target
-        if (target != null && target.equals(player)) {
+        if (resolved.getUniqueId().equals(player.getUniqueId())) {
             boolean newState = plugin.core().toggles().toggle(player.getUniqueId(), ToggleService.Toggle.SOCIALSPY);
 
             MessageUtil.send(player,
@@ -92,20 +94,18 @@ public final class SocialSpyCommand implements TabExecutor {
             return true;
         }
 
-        if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of());
-            return true;
-        }
-
-        boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.SOCIALSPY);
+        boolean newState = plugin.core().toggles().toggle(resolved.getUniqueId(), ToggleService.Toggle.SOCIALSPY);
+        String targetName = resolved.getName() != null ? resolved.getName() : args[0];
 
         MessageUtil.send(player,
                 newState ? "chat.socialspy.enabled-for" : "chat.socialspy.disabled-for",
-                Map.of("player", target.getName()));
+                Map.of("player", targetName));
 
-        MessageUtil.send(target,
-                newState ? "chat.socialspy.enabled-by" : "chat.socialspy.disabled-by",
-                Map.of("player", player.getName()));
+        if (resolved.isOnline()) {
+            MessageUtil.send(resolved.getPlayer(),
+                    newState ? "chat.socialspy.enabled-by" : "chat.socialspy.disabled-by",
+                    Map.of("player", player.getName()));
+        }
 
         return true;
     }
@@ -131,5 +131,25 @@ public final class SocialSpyCommand implements TabExecutor {
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)
                 .toList();
+    }
+
+    private OfflinePlayer resolve(CommandSender sender, String name) {
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.getName().equalsIgnoreCase(name)) {
+                return online;
+            }
+        }
+
+        UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
+        if (cached != null) {
+            return Bukkit.getOfflinePlayer(cached);
+        }
+
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
+        } else {
+            sender.sendMessage("Player not found");
+        }
+        return null;
     }
 }
