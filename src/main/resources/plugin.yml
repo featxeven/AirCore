@@ -1,6 +1,6 @@
 name: AirCore
 main: com.ftxeven.aircore.AirCore
-version: 1.0.4
+version: 1.0.5
 api-version: "1.21"
 author: ftxeven
 description: Core commands and features for all servers.
