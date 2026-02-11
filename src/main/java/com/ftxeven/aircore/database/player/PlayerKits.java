@@ -43,13 +43,16 @@ public final class PlayerKits {
                 one_time_claimed = excluded.one_time_claimed,
                 last_cooldown = excluded.last_cooldown;
         """;
-        plugin.database().executeAsync(sql, ps -> {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
             ps.setString(2, kit);
             ps.setLong(3, lastClaim);
             ps.setInt(4, oneTimeClaimed ? 1 : 0);
             ps.setLong(5, cooldown);
-        });
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to sync-save kit data for " + uuid + ": " + e.getMessage());
+        }
     }
 
     public record KitData(long lastClaim, boolean oneTimeClaimed, long lastCooldown) {}

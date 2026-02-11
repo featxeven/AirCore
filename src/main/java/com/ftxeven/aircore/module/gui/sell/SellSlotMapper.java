@@ -13,118 +13,55 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class SellSlotMapper {
+    private static final MiniMessage MM = MiniMessage.miniMessage();
+
     private SellSlotMapper() {}
 
     public static void fillCustom(AirCore plugin,
                                   Inventory inv,
                                   GuiDefinition def,
                                   Player viewer,
-                                  Map<String,String> placeholders) {
-        MiniMessage mm = MiniMessage.miniMessage();
+                                  Map<String, String> placeholders) {
 
-        // Place confirm button
+        var worthService = plugin.economy().worth();
+        var formatService = plugin.economy().formats();
+
         GuiDefinition.GuiItem confirm = def.items().get("confirm");
         if (confirm != null) {
-            String headOwner = processHeadOwner(confirm.headOwner(), viewer, placeholders);
-
-            ItemStack button = new ItemComponent(confirm.material())
-                    .amount(confirm.amount() != null ? confirm.amount() : 1)
-                    .glow(confirm.glow())
-                    .itemModel(confirm.itemModel())
-                    .customModelData(confirm.customModelData())
-                    .damage(confirm.damage())
-                    .enchants(confirm.enchants())
-                    .flags(confirm.flags() != null ? confirm.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                    .skullOwner(headOwner)
-                    .hideTooltip(confirm.hideTooltip())
-                    .tooltipStyle(confirm.tooltipStyle())
-                    .build();
-
+            ItemStack button = createBaseItem(confirm, processHeadOwner(confirm.headOwner(), viewer, placeholders));
             for (int slot : confirm.slots()) {
-                if (slot < inv.getSize()) {
-                    inv.setItem(slot, button.clone());
-                }
+                if (slot < inv.getSize()) inv.setItem(slot, button.clone());
             }
 
-            WorthResult result = calculateWorth(inv, plugin.economy().worth(), def);
-            double total = result.total();
-            updateConfirmButton(confirm, inv, viewer, total, placeholders, plugin.economy().formats());
+            double totalGui = calculateWorth(inv, worthService, def).total();
+            double totalAll = calculateWorthAll(inv, worthService, def, viewer).total();
+
+            updateConfirmButton(def, confirm, inv, viewer, totalGui, totalAll, placeholders, formatService);
         }
 
-        // Place confirm-all button
         GuiDefinition.GuiItem confirmAll = def.items().get("confirm-all");
         if (confirmAll != null) {
-            String headOwner = processHeadOwner(confirmAll.headOwner(), viewer, placeholders);
-
-            ItemStack button = new ItemComponent(confirmAll.material())
-                    .amount(confirmAll.amount() != null ? confirmAll.amount() : 1)
-                    .glow(confirmAll.glow())
-                    .itemModel(confirmAll.itemModel())
-                    .customModelData(confirmAll.customModelData())
-                    .damage(confirmAll.damage())
-                    .enchants(confirmAll.enchants())
-                    .flags(confirmAll.flags() != null ? confirmAll.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                    .skullOwner(headOwner)
-                    .hideTooltip(confirmAll.hideTooltip())
-                    .tooltipStyle(confirmAll.tooltipStyle())
-                    .build();
-
+            ItemStack button = createBaseItem(confirmAll, processHeadOwner(confirmAll.headOwner(), viewer, placeholders));
             for (int slot : confirmAll.slots()) {
-                if (slot < inv.getSize()) {
-                    inv.setItem(slot, button.clone());
-                }
+                if (slot < inv.getSize()) inv.setItem(slot, button.clone());
             }
 
-            double totalAll = calculateWorthAll(inv, plugin.economy().worth(), def, viewer);
-            updateConfirmButton(confirmAll, inv, viewer, totalAll, placeholders, plugin.economy().formats());
+            double totalAll = calculateWorthAll(inv, worthService, def, viewer).total();
+            updateConfirmButton(def, confirmAll, inv, viewer, totalAll, totalAll, placeholders, formatService);
         }
 
+        String playerName = placeholders.getOrDefault("player", viewer.getName());
         for (Map.Entry<String, GuiDefinition.GuiItem> entry : def.items().entrySet()) {
             String key = entry.getKey();
+            if (isReservedKey(key)) continue;
+
             GuiDefinition.GuiItem item = entry.getValue();
+            ItemStack stack = createBaseItem(item, processHeadOwner(item.headOwner(), viewer, placeholders));
 
-            if ("sell-slots".equalsIgnoreCase(key) || "confirm".equalsIgnoreCase(key) || "confirm-all".equalsIgnoreCase(key)) continue;
-
-            String headOwner = processHeadOwner(item.headOwner(), viewer, placeholders);
-
-            ItemComponent builder = new ItemComponent(item.material())
-                    .amount(item.amount() != null ? item.amount() : 1)
-                    .glow(item.glow())
-                    .itemModel(item.itemModel())
-                    .customModelData(item.customModelData())
-                    .damage(item.damage())
-                    .enchants(item.enchants())
-                    .flags(item.flags() != null ? item.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                    .skullOwner(headOwner)
-                    .hideTooltip(item.hideTooltip())
-                    .tooltipStyle(item.tooltipStyle());
-
-            ItemStack stack = builder.build();
-
-            if (item.displayName() != null) {
-                String raw = mm.serialize(item.displayName());
-                raw = raw.replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
-                raw = PlaceholderUtil.apply(viewer, raw);
-
-                final String finalRaw = raw;
-                stack.editMeta(meta -> meta.displayName(mm.deserialize(finalRaw)));
-            }
-
-            if (item.lore() != null && !item.lore().isEmpty()) {
-                List<Component> lore = new ArrayList<>();
-                for (Component comp : item.lore()) {
-                    String raw = mm.serialize(comp);
-                    raw = raw.replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
-                    raw = PlaceholderUtil.apply(viewer, raw);
-                    lore.add(mm.deserialize(raw));
-                }
-                stack.editMeta(meta -> meta.lore(lore));
-            }
+            applyTemplateMeta(stack, "items." + key, def, viewer, playerName);
 
             for (int slot : item.slots()) {
                 if (slot < inv.getSize()) {
@@ -137,192 +74,159 @@ public final class SellSlotMapper {
         }
     }
 
-    private static String processHeadOwner(String headOwner, Player viewer, Map<String, String> placeholders) {
-        if (headOwner == null || headOwner.isBlank()) return null;
+    private static void applyTemplateMeta(ItemStack stack, String configPath, GuiDefinition def, Player viewer, String playerName) {
+        stack.editMeta(meta -> {
+            String rawName = def.config().getString(configPath + ".display-name");
+            if (rawName != null) {
+                String processed = PlaceholderUtil.apply(viewer, rawName.replace("%player%", playerName));
+                meta.displayName(MM.deserialize("<!italic>" + processed));
+            }
 
-        headOwner = headOwner.replace("%player%", viewer.getName());
-        String targetName = placeholders.get("target");
-        if (targetName != null && !targetName.isBlank()) {
-            headOwner = headOwner.replace("%target%", targetName);
-        }
-
-        headOwner = PlaceholderUtil.apply(viewer, headOwner);
-
-        if (headOwner.isBlank()) {
-            return null;
-        }
-
-        return headOwner;
+            List<String> rawLore = def.config().getStringList(configPath + ".lore");
+            if (!rawLore.isEmpty()) {
+                meta.lore(rawLore.stream()
+                        .map(line -> MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, line.replace("%player%", playerName))))
+                        .toList());
+            }
+        });
     }
 
-    public static void updateConfirmButton(GuiDefinition.GuiItem confirm,
+    public static void updateConfirmButton(GuiDefinition def,
+                                           GuiDefinition.GuiItem confirm,
                                            Inventory inv,
                                            Player viewer,
-                                           double total,
-                                           Map<String,String> placeholders,
+                                           double worthValue,
+                                           double worthAllValue,
+                                           Map<String, String> placeholders,
                                            FormatService formatService) {
-        MiniMessage mm = MiniMessage.miniMessage();
 
-        String formattedWorth = formatService.formatAmount(total);
+        String worth = formatService.formatAmount(worthValue);
+        String worthAll = formatService.formatAmount(worthAllValue);
+        String playerName = placeholders.getOrDefault("player", viewer.getName());
 
-        Component name = null;
-        if (confirm.displayName() != null) {
-            String raw = mm.serialize(confirm.displayName());
-            raw = raw.replace("%worth%", formattedWorth)
-                    .replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
-            raw = PlaceholderUtil.apply(viewer, raw);
-            name = mm.deserialize(raw);
-        }
+        String path = "buttons." + confirm.key();
+        String rawName = def.config().getString(path + ".display-name");
 
-        List<Component> lore = new ArrayList<>();
-        if (confirm.lore() != null) {
-            for (Component comp : confirm.lore()) {
-                String raw = mm.serialize(comp);
-                raw = raw.replace("%worth%", formattedWorth)
-                        .replace("%player%", placeholders.getOrDefault("player", viewer.getName()));
-                raw = PlaceholderUtil.apply(viewer, raw);
-                lore.add(mm.deserialize(raw));
-            }
-        }
+        Component name = (rawName == null) ? null : MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer,
+                rawName.replace("%worth%", worth).replace("%worth-all%", worthAll).replace("%player%", playerName)));
+
+        List<String> rawLore = def.config().getStringList(path + ".lore");
+        List<Component> lore = rawLore.isEmpty() ? Collections.emptyList() : rawLore.stream()
+                .map(line -> MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer,
+                        line.replace("%worth%", worth).replace("%worth-all%", worthAll).replace("%player%", playerName))))
+                .toList();
 
         for (int slot : confirm.slots()) {
             if (slot < inv.getSize()) {
-                ItemStack existing = inv.getItem(slot);
-                if (existing != null && !existing.getType().isAir()) {
-                    updateItemMeta(existing, name, lore);
+                ItemStack item = inv.getItem(slot);
+                if (item != null && !item.getType().isAir()) {
+                    item.editMeta(meta -> {
+                        if (name != null) meta.displayName(name);
+                        meta.lore(lore);
+                    });
                 }
             }
         }
     }
 
-    private static void updateItemMeta(ItemStack item, Component displayName, List<Component> lore) {
-        var meta = item.getItemMeta();
-        if (meta == null) return;
-
-        if (displayName != null) {
-            meta.displayName(displayName);
-        }
-        if (lore != null && !lore.isEmpty()) {
-            meta.lore(lore);
-        }
-
-        item.setItemMeta(meta);
-    }
-
-    public static WorthResult calculateWorth(Inventory inv,
-                                             ItemWorthService worthService,
-                                             GuiDefinition def) {
+    public static WorthResult calculateWorth(Inventory inv, ItemWorthService worthService, GuiDefinition def) {
         double total = 0;
         boolean unsupported = false;
 
         GuiDefinition.GuiItem sellGroup = def.items().get("sell-slots");
         if (sellGroup == null) return new WorthResult(0, false);
 
-        int[] slots = sellGroup.slots().stream().mapToInt(Integer::intValue).toArray();
-        for (int slot : slots) {
+        for (int slot : sellGroup.slots()) {
             if (slot >= inv.getSize()) continue;
-
             ItemStack item = inv.getItem(slot);
             if (item == null || item.getType().isAir()) continue;
 
             double price = worthService.getWorth(item);
-
             if (price <= 0) {
                 unsupported = true;
                 continue;
             }
-
             total += price * item.getAmount();
         }
         return new WorthResult(total, unsupported);
     }
 
-    public static double calculateWorthAll(Inventory inv,
-                                           ItemWorthService worthService,
-                                           GuiDefinition def,
-                                           Player viewer) {
-        double total = 0;
+    public static WorthResult calculateWorthAll(Inventory inv, ItemWorthService worthService, GuiDefinition def, Player viewer) {
+        WorthResult guiResult = calculateWorth(inv, worthService, def);
+        double total = guiResult.total();
+        boolean unsupported = guiResult.hasUnsupported();
 
-        // Sell GUI slots
-        GuiDefinition.GuiItem sellGroup = def.items().get("sell-slots");
-        if (sellGroup != null) {
-            for (int slot : sellGroup.slots()) {
-                if (slot >= inv.getSize()) continue;
-                ItemStack item = inv.getItem(slot);
-                if (item == null || item.getType().isAir()) continue;
-                double price = worthService.getWorth(item);
-                if (price > 0) total += price * item.getAmount();
-            }
-        }
-
-        // Player inventory slots
         for (int i = 0; i < 36; i++) {
             ItemStack item = viewer.getInventory().getItem(i);
             if (item == null || item.getType().isAir()) continue;
-            double price = worthService.getWorth(item);
-            if (price > 0) total += price * item.getAmount();
-        }
 
-        return total;
+            double price = worthService.getWorth(item);
+            if (price > 0) {
+                total += price * item.getAmount();
+            } else {
+                unsupported = true;
+            }
+        }
+        return new WorthResult(total, unsupported);
+    }
+
+    private static ItemStack createBaseItem(GuiDefinition.GuiItem item, String headOwner) {
+        return new ItemComponent(item.material())
+                .amount(item.amount() != null ? item.amount() : 1)
+                .glow(item.glow())
+                .itemModel(item.itemModel())
+                .customModelData(item.customModelData())
+                .damage(item.damage())
+                .enchants(item.enchants())
+                .flags(item.flags() != null ? item.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
+                .skullOwner(headOwner)
+                .hideTooltip(item.hideTooltip())
+                .tooltipStyle(item.tooltipStyle())
+                .build();
+    }
+
+    private static String processHeadOwner(String headOwner, Player viewer, Map<String, String> placeholders) {
+        if (headOwner == null || headOwner.isBlank()) return null;
+        String result = headOwner.replace("%player%", viewer.getName());
+        String targetName = placeholders.get("target");
+        if (targetName != null) result = result.replace("%target%", targetName);
+        return PlaceholderUtil.apply(viewer, result);
     }
 
     public static GuiDefinition.GuiItem findItem(GuiDefinition def, int slot) {
         for (GuiDefinition.GuiItem item : def.items().values()) {
-            for (int s : item.slots()) {
-                if (s == slot) return item;
-            }
+            if (item.slots().contains(slot)) return item;
         }
         return null;
     }
 
     public static boolean isDynamicSlot(GuiDefinition def, int slot) {
         GuiDefinition.GuiItem sellGroup = def.items().get("sell-slots");
-        if (sellGroup == null) return false;
-        for (int s : sellGroup.slots()) {
-            if (s == slot) return true;
-        }
-        return false;
+        return sellGroup != null && sellGroup.slots().contains(slot);
     }
 
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, ItemStack current) {
-        if (current == null || current.getType().isAir()) return false;
-
-        if (!isDynamicSlot(def, slot)) return false;
+        if (current == null || current.getType().isAir() || !isDynamicSlot(def, slot)) return false;
 
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
-            String key = e.getKey();
+            if ("sell-slots".equals(e.getKey())) continue;
             GuiDefinition.GuiItem gi = e.getValue();
-
-            if ("sell-slots".equals(key)) continue; // skip dynamic group
-
-            boolean slotMatches = false;
-            for (int s : gi.slots()) {
-                if (s == slot) {
-                    slotMatches = true;
-                    break;
-                }
-            }
-            if (!slotMatches) continue;
-
-            // Check if material matches
-            if (current.getType() == gi.material()) return true;
+            if (gi.slots().contains(slot) && current.getType() == gi.material()) return true;
         }
         return false;
     }
 
     public static GuiDefinition.GuiItem findCustomItemAt(GuiDefinition def, int slot) {
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
-            String key = e.getKey();
-            GuiDefinition.GuiItem gi = e.getValue();
-            if ("sell-slots".equals(key)) continue; // skip dynamic group
-
-            for (int s : gi.slots()) {
-                if (s == slot) return gi;
-            }
+            if ("sell-slots".equals(e.getKey())) continue;
+            if (e.getValue().slots().contains(slot)) return e.getValue();
         }
         return null;
     }
 
-    public record WorthResult(double total, boolean hasUnsupported) {
+    private static boolean isReservedKey(String key) {
+        return "sell-slots".equalsIgnoreCase(key) || "confirm".equalsIgnoreCase(key) || "confirm-all".equalsIgnoreCase(key);
     }
+
+    public record WorthResult(double total, boolean hasUnsupported) {}
 }

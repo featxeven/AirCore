@@ -29,7 +29,6 @@ public final class GuiManager {
     public void reload() {
         reloading = true;
 
-        // Close all inventories first
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             Inventory open = player.getOpenInventory().getTopInventory();
             for (CustomGuiManager mgr : customManagers.values()) {
@@ -40,7 +39,6 @@ public final class GuiManager {
             }
         }
 
-        // Unregister listeners
         for (CustomGuiManager mgr : customManagers.values()) {
             if (mgr instanceof InventoryManager invsee) {
                 invsee.unregisterListeners();
@@ -51,7 +49,6 @@ public final class GuiManager {
             }
         }
 
-        // Clear and reload managers
         customManagers.clear();
         loadAll();
 

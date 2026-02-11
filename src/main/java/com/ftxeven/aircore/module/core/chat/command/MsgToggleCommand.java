@@ -30,10 +30,7 @@ public final class MsgToggleCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console
         if (!(sender instanceof Player player)) {
-            String consoleName = plugin.lang().get("general.console-name");
-
             if (args.length != 1) {
                 sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
@@ -45,10 +42,10 @@ public final class MsgToggleCommand implements TabExecutor {
             boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.PM);
             String targetName = target.getName() != null ? target.getName() : args[0];
 
-            sender.sendMessage("Msgtoggle status for " + targetName + " -> "
-                    + (newState ? "enabled" : "disabled"));
+            sender.sendMessage("Msgtoggle status for " + targetName + " -> " + (newState ? "enabled" : "disabled"));
 
             if (target.isOnline() && plugin.config().consoleToPlayerFeedback()) {
+                String consoleName = plugin.lang().get("general.console-name");
                 MessageUtil.send(target.getPlayer(),
                         newState ? "chat.toggles.messages.enabled-by" : "chat.toggles.messages.disabled-by",
                         Map.of("player", consoleName));
@@ -56,14 +53,12 @@ public final class MsgToggleCommand implements TabExecutor {
             return true;
         }
 
-        // Player
         if (!player.hasPermission("aircore.command.msgtoggle")) {
             MessageUtil.send(player, "errors.no-permission",
                     Map.of("permission", "aircore.command.msgtoggle"));
             return true;
         }
 
-        // Self toggle
         if (args.length == 0) {
             boolean newState = plugin.core().toggles().toggle(player.getUniqueId(), ToggleService.Toggle.PM);
             MessageUtil.send(player,
@@ -72,15 +67,22 @@ public final class MsgToggleCommand implements TabExecutor {
             return true;
         }
 
-        // Toggle another player
+        OfflinePlayer target = resolve(player, args[0]);
+        if (target == null) return true;
+
+        if (target.getUniqueId().equals(player.getUniqueId())) {
+            boolean newState = plugin.core().toggles().toggle(player.getUniqueId(), ToggleService.Toggle.PM);
+            MessageUtil.send(player,
+                    newState ? "chat.toggles.messages.enabled" : "chat.toggles.messages.disabled",
+                    Map.of());
+            return true;
+        }
+
         if (!player.hasPermission("aircore.command.msgtoggle.others")) {
             MessageUtil.send(player, "errors.no-permission",
                     Map.of("permission", "aircore.command.msgtoggle.others"));
             return true;
         }
-
-        OfflinePlayer target = resolve(player, args[0]);
-        if (target == null) return true;
 
         boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.PM);
         String targetName = target.getName() != null ? target.getName() : args[0];
@@ -105,16 +107,13 @@ public final class MsgToggleCommand implements TabExecutor {
                                       String @NotNull [] args) {
 
         if (args.length != 1) return List.of();
-
         String input = args[0].toLowerCase();
 
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.msgtoggle.others")) {
-                return List.of();
-            }
-        }
-
         return Bukkit.getOnlinePlayers().stream()
+                .filter(p -> {
+                    if (sender.hasPermission("aircore.command.msgtoggle.others")) return true;
+                    return p.getName().equalsIgnoreCase(sender.getName());
+                })
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)
@@ -135,7 +134,7 @@ public final class MsgToggleCommand implements TabExecutor {
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
-        } else {
+        } else if (sender != null) {
             sender.sendMessage("Player not found");
         }
         return null;

@@ -31,13 +31,17 @@ buttons:
     display-name: "<green>Click to confirm</green>"
     lore:
       - "<gray>Total worth: $%worth%</gray>"
+    actions:
+      - "[close]"
 
   confirm-all:
     slots: [42]
     material: CHEST_MINECART
     display-name: "<green>Click to confirm all</green>"
     lore:
-      - "<gray>Total worth: $%worth%</gray>"
+      - "<gray>Total worth: $%worth-all%</gray>"
+    actions:
+      - "[close]"
 
 # Custom items
 items: []

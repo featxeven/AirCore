@@ -6,17 +6,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
-import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,11 +22,11 @@ public final class TargetListener implements Listener {
     private final AirCore plugin;
     private final InventoryManager inventoryManager;
     private final Map<UUID, List<Player>> viewers = new HashMap<>();
+    private final Set<UUID> pendingRefreshes = new HashSet<>();
 
     public TargetListener(AirCore plugin, InventoryManager inventoryManager) {
         this.plugin = plugin;
         this.inventoryManager = inventoryManager;
-        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public void registerViewer(UUID target, Player viewer) {
@@ -45,48 +41,40 @@ public final class TargetListener implements Listener {
         }
     }
 
-    private void refreshViewers(Player target) {
-        List<Player> list = viewers.get(target.getUniqueId());
-        if (list == null) return;
+    private void scheduleRefresh(Player target) {
+        if (target == null || !viewers.containsKey(target.getUniqueId())) return;
+        if (!pendingRefreshes.add(target.getUniqueId())) return;
 
-        PlayerInventories.InventoryBundle bundle = new PlayerInventories.InventoryBundle(
+        plugin.scheduler().runEntityTask(target, () -> {
+            try {
+                refreshViewers(target.getUniqueId(), createBundle(target));
+            } finally {
+                pendingRefreshes.remove(target.getUniqueId());
+            }
+        });
+    }
+
+    private PlayerInventories.InventoryBundle createBundle(Player target) {
+        return new PlayerInventories.InventoryBundle(
                 target.getInventory().getContents(),
                 target.getInventory().getArmorContents(),
                 target.getInventory().getItemInOffHand(),
                 target.getEnderChest().getContents()
         );
-
-        for (Player viewer : list) {
-            Inventory inv = viewer.getOpenInventory().getTopInventory();
-            if (inv.getHolder() instanceof InventoryManager.InvseeHolder holder) {
-                for (int i = 0; i < inv.getSize(); i++) {
-                    inv.setItem(i, null);
-                }
-                InventorySlotMapper.fill(inv, inventoryManager.definition(), bundle);
-                InventorySlotMapper.fillCustom(
-                        inv,
-                        inventoryManager.definition(),
-                        viewer,
-                        Map.of("player", viewer.getName(), "target", holder.targetName()),
-                        inventoryManager
-                );
-            }
-        }
     }
 
     public void refreshViewers(UUID targetUUID, PlayerInventories.InventoryBundle bundle) {
         List<Player> list = viewers.get(targetUUID);
-        if (list == null) return;
+        if (list == null || list.isEmpty()) return;
 
         for (Player viewer : list) {
-            Inventory inv = viewer.getOpenInventory().getTopInventory();
-            if (inv.getHolder() instanceof InventoryManager.InvseeHolder holder) {
-                for (int i = 0; i < inv.getSize(); i++) {
-                    inv.setItem(i, null);
-                }
-                InventorySlotMapper.fill(inv, inventoryManager.definition(), bundle);
+            Inventory top = viewer.getOpenInventory().getTopInventory();
+            if (top.getHolder() instanceof InventoryManager.InvseeHolder holder) {
+                // Clear and refill - InventorySlotMapper handles the logic
+                top.clear();
+                InventorySlotMapper.fill(top, inventoryManager.definition(), bundle);
                 InventorySlotMapper.fillCustom(
-                        inv,
+                        top,
                         inventoryManager.definition(),
                         viewer,
                         Map.of("player", viewer.getName(), "target", holder.targetName()),
@@ -96,160 +84,83 @@ public final class TargetListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent e) {
         if (e.getInventory().getHolder() instanceof InventoryManager.InvseeHolder holder) {
-            Player viewer = (Player) e.getPlayer();
-            unregisterViewer(holder.targetUUID(), viewer);
+            unregisterViewer(holder.targetUUID(), (Player) e.getPlayer());
         }
     }
 
-    @EventHandler public void onTargetClick(InventoryClickEvent e) {
-        if (e.getWhoClicked() instanceof Player target) {
-            plugin.scheduler().runEntityTask(target, () -> refreshViewers(target));
-        }
-    }
-    @EventHandler public void onTargetDrag(InventoryDragEvent e) {
-        if (e.getWhoClicked() instanceof Player target) {
-            plugin.scheduler().runEntityTask(target, () -> refreshViewers(target));
-        }
-    }
-    @EventHandler public void onTargetDrop(PlayerDropItemEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler public void onTargetPickup(EntityPickupItemEvent e) {
-        if (e.getEntity() instanceof Player target) {
-            plugin.scheduler().runEntityTask(target, () -> refreshViewers(target));
-        }
-    }
-    @EventHandler public void onTargetItemConsume(PlayerItemConsumeEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler public void onTargetItemBreak(PlayerItemBreakEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler public void onTargetItemDamage(PlayerItemDamageEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler public void onTargetSwapHand(PlayerSwapHandItemsEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler public void onTargetBlockPlace(BlockPlaceEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler public void onTargetBlockBreak(BlockBreakEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-    @EventHandler
-    public void onPotionSplash(PotionSplashEvent e) {
-        if (!(e.getPotion().getShooter() instanceof Player player)) return;
-        plugin.scheduler().runEntityTask(player, () -> refreshViewers(player));
-    }
-    @EventHandler
-    public void onShootBow(EntityShootBowEvent e) {
-        if (!(e.getEntity() instanceof Player player)) return;
-        plugin.scheduler().runEntityTask(player, () -> refreshViewers(player));
-    }
-    @EventHandler
-    public void onProjectileLaunch(ProjectileLaunchEvent e) {
-        if (!(e.getEntity().getShooter() instanceof Player player)) return;
-        plugin.scheduler().runEntityTask(player, () -> refreshViewers(player));
-    }
-    @EventHandler
-    public void onRightClickArmor(PlayerInteractEvent e) {
-        ItemStack item = e.getItem();
-        if (item == null) return;
-        EquipmentSlot slot = item.getType().getEquipmentSlot();
-        if (slot.isArmor()) {
-            plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-        }
-    }
-    @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent e) {
-        plugin.scheduler().runEntityTask(e.getEntity(), () -> refreshViewers(e.getEntity()));
-    }
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent e) {
-        plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                () -> refreshViewers(e.getPlayer()), 1L);
+    // --- Grouped Generic Interaction Handlers ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryChange(InventoryClickEvent e) { scheduleRefresh((Player) e.getWhoClicked()); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInventoryDrag(InventoryDragEvent e) { scheduleRefresh((Player) e.getWhoClicked()); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGenericAction(PlayerDropItemEvent e) { scheduleRefresh(e.getPlayer()); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGenericAction(EntityPickupItemEvent e) { if (e.getEntity() instanceof Player p) scheduleRefresh(p); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGenericAction(PlayerItemConsumeEvent e) { scheduleRefresh(e.getPlayer()); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGenericAction(PlayerSwapHandItemsEvent e) { scheduleRefresh(e.getPlayer()); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGenericAction(BlockPlaceEvent e) { scheduleRefresh(e.getPlayer()); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGenericAction(BlockBreakEvent e) { scheduleRefresh(e.getPlayer()); }
+
+    // --- Combat & Consumables ---
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCombatAction(ProjectileLaunchEvent e) { if (e.getEntity().getShooter() instanceof Player p) scheduleRefresh(p); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCombatAction(EntityShootBowEvent e) { if (e.getEntity() instanceof Player p) scheduleRefresh(p); }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onCombatAction(PlayerItemDamageEvent e) { scheduleRefresh(e.getPlayer()); }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onDeath(PlayerDeathEvent e) { scheduleRefresh(e.getEntity()); }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent e) {
+        plugin.scheduler().runEntityTaskDelayed(e.getPlayer(), () -> scheduleRefresh(e.getPlayer()), 1L);
     }
 
-    @EventHandler
-    public void onBottleInteract(PlayerInteractEvent e) {
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (e.getClickedBlock() == null) return;
+    // --- Specialized Interaction Handlers ---
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInteract(PlayerInteractEvent e) {
         ItemStack item = e.getItem();
         if (item == null) return;
 
-        if (e.getClickedBlock().getType() == Material.WATER_CAULDRON && item.getType() == Material.GLASS_BOTTLE) {
-            plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                    () -> refreshViewers(e.getPlayer()), 1L);
-        }
-
-        if (e.getClickedBlock().getType() == Material.CAULDRON && item.getType() == Material.POTION) {
-            plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                    () -> refreshViewers(e.getPlayer()), 1L);
-        }
-
-        if (e.getClickedBlock().getType() == Material.WATER && item.getType() == Material.GLASS_BOTTLE) {
-            plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                    () -> refreshViewers(e.getPlayer()), 1L);
+        Material mat = item.getType();
+        // Check for Armor Right-Click, Buckets, or Spawn Eggs
+        if (mat.getEquipmentSlot().isArmor() || mat == Material.BUCKET || mat == Material.GLASS_BOTTLE || mat.name().endsWith("_SPAWN_EGG")) {
+            // Delay by 1 tick because the item hasn't actually left/entered the inventory yet in some cases
+            plugin.scheduler().runEntityTaskDelayed(e.getPlayer(), () -> scheduleRefresh(e.getPlayer()), 1L);
         }
     }
 
-    @EventHandler
-    public void onBottleFill(PlayerInteractEvent e) {
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_AIR) return;
-
-        ItemStack item = e.getItem();
-        if (item == null || item.getType() != Material.GLASS_BOTTLE) return;
-
-        plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                () -> refreshViewers(e.getPlayer()), 1L);
-    }
-
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBucketFill(PlayerBucketFillEvent e) {
-        plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                () -> refreshViewers(e.getPlayer()), 1L);
+        plugin.scheduler().runEntityTaskDelayed(e.getPlayer(), () -> scheduleRefresh(e.getPlayer()), 1L);
     }
 
-    @EventHandler public void onBucketEmpty(PlayerBucketEmptyEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-    }
-
-    @EventHandler
-    public void onBucketPlace(BlockPlaceEvent e) {
-        plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                () -> refreshViewers(e.getPlayer()), 1L);
-    }
-
-    @EventHandler
-    public void onBucketEntity(PlayerInteractEntityEvent e) {
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityInteract(PlayerInteractEntityEvent e) {
         ItemStack item = e.getPlayer().getInventory().getItem(e.getHand());
-        if (item.getType() == Material.BUCKET) {
-            plugin.scheduler().runEntityTaskDelayed(e.getPlayer(),
-                    () -> refreshViewers(e.getPlayer()), 1L);
+        if (item.getType() == Material.BUCKET || item.getType().name().endsWith("_SPAWN_EGG")) {
+            plugin.scheduler().runEntityTaskDelayed(e.getPlayer(), () -> scheduleRefresh(e.getPlayer()), 1L);
         }
-    }
-
-    @EventHandler public void onUseSpawnEgg(PlayerInteractEvent e) {
-        ItemStack item = e.getItem();
-        if (item != null && item.getType().toString().endsWith("_SPAWN_EGG")) {
-            plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-        }
-    }
-
-    @EventHandler public void onUseSpawnEggOnEntity(PlayerInteractEntityEvent e) {
-        ItemStack item = e.getPlayer().getInventory().getItem(e.getHand());
-        if (item.getType().toString().endsWith("_SPAWN_EGG")) {
-            plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
-        }
-    }
-
-    @EventHandler
-    public void onPlayerCommand(PlayerCommandPreprocessEvent e) {
-        plugin.scheduler().runEntityTask(e.getPlayer(), () -> refreshViewers(e.getPlayer()));
     }
 }

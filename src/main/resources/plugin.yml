@@ -1,6 +1,6 @@
 name: AirCore
 main: com.ftxeven.aircore.AirCore
-version: 1.0.5
+version: 1.0.6
 api-version: "1.21"
 author: ftxeven
 description: Core commands and features for all servers.
@@ -8,7 +8,6 @@ load: STARTUP
 softdepend:
   - PlaceholderAPI
   - LuckPerms
-  - WorldGuard
   - Vault
 folia-supported: true
 

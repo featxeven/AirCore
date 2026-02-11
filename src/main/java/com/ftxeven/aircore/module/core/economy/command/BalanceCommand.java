@@ -31,7 +31,6 @@ public final class BalanceCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
             if (args.length != 1) {
                 sender.sendMessage("Usage: /balance <player>");
@@ -47,14 +46,12 @@ public final class BalanceCommand implements TabExecutor {
             return true;
         }
 
-        // Player execution
         if (!player.hasPermission("aircore.command.balance")) {
             MessageUtil.send(player, "errors.no-permission",
                     Map.of("permission", "aircore.command.balance"));
             return true;
         }
 
-        // /balance > self
         if (args.length == 0) {
             double balance = manager.balances().getBalance(player.getUniqueId());
             MessageUtil.send(player, "economy.balance.self",
@@ -62,7 +59,6 @@ public final class BalanceCommand implements TabExecutor {
             return true;
         }
 
-        // /balance <player>
         if (!player.hasPermission("aircore.command.balance.others")) {
             MessageUtil.send(player, "errors.no-permission",
                     Map.of("permission", "aircore.command.balance.others"));
@@ -92,11 +88,11 @@ public final class BalanceCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return List.of();
 
-        if (!player.hasPermission("aircore.command.balance")) return List.of();
-
-        if (!player.hasPermission("aircore.command.balance.others")) return List.of();
+        if (sender instanceof Player player) {
+            if (!player.hasPermission("aircore.command.balance")) return List.of();
+            if (!player.hasPermission("aircore.command.balance.others")) return List.of();
+        }
 
         if (args.length != 1) return List.of();
 

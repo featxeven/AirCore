@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.module.gui;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -112,12 +111,12 @@ public record GuiDefinition(String title,
 
             String displayName = sec.getString("display-name");
             Component name = displayName != null && !displayName.isBlank()
-                    ? mm.deserialize(displayName).decoration(TextDecoration.ITALIC, false)
+                    ? mm.deserialize("<!italic>" + displayName)
                     : null;
 
             List<Component> lore = new ArrayList<>();
             for (String s : sec.getStringList("lore")) {
-                lore.add(mm.deserialize(s).decoration(TextDecoration.ITALIC, false));
+                lore.add(mm.deserialize("<!italic>" + s));
             }
 
             List<Integer> slots = GuiDefinition.parseSlots(sec.getStringList("slots"));

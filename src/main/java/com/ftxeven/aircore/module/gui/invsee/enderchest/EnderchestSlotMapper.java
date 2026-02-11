@@ -15,89 +15,96 @@ import java.util.List;
 import java.util.Map;
 
 public final class EnderchestSlotMapper {
-    private EnderchestSlotMapper() {
-    }
+    private static final MiniMessage MM = MiniMessage.miniMessage();
+
+    private EnderchestSlotMapper() {}
 
     public static void fill(Inventory inv, GuiDefinition def, ItemStack[] contents) {
-        List<Integer> slots = def.items().get("player-enderchest").slots();
-        for (int i = 0; i < contents.length && i < slots.size(); i++) {
-            ItemStack item = contents[i];
-            if (item != null) inv.setItem(slots.get(i), item);
+        GuiDefinition.GuiItem ecGroup = def.items().get("player-enderchest");
+        if (ecGroup == null) return;
+
+        List<Integer> slots = ecGroup.slots();
+        for (int i = 0; i < slots.size(); i++) {
+            int slot = slots.get(i);
+            // FIX: Set the item regardless of whether it is null to ensure removals sync
+            ItemStack item = (i < contents.length) ? contents[i] : null;
+            inv.setItem(slot, item);
         }
     }
 
     public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> placeholders, EnderchestManager manager) {
-        MiniMessage mm = MiniMessage.miniMessage();
+        String viewerName = viewer.getName();
+        String targetName = placeholders.getOrDefault("target", "");
 
         for (Map.Entry<String, GuiDefinition.GuiItem> entry : def.items().entrySet()) {
             String key = entry.getKey();
-            GuiDefinition.GuiItem itemDef = entry.getValue();
-
-            // Skip dynamic groups
             if (manager.isDynamicGroup(key)) continue;
 
+            GuiDefinition.GuiItem itemDef = entry.getValue();
+            String headOwner = resolveStringPlaceholders(itemDef.headOwner(), viewer, viewerName, targetName);
+
+            ItemComponent builder = new ItemComponent(itemDef.material())
+                    .amount(itemDef.amount() != null ? itemDef.amount() : 1)
+                    .glow(itemDef.glow())
+                    .itemModel(itemDef.itemModel())
+                    .customModelData(itemDef.customModelData())
+                    .damage(itemDef.damage())
+                    .enchants(itemDef.enchants())
+                    .flags(itemDef.flags() != null ? itemDef.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
+                    .skullOwner(headOwner)
+                    .hideTooltip(itemDef.hideTooltip())
+                    .tooltipStyle(itemDef.tooltipStyle());
+
+            if (itemDef.displayName() != null) {
+                builder.name(resolveComponentPlaceholders(itemDef.displayName(), viewer, viewerName, targetName));
+            }
+
+            if (itemDef.lore() != null && !itemDef.lore().isEmpty()) {
+                List<Component> processedLore = new ArrayList<>();
+                for (Component line : itemDef.lore()) {
+                    processedLore.add(resolveComponentPlaceholders(line, viewer, viewerName, targetName));
+                }
+                builder.lore(processedLore);
+            }
+
+            ItemStack customItem = builder.build();
+
             for (int slot : itemDef.slots()) {
-                ItemStack currentItem = inv.getItem(slot);
-
-                boolean isDynamic = isDynamicSlot(def, slot);
-                if (isDynamic && currentItem != null && !currentItem.getType().isAir()) {
-                    continue;
+                if (slot >= inv.getSize()) continue;
+                if (isDynamicSlot(def, slot)) {
+                    ItemStack existing = inv.getItem(slot);
+                    if (existing != null && !existing.getType().isAir()) continue;
                 }
-
-                Component name = null;
-                if (itemDef.displayName() != null) {
-                    String raw = mm.serialize(itemDef.displayName());
-                    raw = raw.replace("%player%", viewer.getName())
-                            .replace("%target%", placeholders.getOrDefault("target", ""));
-                    raw = PlaceholderUtil.apply(viewer, raw);
-                    name = mm.deserialize(raw);
-                }
-
-                List<Component> lore = null;
-                if (itemDef.lore() != null && !itemDef.lore().isEmpty()) {
-                    lore = new ArrayList<>(itemDef.lore().size());
-                    for (Component comp : itemDef.lore()) {
-                        String raw = mm.serialize(comp);
-                        raw = raw.replace("%player%", viewer.getName())
-                                .replace("%target%", placeholders.getOrDefault("target", ""));
-                        raw = PlaceholderUtil.apply(viewer, raw);
-                        lore.add(mm.deserialize(raw));
-                    }
-                }
-
-                String headOwner = itemDef.headOwner();
-                if (headOwner != null && !headOwner.isBlank()) {
-                    headOwner = headOwner.replace("%player%", viewer.getName());
-                    String targetName = placeholders.get("target");
-                    if (targetName != null && !targetName.isBlank()) {
-                        headOwner = headOwner.replace("%target%", targetName);
-                    }
-
-                    headOwner = PlaceholderUtil.apply(viewer, headOwner);
-
-                    if (headOwner.isBlank()) {
-                        headOwner = null;
-                    }
-                }
-
-                ItemStack custom = new ItemComponent(itemDef.material())
-                        .amount(itemDef.amount() != null ? itemDef.amount() : 1)
-                        .name(name)
-                        .lore(lore)
-                        .glow(itemDef.glow())
-                        .itemModel(itemDef.itemModel())
-                        .customModelData(itemDef.customModelData())
-                        .damage(itemDef.damage())
-                        .enchants(itemDef.enchants())
-                        .flags(itemDef.flags() != null ? itemDef.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                        .skullOwner(headOwner)
-                        .hideTooltip(itemDef.hideTooltip())
-                        .tooltipStyle(itemDef.tooltipStyle())
-                        .build();
-
-                inv.setItem(slot, custom);
+                inv.setItem(slot, customItem);
             }
         }
+    }
+
+    private static Component resolveComponentPlaceholders(Component component, Player viewer, String vName, String tName) {
+        if (component == null) return null;
+        String serialized = MM.serialize(component);
+        String resolved = serialized.replace("%player%", vName).replace("%target%", tName);
+        return MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, resolved));
+    }
+
+    private static String resolveStringPlaceholders(String text, Player viewer, String vName, String tName) {
+        if (text == null || text.isEmpty()) return text;
+        String resolved = text.replace("%player%", vName).replace("%target%", tName);
+        return PlaceholderUtil.apply(viewer, resolved);
+    }
+
+    public static ItemStack[] extractContents(Inventory inv, GuiDefinition def) {
+        ItemStack[] contents = new ItemStack[27];
+        GuiDefinition.GuiItem ecGroup = def.items().get("player-enderchest");
+        if (ecGroup == null) return contents;
+
+        List<Integer> slots = ecGroup.slots();
+        for (int i = 0; i < slots.size() && i < contents.length; i++) {
+            int slot = slots.get(i);
+            ItemStack stack = inv.getItem(slot);
+            contents[i] = isCustomFillerAt(def, slot, stack) ? null : stack;
+        }
+        return contents;
     }
 
     public static GuiDefinition.GuiItem findItem(GuiDefinition def, int slot) {
@@ -107,46 +114,25 @@ public final class EnderchestSlotMapper {
         return null;
     }
 
-    public static ItemStack[] extractContents(Inventory inv, GuiDefinition def) {
-        ItemStack[] contents = new ItemStack[27];
-
-        List<Integer> invSlots = def.items().get("player-enderchest").slots();
-        for (int i = 0; i < invSlots.size() && i < contents.length; i++) {
-            ItemStack stack = inv.getItem(invSlots.get(i));
-            contents[i] = isCustomFillerAt(def, invSlots.get(i), stack) ? null : stack;
-        }
-
-        return contents;
-    }
-
     public static boolean isDynamicSlot(GuiDefinition def, int slot) {
-        GuiDefinition.GuiItem inventory = def.items().get("player-enderchest");
-        return inventory != null && inventory.slots().contains(slot);
+        GuiDefinition.GuiItem ecGroup = def.items().get("player-enderchest");
+        return ecGroup != null && ecGroup.slots().contains(slot);
     }
 
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, ItemStack current) {
         if (current == null || current.getType().isAir()) return false;
-
-        if (!isDynamicSlot(def, slot)) return false;
-
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
-            String key = e.getKey();
+            if (e.getKey().startsWith("player-")) continue;
             GuiDefinition.GuiItem gi = e.getValue();
-
-            if (key.startsWith("player-")) continue; // skip dynamic groups
-            if (!gi.slots().contains(slot)) continue;
-
-            if (current.getType() == gi.material()) return true;
+            if (gi.slots().contains(slot) && current.getType() == gi.material()) return true;
         }
         return false;
     }
 
     public static GuiDefinition.GuiItem findCustomItemAt(GuiDefinition def, int slot) {
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
-            String key = e.getKey();
-            GuiDefinition.GuiItem gi = e.getValue();
-            if (key.startsWith("player-")) continue; // skip dynamic groups
-            if (gi.slots().contains(slot)) return gi;
+            if (e.getKey().startsWith("player-")) continue;
+            if (e.getValue().slots().contains(slot)) return e.getValue();
         }
         return null;
     }

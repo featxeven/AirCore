@@ -13,6 +13,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -26,31 +27,22 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
 
     private final AirCore plugin;
     private final ItemAction itemAction;
-    private GuiDefinition definition;
-    private String titleOwn;
     private final MiniMessage mm = MiniMessage.miniMessage();
-
-    private final Set<String> dynamicGroups = Set.of("player-enderchest");
-
+    private final Set<UUID> pendingUpdates = new HashSet<>();
     private final TargetListener targetListener;
     private final ViewerListener viewerListener;
+    private GuiDefinition definition;
+    private String titleOwn;
 
     public EnderchestManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
-
         this.targetListener = new TargetListener(plugin, this);
+        this.viewerListener = new ViewerListener(this);
+
         Bukkit.getPluginManager().registerEvents(targetListener, plugin);
-
-        this.viewerListener = new ViewerListener(plugin, this);
         Bukkit.getPluginManager().registerEvents(viewerListener, plugin);
-
         loadDefinition();
-    }
-
-    public void unregisterListeners() {
-        HandlerList.unregisterAll(targetListener);
-        HandlerList.unregisterAll(viewerListener);
     }
 
     private void loadDefinition() {
@@ -58,105 +50,56 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         if (!file.exists()) plugin.saveResource("guis/invsee/enderchest.yml", false);
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
-
-        String title = cfg.getString("title", "Enderchest");
         this.titleOwn = cfg.getString("title-own", "Ender Chest");
-        int rows = cfg.getInt("rows", 3);
 
         Map<String, GuiDefinition.GuiItem> items = new HashMap<>();
+        Set<String> dynamicGroups = Set.of("player-enderchest");
 
         for (String key : dynamicGroups) {
-            items.put(key, new GuiDefinition.GuiItem(
-                    key,
-                    GuiDefinition.parseSlots(cfg.getStringList(key)),
-                    Material.AIR,
-                    null,
-                    Collections.emptyList(),
-                    false,
-                    null,
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    null,
-                    null,
-                    null,
-                    Collections.emptyMap(),
-                    Collections.emptyList(),
-                    null,
-                    null,
-                    null
-            ));
+            items.put(key, new GuiDefinition.GuiItem(key, GuiDefinition.parseSlots(cfg.getStringList(key)),
+                    Material.AIR, null, Collections.emptyList(), false, null, Collections.emptyList(),
+                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                    null, null, null, Collections.emptyMap(), Collections.emptyList(), null, null, null));
         }
 
-        // Static/custom items
         ConfigurationSection itemsSec = cfg.getConfigurationSection("items");
         if (itemsSec != null) {
             for (String key : itemsSec.getKeys(false)) {
                 ConfigurationSection sec = itemsSec.getConfigurationSection(key);
-                if (sec == null) continue;
-
-                GuiDefinition.GuiItem guiItem = GuiDefinition.GuiItem.fromSection(key, sec, mm);
-                items.put(key, guiItem);
+                if (sec != null) items.put(key, GuiDefinition.GuiItem.fromSection(key, sec, mm));
             }
         }
-
-        this.definition = new GuiDefinition(title, rows, items, cfg);
+        this.definition = new GuiDefinition(cfg.getString("title", "Enderchest"), cfg.getInt("rows", 3), items, cfg);
     }
 
     @Override
     public Inventory build(Player viewer, Map<String, String> placeholders) {
         String targetName = placeholders.get("target");
         Player target = Bukkit.getPlayerExact(targetName);
-        UUID targetUUID = target != null
-                ? target.getUniqueId()
-                : plugin.database().records().uuidFromName(targetName);
+        UUID targetUUID = target != null ? target.getUniqueId() : plugin.database().records().uuidFromName(targetName);
 
-        ItemStack[] enderchestContents;
+        ItemStack[] contents;
         if (target != null) {
-            enderchestContents = target.getEnderChest().getContents();
+            contents = target.getEnderChest().getContents();
         } else {
             PlayerInventories.InventoryBundle bundle = plugin.database().inventories().loadAllInventory(targetUUID);
-            enderchestContents = bundle != null ? bundle.enderChest() : new ItemStack[PlayerInventories.ENDERCHEST_SIZE];
+            contents = bundle != null ? bundle.enderChest() : new ItemStack[27];
         }
 
-        String rawTitle = PlaceholderUtil.apply(
-                viewer,
-                definition.title()
-                        .replace("%player%", viewer.getName())
-                        .replace("%target%", targetName)
-        );
+        String title = PlaceholderUtil.apply(viewer, definition.title().replace("%player%", viewer.getName()).replace("%target%", targetName));
+        Inventory inv = Bukkit.createInventory(new EnderchestHolder(targetUUID, targetName), definition.rows() * 9, mm.deserialize(title));
 
-        Inventory inv = Bukkit.createInventory(
-                new EnderchestHolder(targetUUID, targetName),
-                definition.rows() * 9,
-                mm.deserialize(rawTitle)
-        );
-
-        EnderchestSlotMapper.fill(inv, definition, enderchestContents);
+        EnderchestSlotMapper.fill(inv, definition, contents);
         EnderchestSlotMapper.fillCustom(inv, definition, viewer, placeholders, this);
-
         targetListener.registerViewer(targetUUID, viewer);
         return inv;
     }
 
     public Inventory buildOwn(Player viewer) {
-        ItemStack[] enderchestContents = viewer.getEnderChest().getContents();
-
-        String rawTitle = PlaceholderUtil.apply(viewer, titleOwn);
-
-        Inventory inv = Bukkit.createInventory(
-                new EnderchestHolder(viewer.getUniqueId(), viewer.getName()),
-                27,
-                mm.deserialize(rawTitle)
-        );
-
-        for (int i = 0; i < enderchestContents.length && i < 27; i++) {
-            ItemStack item = enderchestContents[i];
-            if (item != null) inv.setItem(i, item);
-        }
-
+        ItemStack[] contents = viewer.getEnderChest().getContents();
+        String title = PlaceholderUtil.apply(viewer, titleOwn);
+        Inventory inv = Bukkit.createInventory(new EnderchestHolder(viewer.getUniqueId(), viewer.getName()), 27, mm.deserialize(title));
+        inv.setContents(contents);
         targetListener.registerViewer(viewer.getUniqueId(), viewer);
         return inv;
     }
@@ -164,233 +107,114 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
     @Override
     public void handleClick(InventoryClickEvent event, Player viewer) {
         Inventory top = event.getView().getTopInventory();
-        Inventory bottom = event.getView().getBottomInventory();
         Inventory clicked = event.getClickedInventory();
+        if (clicked == null || !(top.getHolder() instanceof EnderchestHolder holder)) return;
 
         int slot = event.getSlot();
         ItemStack current = event.getCurrentItem();
         ItemStack cursor = event.getCursor();
+        boolean hasModifyPerm = viewer.hasPermission("aircore.command.enderchest.others.modify")
+                || holder.targetUUID().equals(viewer.getUniqueId());
 
-        boolean hasModifyPermission = viewer.hasPermission("aircore.command.enderchest.others.modify");
-
-        // Block shift-click from bottom to top if no permission
-        if (event.isShiftClick() && clicked == bottom) {
-            if (!hasModifyPermission) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (current == null || current.getType().isAir()) {
-                event.setCancelled(true);
-                return;
-            }
-
-            event.setCancelled(true);
-            distributeToSlots(definition, top, current, clicked, event.getSlot());
-            syncAndRefresh(top, viewer);
-            return;
-        }
-
-        if (clicked != top) return;
-
-        boolean dynamic = EnderchestSlotMapper.isDynamicSlot(definition, slot);
-        boolean isFillerHere = EnderchestSlotMapper.isCustomFillerAt(definition, slot, current);
-        boolean registered = EnderchestSlotMapper.findItem(definition, slot) != null;
-
-        if (!registered) {
-            event.setCancelled(true);
-            return;
-        }
-
-        // If player doesn't have modify permission, only allow actions on fillers/items
-        if (!hasModifyPermission) {
-            if (dynamic) {
-                if (isFillerHere && cursor.getType().isAir()) {
+        if (clicked == event.getView().getBottomInventory()) {
+            if (event.isShiftClick()) {
+                if (!hasModifyPerm || current == null || current.getType().isAir()) {
                     event.setCancelled(true);
-
-                    InventoryHolder holder = top.getHolder();
-                    if (holder instanceof EnderchestHolder eh) {
-                        GuiDefinition.GuiItem custom = EnderchestSlotMapper.findCustomItemAt(definition, slot);
-                        if (custom != null) {
-                            List<String> actionsToExecute = custom.getActionsForClick(event.getClick());
-                            if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
-                                itemAction.executeAll(
-                                        actionsToExecute,
-                                        viewer,
-                                        Map.of(
-                                                "player", viewer.getName(),
-                                                "target", eh.targetName()
-                                        )
-                                );
-                            }
-                        }
-                    }
                     return;
                 }
-            } else {
                 event.setCancelled(true);
-
-                InventoryHolder holder = top.getHolder();
-                if (!(holder instanceof EnderchestHolder eh)) return;
-
-                GuiDefinition.GuiItem item = EnderchestSlotMapper.findItem(definition, slot);
-                if (item == null) return;
-
-                List<String> actionsToExecute = item.getActionsForClick(event.getClick());
-                if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
-                    itemAction.executeAll(
-                            actionsToExecute,
-                            viewer,
-                            Map.of(
-                                    "player", viewer.getName(),
-                                    "target", eh.targetName()
-                            )
-                    );
-                }
-                return;
+                distributeToSlots(definition, top, current, clicked, slot);
+                syncAndRefresh(top, viewer);
             }
+            return;
+        }
 
+        boolean dynamic = EnderchestSlotMapper.isDynamicSlot(definition, slot);
+        boolean isFiller = EnderchestSlotMapper.isCustomFillerAt(definition, slot, current);
+        GuiDefinition.GuiItem item = EnderchestSlotMapper.findItem(definition, slot);
+
+        if (item == null) {
             event.setCancelled(true);
             return;
         }
 
-        // Player has modify permission
+        if (!hasModifyPerm || (dynamic && isFiller && cursor.getType().isAir())) {
+            event.setCancelled(true);
+            handleAction(viewer, holder, isFiller ? EnderchestSlotMapper.findCustomItemAt(definition, slot) : item, event.getClick());
+            return;
+        }
 
-        // Dynamic slot behavior
         if (dynamic) {
-            if (isFillerHere && cursor.getType().isAir()) {
-                event.setCancelled(true);
-
-                InventoryHolder holder = top.getHolder();
-                if (holder instanceof EnderchestHolder eh) {
-                    GuiDefinition.GuiItem custom = EnderchestSlotMapper.findCustomItemAt(definition, slot);
-                    if (custom != null) {
-                        List<String> actionsToExecute = custom.getActionsForClick(event.getClick());
-                        if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
-                            itemAction.executeAll(
-                                    actionsToExecute,
-                                    viewer,
-                                    Map.of(
-                                            "player", viewer.getName(),
-                                            "target", eh.targetName()
-                                    )
-                            );
-                        }
-                    }
-                }
-                return;
-            }
-
-            if (isFillerHere && !cursor.getType().isAir()) {
+            if (isFiller && !cursor.getType().isAir()) {
                 event.setCancelled(true);
                 top.setItem(slot, cursor.clone());
                 viewer.setItemOnCursor(null);
                 syncAndRefresh(top, viewer);
-                return;
-            }
-
-            event.setCancelled(false);
-            plugin.scheduler().runEntityTask(viewer, () -> {
-                refreshFillers(top, viewer);
+            } else {
+                event.setCancelled(false);
                 syncAndRefresh(top, viewer);
-            });
-            return;
+            }
+        } else {
+            event.setCancelled(true);
+            handleAction(viewer, holder, item, event.getClick());
         }
+    }
 
-        // Static/custom item slots
-        event.setCancelled(true);
-
-        InventoryHolder holder = top.getHolder();
-        if (!(holder instanceof EnderchestHolder eh)) return;
-
-        GuiDefinition.GuiItem item = EnderchestSlotMapper.findItem(definition, slot);
+    private void handleAction(Player viewer, EnderchestHolder ih, GuiDefinition.GuiItem item, ClickType click) {
         if (item == null) return;
-
-        List<String> actionsToExecute = item.getActionsForClick(event.getClick());
-        if (actionsToExecute != null && !actionsToExecute.isEmpty()) {
-            itemAction.executeAll(
-                    actionsToExecute,
-                    viewer,
-                    Map.of(
-                            "player", viewer.getName(),
-                            "target", eh.targetName()
-                    )
-            );
+        List<String> actions = item.getActionsForClick(click);
+        if (actions != null && !actions.isEmpty()) {
+            itemAction.executeAll(actions, viewer, Map.of("player", viewer.getName(), "target", ih.targetName()));
         }
+    }
+
+    public void syncAndRefresh(Inventory top, Player viewer) {
+        if (!(top.getHolder() instanceof EnderchestHolder eh)) return;
+        if (!pendingUpdates.add(viewer.getUniqueId())) return;
+
+        plugin.scheduler().runEntityTaskDelayed(viewer, () -> {
+            try {
+                refreshFillers(top, viewer);
+                ItemStack[] contents = EnderchestSlotMapper.extractContents(top, definition);
+                applyEnderchestToTarget(eh.targetUUID(), contents);
+                targetListener.refreshViewers(eh.targetUUID(), contents);
+            } finally {
+                pendingUpdates.remove(viewer.getUniqueId());
+            }
+        }, 1L);
+    }
+
+    public void refreshFillers(Inventory top, Player viewer) {
+        if (!(top.getHolder() instanceof EnderchestHolder eh) || top.getSize() == 27) return;
+        EnderchestSlotMapper.fillCustom(top, definition, viewer, Map.of("player", viewer.getName(), "target", eh.targetName()), this);
     }
 
     void applyEnderchestToTarget(UUID targetUUID, ItemStack[] contents) {
         Player target = Bukkit.getPlayer(targetUUID);
-
         if (target == null || !target.isOnline()) {
             plugin.database().inventories().saveEnderchest(targetUUID, contents);
             return;
         }
-
         var ec = target.getEnderChest();
-        boolean changed = false;
-
-        ItemStack[] currentContents = ec.getContents();
-        for (int i = 0; i < contents.length && i < currentContents.length; i++) {
-            ItemStack current = currentContents[i];
-            ItemStack next = contents[i];
-
-            if (!itemsEqual(current, next)) {
-                ec.setItem(i, next);
-                changed = true;
-            }
-        }
-
-        if (changed) {
+        if (!Arrays.equals(ec.getContents(), contents)) {
+            ec.setContents(contents);
             target.updateInventory();
         }
     }
 
-    private static boolean itemsEqual(ItemStack a, ItemStack b) {
-        if (a == b) return true;
-        if (a == null || b == null) return false;
-        return a.isSimilar(b) && a.getAmount() == b.getAmount();
-    }
-
-    private void syncAndRefresh(Inventory top, Player viewer) {
-        plugin.scheduler().runEntityTask(viewer, () -> {
-            InventoryHolder holder = top.getHolder();
-            if (!(holder instanceof EnderchestHolder eh)) return;
-
-            refreshFillers(top, viewer);
-
-            ItemStack[] contents = EnderchestSlotMapper.extractContents(top, definition);
-
-            applyEnderchestToTarget(eh.targetUUID(), contents);
-
-            targetListener.refreshViewers(eh.targetUUID(), contents);
-        });
-    }
-
-    private void distributeToSlots(GuiDefinition def, Inventory top, ItemStack moving,
-                                   Inventory sourceInv, int sourceSlot) {
-        if (moving == null || moving.getType().isAir()) return;
-
+    private void distributeToSlots(GuiDefinition def, Inventory top, ItemStack moving, Inventory sourceInv, int sourceSlot) {
         List<Integer> slots = def.items().get("player-enderchest").slots();
-
-        // Merge into partial stacks first
         for (int dest : slots) {
-            ItemStack destItem = top.getItem(dest);
-            if (destItem != null && destItem.isSimilar(moving) && destItem.getAmount() < destItem.getMaxStackSize()) {
-                int transfer = Math.min(moving.getAmount(), destItem.getMaxStackSize() - destItem.getAmount());
-                destItem.setAmount(destItem.getAmount() + transfer);
-                moving.setAmount(moving.getAmount() - transfer);
-                if (moving.getAmount() <= 0) {
-                    sourceInv.setItem(sourceSlot, null);
-                    return;
-                }
+            ItemStack target = top.getItem(dest);
+            if (target != null && target.isSimilar(moving)) {
+                int transfer = Math.min(moving.getAmount(), target.getMaxStackSize() - target.getAmount());
+                if (transfer > 0) { target.setAmount(target.getAmount() + transfer); moving.setAmount(moving.getAmount() - transfer); }
             }
+            if (moving.getAmount() <= 0) { sourceInv.setItem(sourceSlot, null); return; }
         }
-
-        // Then fill empty slots
         for (int dest : slots) {
-            ItemStack destItem = top.getItem(dest);
-            if (destItem == null || destItem.getType().isAir()) {
+            ItemStack target = top.getItem(dest);
+            if (target == null || target.getType().isAir() || EnderchestSlotMapper.isCustomFillerAt(def, dest, target)) {
                 top.setItem(dest, moving.clone());
                 sourceInv.setItem(sourceSlot, null);
                 return;
@@ -398,45 +222,12 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         }
     }
 
-    public void refreshFillers(Inventory top, Player viewer) {
-        InventoryHolder holder = top.getHolder();
-        if (!(holder instanceof EnderchestHolder eh)) {
-            return;
-        }
-
-        if (top.getSize() == 27) {
-            return;
-        }
-
-        EnderchestSlotMapper.fillCustom(
-                top,
-                definition,
-                viewer,
-                Map.of(
-                        "player", viewer.getName(),
-                        "target", eh.targetName()
-                ),
-                this
-        );
-    }
-
-    @Override
-    public boolean owns(Inventory inv) {
-        return inv.getHolder() instanceof EnderchestHolder;
-    }
-
-    public boolean isDynamicGroup(String key) {
-        return dynamicGroups.contains(key);
-    }
-
-    public GuiDefinition definition() {
-        return definition;
-    }
+    public void unregisterListeners() { HandlerList.unregisterAll(targetListener); HandlerList.unregisterAll(viewerListener); }
+    @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof EnderchestHolder; }
+    public boolean isDynamicGroup(String key) { return "player-enderchest".equals(key); }
+    public GuiDefinition definition() { return definition; }
 
     public record EnderchestHolder(UUID targetUUID, String targetName) implements InventoryHolder {
-        @Override
-        public @NotNull Inventory getInventory() {
-            throw new UnsupportedOperationException();
-        }
+        @Override public @NotNull Inventory getInventory() { throw new UnsupportedOperationException(); }
     }
 }

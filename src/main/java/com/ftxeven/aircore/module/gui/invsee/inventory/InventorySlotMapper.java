@@ -12,207 +12,165 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public final class InventorySlotMapper {
+    private static final MiniMessage MM = MiniMessage.miniMessage();
+
     private InventorySlotMapper() {}
 
     public static void fill(Inventory inv, GuiDefinition def, PlayerInventories.InventoryBundle bundle) {
-        // Hotbar
-        List<Integer> hotbarSlots = def.items().get("player-hotbar").slots();
-        for (int i = 0; i < bundle.contents().length && i < hotbarSlots.size(); i++) {
-            ItemStack item = bundle.contents()[i];
-            if (item != null) inv.setItem(hotbarSlots.get(i), item);
-        }
-
+        // Hotbar (0-8)
+        mapToSlots(inv, def.items().get("player-hotbar").slots(), bundle.contents(), 0);
+        // Inventory (9-35)
+        mapToSlots(inv, def.items().get("player-inventory").slots(), bundle.contents(), 9);
         // Armor
-        List<Integer> armorSlots = def.items().get("player-armor").slots();
-        ItemStack[] armor = bundle.armor();
-        for (int i = 0; i < armor.length && i < armorSlots.size(); i++) {
-            if (armor[i] != null) inv.setItem(armorSlots.get(i), armor[i]);
-        }
-
+        mapToSlots(inv, def.items().get("player-armor").slots(), bundle.armor(), 0);
         // Offhand
         List<Integer> offhandSlots = def.items().get("player-offhand").slots();
         if (bundle.offhand() != null && !offhandSlots.isEmpty()) {
             inv.setItem(offhandSlots.getFirst(), bundle.offhand());
         }
+    }
 
-        // Contents (main inventory)
-        List<Integer> invSlots = def.items().get("player-inventory").slots();
-        for (int i = 9; i < bundle.contents().length && i - 9 < invSlots.size(); i++) {
-            ItemStack item = bundle.contents()[i];
-            if (item != null) inv.setItem(invSlots.get(i - 9), item);
+    private static void mapToSlots(Inventory inv, List<Integer> slots, ItemStack[] source, int sourceOffset) {
+        for (int i = 0; i < slots.size() && (i + sourceOffset) < source.length; i++) {
+            ItemStack item = source[i + sourceOffset];
+            if (item != null) inv.setItem(slots.get(i), item);
         }
     }
 
-    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String,String> placeholders, InventoryManager manager) {
-        MiniMessage mm = MiniMessage.miniMessage();
+    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> placeholders, InventoryManager manager) {
+        String viewerName = viewer.getName();
+        String targetName = placeholders.getOrDefault("target", "");
 
         for (Map.Entry<String, GuiDefinition.GuiItem> entry : def.items().entrySet()) {
             String key = entry.getKey();
-            GuiDefinition.GuiItem itemDef = entry.getValue();
-
             if (manager.isDynamicGroup(key)) continue;
 
-            for (int slot : itemDef.slots()) {
-                ItemStack currentItem = inv.getItem(slot);
+            GuiDefinition.GuiItem itemDef = entry.getValue();
+            ItemStack customItem = buildCustomItem(def, key, itemDef, viewer, viewerName, targetName, placeholders);
 
-                boolean isDynamic = isDynamicSlot(def, slot);
-                if (isDynamic && currentItem != null && !currentItem.getType().isAir()) {
+            for (int slot : itemDef.slots()) {
+                if (slot >= inv.getSize()) continue;
+                ItemStack current = inv.getItem(slot);
+
+                // Don't overwrite dynamic items (actual player items) with fillers
+                if (isDynamicSlot(def, slot) && current != null && !current.getType().isAir()) {
                     continue;
                 }
-
-                Material resolvedMaterial = resolveMaterial(def, key, viewer, placeholders);
-
-                String headOwner = itemDef.headOwner();
-                if (headOwner != null && !headOwner.isBlank()) {
-                    headOwner = headOwner.replace("%player%", viewer.getName());
-                    String targetName = placeholders.get("target");
-                    if (targetName != null && !targetName.isBlank()) {
-                        headOwner = headOwner.replace("%target%", targetName);
-                    }
-                    headOwner = PlaceholderUtil.apply(viewer, headOwner);
-                    if (headOwner.isBlank()) {
-                        headOwner = null;
-                    }
-                }
-
-                Component name = null;
-                if (itemDef.displayName() != null) {
-                    String raw = mm.serialize(itemDef.displayName());
-                    raw = raw.replace("%player%", viewer.getName())
-                            .replace("%target%", placeholders.getOrDefault("target", ""));
-                    raw = PlaceholderUtil.apply(viewer, raw);
-                    name = mm.deserialize(raw);
-                }
-
-                List<Component> lore = null;
-                if (itemDef.lore() != null && !itemDef.lore().isEmpty()) {
-                    lore = new ArrayList<>(itemDef.lore().size());
-                    for (Component comp : itemDef.lore()) {
-                        String raw = mm.serialize(comp);
-                        raw = raw.replace("%player%", viewer.getName())
-                                .replace("%target%", placeholders.getOrDefault("target", ""));
-                        raw = PlaceholderUtil.apply(viewer, raw);
-                        lore.add(mm.deserialize(raw));
-                    }
-                }
-
-                ItemStack custom = new ItemComponent(resolvedMaterial)
-                        .amount(itemDef.amount() != null ? itemDef.amount() : 1)
-                        .name(name)
-                        .lore(lore)
-                        .glow(itemDef.glow())
-                        .itemModel(itemDef.itemModel())
-                        .customModelData(itemDef.customModelData())
-                        .damage(itemDef.damage())
-                        .enchants(itemDef.enchants())
-                        .flags(itemDef.flags() != null ? itemDef.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
-                        .skullOwner(headOwner)
-                        .hideTooltip(itemDef.hideTooltip())
-                        .tooltipStyle(itemDef.tooltipStyle())
-                        .build();
-
-                inv.setItem(slot, custom);
+                inv.setItem(slot, customItem.clone());
             }
         }
     }
 
-    private static Material resolveMaterial(GuiDefinition def, String itemKey, Player viewer, Map<String,String> placeholders) {
-        String materialStr = def.config().getString("items." + itemKey + ".material", "");
+    private static ItemStack buildCustomItem(GuiDefinition def, String key, GuiDefinition.GuiItem itemDef, Player viewer, String vName, String tName, Map<String, String> ph) {
+        Material material = resolveMaterial(def, key, viewer, ph);
 
-        if (materialStr.startsWith("head-")) {
-            String playerPart = materialStr.substring(5);
-            playerPart = playerPart.replace("%player%", viewer.getName());
-            playerPart = playerPart.replace("%target%", placeholders.getOrDefault("target", ""));
-
-            if (!playerPart.isEmpty() && !playerPart.isBlank() && !playerPart.contains("%")) {
-                return Material.PLAYER_HEAD;
-            }
+        // Handle Head Owner
+        String headOwner = itemDef.headOwner();
+        if (headOwner != null && !headOwner.isBlank()) {
+            headOwner = PlaceholderUtil.apply(viewer, headOwner.replace("%player%", vName).replace("%target%", tName));
         }
 
+        // Handle Name
+        Component name = null;
+        String rawName = def.config().getString("items." + key + ".display-name");
+        if (rawName != null) {
+            name = MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, rawName.replace("%player%", vName).replace("%target%", tName)));
+        }
+
+        // Handle Lore
+        List<String> rawLore = def.config().getStringList("items." + key + ".lore");
+        List<Component> lore = rawLore.isEmpty() ? null : rawLore.stream()
+                .map(line -> MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, line.replace("%player%", vName).replace("%target%", tName))))
+                .toList();
+
+        return new ItemComponent(material)
+                .amount(Objects.requireNonNullElse(itemDef.amount(), 1))
+                .name(name)
+                .lore(lore)
+                .glow(itemDef.glow())
+                .itemModel(itemDef.itemModel())
+                .customModelData(itemDef.customModelData())
+                .damage(itemDef.damage())
+                .enchants(itemDef.enchants())
+                .flags(itemDef.flags() != null ? itemDef.flags().toArray(new ItemFlag[0]) : new ItemFlag[0])
+                .skullOwner(headOwner)
+                .hideTooltip(itemDef.hideTooltip())
+                .tooltipStyle(itemDef.tooltipStyle())
+                .build();
+    }
+
+    private static Material resolveMaterial(GuiDefinition def, String itemKey, Player viewer, Map<String, String> ph) {
+        String matStr = def.config().getString("items." + itemKey + ".material", "");
+        if (matStr.startsWith("head-")) {
+            String part = matStr.substring(5).replace("%player%", viewer.getName()).replace("%target%", ph.getOrDefault("target", ""));
+            if (!part.isBlank() && !part.contains("%")) return Material.PLAYER_HEAD;
+        }
         return def.items().get(itemKey) != null ? def.items().get(itemKey).material() : Material.STONE;
     }
 
-    public static GuiDefinition.GuiItem findItem(GuiDefinition def, int slot) {
-        for (GuiDefinition.GuiItem item : def.items().values()) {
-            if (item.slots().contains(slot)) return item;
+    public static PlayerInventories.InventoryBundle extractBundle(Inventory inv, GuiDefinition def) {
+        ItemStack[] contents = new ItemStack[36];
+        ItemStack[] armor = new ItemStack[4];
+        ItemStack offhand = null;
+
+        // Extract Hotbar (0-8)
+        extractToBuffer(inv, def.items().get("player-hotbar").slots(), contents, 0, def);
+        // Extract Inventory (9-35)
+        extractToBuffer(inv, def.items().get("player-inventory").slots(), contents, 9, def);
+        // Extract Armor
+        extractToBuffer(inv, def.items().get("player-armor").slots(), armor, 0, def);
+
+        // Extract Offhand
+        List<Integer> ohSlots = def.items().get("player-offhand").slots();
+        if (!ohSlots.isEmpty()) {
+            ItemStack stack = inv.getItem(ohSlots.getFirst());
+            if (!isCustomFillerAt(def, ohSlots.getFirst(), stack)) offhand = stack;
         }
-        return null;
+
+        return new PlayerInventories.InventoryBundle(contents, armor, offhand, new ItemStack[27]);
     }
 
-    public static PlayerInventories.InventoryBundle extractBundle(Inventory inv, GuiDefinition def) {
-        ItemStack[] contents = new ItemStack[PlayerInventories.CONTENTS_SIZE];
-        List<Integer> hotbarSlots = def.items().get("player-hotbar").slots();
-        for (int i = 0; i < hotbarSlots.size() && i < contents.length; i++) {
-            ItemStack stack = inv.getItem(hotbarSlots.get(i));
-            contents[i] = isCustomFillerAt(def, hotbarSlots.get(i), stack) ? null : stack;
+    private static void extractToBuffer(Inventory inv, List<Integer> slots, ItemStack[] buffer, int offset, GuiDefinition def) {
+        for (int i = 0; i < slots.size() && (i + offset) < buffer.length; i++) {
+            int slot = slots.get(i);
+            ItemStack stack = inv.getItem(slot);
+            buffer[i + offset] = isCustomFillerAt(def, slot, stack) ? null : stack;
         }
-
-        List<Integer> invSlots = def.items().get("player-inventory").slots();
-        for (int i = 0; i < invSlots.size() && i + 9 < contents.length; i++) {
-            ItemStack stack = inv.getItem(invSlots.get(i));
-            contents[i + 9] = isCustomFillerAt(def, invSlots.get(i), stack) ? null : stack;
-        }
-
-        ItemStack[] armor = new ItemStack[PlayerInventories.ARMOR_SIZE];
-        List<Integer> armorSlots = def.items().get("player-armor").slots();
-        for (int i = 0; i < armorSlots.size() && i < armor.length; i++) {
-            ItemStack stack = inv.getItem(armorSlots.get(i));
-            armor[i] = isCustomFillerAt(def, armorSlots.get(i), stack) ? null : stack;
-        }
-
-        ItemStack offhand = null;
-        List<Integer> offhandSlots = def.items().get("player-offhand").slots();
-        if (!offhandSlots.isEmpty()) {
-            ItemStack stack = inv.getItem(offhandSlots.getFirst());
-            if (!isCustomFillerAt(def, offhandSlots.getFirst(), stack)) {
-                offhand = stack;
-            }
-        }
-
-        return new PlayerInventories.InventoryBundle(contents, armor, offhand,
-                new ItemStack[PlayerInventories.ENDERCHEST_SIZE]);
     }
 
     public static boolean isDynamicSlot(GuiDefinition def, int slot) {
-        GuiDefinition.GuiItem hotbar = def.items().get("player-hotbar");
-        GuiDefinition.GuiItem contents = def.items().get("player-inventory");
-        GuiDefinition.GuiItem armor = def.items().get("player-armor");
-        GuiDefinition.GuiItem offhand = def.items().get("player-offhand");
-
-        return (hotbar != null && hotbar.slots().contains(slot))
-                || (contents != null && contents.slots().contains(slot))
-                || (armor != null && armor.slots().contains(slot))
-                || (offhand != null && offhand.slots().contains(slot));
+        String[] groups = {"player-hotbar", "player-inventory", "player-armor", "player-offhand"};
+        for (String g : groups) {
+            GuiDefinition.GuiItem item = def.items().get(g);
+            if (item != null && item.slots().contains(slot)) return true;
+        }
+        return false;
     }
 
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, ItemStack current) {
-        if (current == null || current.getType().isAir()) return false;
-
-        if (!isDynamicSlot(def, slot)) return false;
-
+        if (current == null || current.getType().isAir() || !isDynamicSlot(def, slot)) return false;
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
-            String key = e.getKey();
-            GuiDefinition.GuiItem gi = e.getValue();
-
-            if (key.startsWith("player-")) continue; // skip dynamic groups
-            if (!gi.slots().contains(slot)) continue;
-
-            if (current.getType() == gi.material()) return true;
+            if (e.getKey().startsWith("player-")) continue;
+            if (e.getValue().slots().contains(slot) && current.getType() == e.getValue().material()) return true;
         }
         return false;
     }
 
     public static GuiDefinition.GuiItem findCustomItemAt(GuiDefinition def, int slot) {
         for (Map.Entry<String, GuiDefinition.GuiItem> e : def.items().entrySet()) {
-            String key = e.getKey();
-            GuiDefinition.GuiItem gi = e.getValue();
-            if (key.startsWith("player-")) continue; // skip dynamic groups
-            if (gi.slots().contains(slot)) return gi;
+            if (!e.getKey().startsWith("player-") && e.getValue().slots().contains(slot)) return e.getValue();
+        }
+        return null;
+    }
+
+    public static GuiDefinition.GuiItem findItem(GuiDefinition def, int slot) {
+        for (GuiDefinition.GuiItem item : def.items().values()) {
+            if (item.slots().contains(slot)) return item;
         }
         return null;
     }
