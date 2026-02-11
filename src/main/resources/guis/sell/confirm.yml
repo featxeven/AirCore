@@ -1,0 +1,22 @@
+# GUI title and size
+title: "Confirm for $%total%"
+rows: 3
+
+# GUI buttons
+# Special items with fixed actions in the GUI.
+# You can customize their appearance (glow, enchants, tooltips, actions, etc.).
+buttons:
+  confirm:
+    slots: [11]
+    material: GREEN_STAINED_GLASS_PANE
+    display-name: "<green>Confirm</green>"
+    lore:
+      - "<gray>Total worth: $%total%</gray>"
+
+  cancel:
+    slots: [15]
+    material: RED_STAINED_GLASS_PANE
+    display-name: "<red>Cancel</red>"
+
+# Custom items
+items: []
