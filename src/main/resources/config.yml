@@ -12,7 +12,7 @@ console-to-player-feedback: true   # Send feedback to players when console runs 
 # Time formatting used across the plugin and in placeholders
 time-format:
   # Modes: DETAILED | SEQUENTIAL | CUSTOM
-  # DETAILED   - show all relevant units ("2 days 3 hours 4 minutes")
+  # DETAILED   - show all relevant units ("2 days 3 hours 4 minutes 20 seconds")
   # SEQUENTIAL - show one unit at a time (used for progressive messages)
   # CUSTOM     - show up to 'granularity' units (useful for short displays)
   mode: DETAILED
@@ -139,10 +139,10 @@ economy:
 
   # Balance / transaction limits
   default-balance: 500
-  min-balance: 0
-  max-balance: 1000000000
-  min-pay-amount: 3
-  max-pay-amount: 1000000
+  min-balance: 0                # -1 to disable limit
+  max-balance: 1000000000       # -1 to disable limit
+  min-pay-amount: 3             # -1 to disable limit
+  max-pay-amount: 1000000       # -1 to disable limit
 
 # -----------------------------
 # TELEPORT
@@ -180,7 +180,7 @@ homes:
   disabled-worlds:
     - "disabledworld" # Worlds where /sethome is disabled
 
-  # If true, players must name their homes.
+  # If true, players must name their homes
   allow-home-names: true
   name-validation-regex: "^[A-Za-z0-9]+$"  # Regex used to validate home names
   max-home-name-length: 16

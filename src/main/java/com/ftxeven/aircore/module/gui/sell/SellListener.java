@@ -53,6 +53,8 @@ public final class SellListener implements Listener {
         if (!(e.getInventory().getHolder() instanceof SellManager.SellHolder)) return;
 
         Player player = (Player) e.getPlayer();
+        if (manager.isTransitioning(player.getUniqueId())) return;
+
         Inventory inv = e.getInventory();
         var sellSlots = manager.definition().items().get("sell-slots").slots();
 
@@ -61,14 +63,28 @@ public final class SellListener implements Listener {
             return;
         }
 
-        boolean sellOnClose = manager.definition().getBoolean("sell-on-inventory-close", false);
+        boolean sellOnClose = manager.definition().config().getBoolean("sell-on-inventory-close", false);
         if (sellOnClose) {
             SellSlotMapper.WorthResult result = SellSlotMapper.calculateWorth(inv, plugin.economy().worth(), manager.definition());
-            double total = result.total();
 
-            if (result.hasUnsupported() || total <= 0) {
-                if (total <= 0) MessageUtil.send(player, "cannot-sell-air", Map.of());
-                else MessageUtil.send(player, "sell-failed", Map.of());
+            if (result.hasUnsupported()) {
+                MessageUtil.send(player, "economy.sell.error-failed", Map.of());
+                returnItemsToPlayer(player, inv, sellSlots);
+                return;
+            }
+
+            double total = result.total();
+            if (total <= 0) {
+                boolean hasItems = false;
+                for (int slot : sellSlots) {
+                    ItemStack item = inv.getItem(slot);
+                    if (item != null && !item.getType().isAir()) {
+                        hasItems = true;
+                        break;
+                    }
+                }
+                if (hasItems) MessageUtil.send(player, "economy.sell.error-invalid", Map.of());
+
                 returnItemsToPlayer(player, inv, sellSlots);
                 return;
             }
@@ -76,14 +92,18 @@ public final class SellListener implements Listener {
             double toDeposit = plugin.economy().formats().round(total);
             String formatted = plugin.economy().formats().formatAmount(toDeposit);
 
-            manager.executeConfirmActions(player, formatted);
             var econResult = plugin.economy().transactions().deposit(player.getUniqueId(), toDeposit);
 
             if (econResult.type() == EconomyManager.ResultType.SUCCESS) {
-                MessageUtil.send(player, "sell-success", Map.of("amount", formatted));
+                MessageUtil.send(player, "economy.sell.success", Map.of("amount", formatted));
+
+                if (manager.definition().config().getBoolean("sell-logs-on-console", false)) {
+                    plugin.getLogger().info(player.getName() + " sold items for $" + formatted);
+                }
+
                 for (int slot : sellSlots) if (slot < inv.getSize()) inv.setItem(slot, null);
             } else {
-                MessageUtil.send(player, "sell-failed", Map.of());
+                MessageUtil.send(player, "economy.sell.error-failed", Map.of());
                 returnItemsToPlayer(player, inv, sellSlots);
             }
         } else {
@@ -128,7 +148,7 @@ public final class SellListener implements Listener {
         debounceRefresh(viewer, top);
     }
 
-    private void returnItemsToPlayer(Player player, Inventory inv, List<Integer> sellSlots) {
+    public void returnItemsToPlayer(Player player, Inventory inv, List<Integer> sellSlots) {
         for (int slot : sellSlots) {
             if (slot >= inv.getSize()) continue;
             ItemStack item = inv.getItem(slot);

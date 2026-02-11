@@ -829,6 +829,7 @@ crimson_stem: 1
 warped_stem: 1
 bamboo_block: 1
 creaking_heart: 6
+mangrove_roots: 0.8
 
 # Leaves & Foliage
 oak_leaves: 0.2

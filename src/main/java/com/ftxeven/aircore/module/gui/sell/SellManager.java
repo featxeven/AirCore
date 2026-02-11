@@ -21,7 +21,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
@@ -38,22 +37,25 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     private int[] cachedSellSlots;
     private int[] cachedConfirmSlots;
     private final SellListener listener;
+    private final ConfirmManager confirmManager;
     private final Set<UUID> processedSales = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> transitioning = ConcurrentHashMap.newKeySet();
 
     public SellManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
         loadDefinition();
 
+        this.confirmManager = new ConfirmManager(plugin, this);
         this.listener = new SellListener(plugin, this);
         Bukkit.getPluginManager().registerEvents(this.listener, plugin);
     }
 
     public boolean isEnabled() { return enabled; }
 
-    private void loadDefinition() {
-        File file = new File(plugin.getDataFolder(), "guis/sell.yml");
-        if (!file.exists()) plugin.saveResource("guis/sell.yml", false);
+    public void loadDefinition() {
+        File file = new File(plugin.getDataFolder(), "guis/sell/sell.yml");
+        if (!file.exists()) plugin.saveResource("guis/sell/sell.yml", false);
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         this.enabled = cfg.getBoolean("enabled", true);
@@ -97,6 +99,8 @@ public final class SellManager implements GuiManager.CustomGuiManager {
             }
         }
         this.definition = new GuiDefinition(title, rows, items, cfg);
+
+        if (confirmManager != null) confirmManager.loadDefinition();
     }
 
     @Override
@@ -138,48 +142,57 @@ public final class SellManager implements GuiManager.CustomGuiManager {
 
         if (clicked != top) return;
 
-        boolean dynamic = isDynamicSlot(slot);
-        boolean isFillerHere = isCustomFillerAt(slot, current);
-        GuiDefinition.GuiItem registeredItem = findItem(slot);
-        boolean registered = registeredItem != null;
         boolean inConfirm = isInConfirmSlots(slot);
         boolean inConfirmAll = definition.items().containsKey("confirm-all") &&
                 definition.items().get("confirm-all").slots().contains(slot);
 
-        if (!registered && !inConfirm && !inConfirmAll) {
-            event.setCancelled(true);
-            return;
-        }
-
+        SellSlotMapper.WorthResult result = null;
         if (inConfirm) {
-            event.setCancelled(true);
-            SellSlotMapper.WorthResult result = SellSlotMapper.calculateWorth(top, plugin.economy().worth(), definition);
-            processSale(viewer, top, result, false, event.getClick());
-            return;
+            result = SellSlotMapper.calculateWorth(top, plugin.economy().worth(), definition);
+        } else if (inConfirmAll) {
+            result = SellSlotMapper.calculateWorthAll(top, plugin.economy().worth(), definition, viewer);
         }
 
-        if (inConfirmAll) {
-            event.setCancelled(true);
-            SellSlotMapper.WorthResult result = SellSlotMapper.calculateWorthAll(top, plugin.economy().worth(), definition, viewer);
-            processSale(viewer, top, result, true, event.getClick());
-            return;
-        }
+        boolean isAlwaysShow = definition.config().getBoolean("always-show-buttons", true);
+        boolean isButtonActive = (inConfirm || inConfirmAll) && (isAlwaysShow || result.total() > 0);
 
-        if (dynamic) {
-            if (isFillerHere && cursor.getType().isAir()) {
+        GuiDefinition.GuiItem customItem = findCustomItemAt(slot);
+        if (customItem != null && current != null && current.getType() == customItem.material()) {
+
+            if (customItem.key().equals("test") || !(inConfirm || inConfirmAll) || !isButtonActive) {
                 event.setCancelled(true);
-                GuiDefinition.GuiItem custom = findCustomItemAt(slot);
-                if (custom != null) {
-                    executeItemActions(custom, viewer, event.getClick(), Collections.emptyMap());
-                }
+                executeItemActions(customItem, viewer, event.getClick(), Collections.emptyMap());
                 return;
             }
+        }
 
-            if (isFillerHere && !cursor.getType().isAir()) {
+        if (isButtonActive && current != null && !current.getType().isAir()) {
+            event.setCancelled(true);
+
+            String key = inConfirm ? "confirm" : "confirm-all";
+            GuiDefinition.GuiItem buttonItem = definition.items().get(key);
+
+            if (buttonItem != null) {
+                String formatted = plugin.economy().formats().formatAmount(result.total());
+                executeItemActions(buttonItem, viewer, event.getClick(), Map.of("amount", formatted));
+            }
+
+            boolean applyConfirm = definition.config().getBoolean("buttons." + key + ".apply-confirm", false);
+
+            if (applyConfirm && result.total() > 0 && !result.hasUnsupported()) {
+                confirmManager.open(viewer, top, result, inConfirmAll);
+            } else {
+                processSale(viewer, top, result, inConfirmAll);
+            }
+            return;
+        }
+
+        boolean dynamic = isDynamicSlot(slot);
+        if (dynamic) {
+            if (SellSlotMapper.isCustomFillerAt(definition, slot, current) && cursor.getType().isAir()) {
                 event.setCancelled(true);
-                top.setItem(slot, cursor.clone());
-                viewer.setItemOnCursor(null);
-                refreshConfirmButton(top, viewer);
+                GuiDefinition.GuiItem filler = findCustomItemAt(slot);
+                if (filler != null) executeItemActions(filler, viewer, event.getClick(), Collections.emptyMap());
                 return;
             }
 
@@ -189,10 +202,9 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         }
 
         event.setCancelled(true);
-        executeItemActions(registeredItem, viewer, event.getClick(), Collections.emptyMap());
     }
 
-    private void processSale(Player viewer, Inventory top, SellSlotMapper.WorthResult result, boolean isAll, ClickType click) {
+    public void processSale(Player viewer, Inventory top, SellSlotMapper.WorthResult result, boolean isAll) {
         if (result.hasUnsupported()) {
             MessageUtil.send(viewer, "economy.sell.error-failed", Map.of());
             viewer.updateInventory();
@@ -212,17 +224,16 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         if (plugin.economy().transactions().deposit(viewer.getUniqueId(), rounded).type() == EconomyManager.ResultType.SUCCESS) {
             MessageUtil.send(viewer, "economy.sell.success", Map.of("amount", formatted));
 
+            if (definition.config().getBoolean("sell-logs-on-console", false)) {
+                plugin.getLogger().info(viewer.getName() + " sold items for $" + formatted);
+            }
+
             clearSellSlots(top);
             if (isAll) clearPlayerInv(viewer);
 
             markSaleProcessed(viewer.getUniqueId());
             refreshConfirmButton(top, viewer);
             viewer.updateInventory();
-
-            GuiDefinition.GuiItem targetItem = isAll ? definition.items().get("confirm-all") : cachedConfirmItem;
-            if (targetItem != null) {
-                executeItemActions(targetItem, viewer, click, Map.of("amount", formatted));
-            }
         } else {
             MessageUtil.send(viewer, "economy.sell.error-failed", Map.of());
         }
@@ -236,7 +247,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         for (int i = 0; i < 36; i++) viewer.getInventory().setItem(i, null);
     }
 
-    private void executeItemActions(GuiDefinition.GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
+    public void executeItemActions(GuiDefinition.GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
         List<String> actions = item.getActionsForClick(click);
         if (actions != null && !actions.isEmpty()) {
             Map<String, String> ph = new HashMap<>(extraPh);
@@ -246,7 +257,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     }
 
     public void refreshConfirmButton(Inventory inv, Player viewer) {
-        if (cachedConfirmItem == null || !(inv.getHolder() instanceof SellHolder holder)) return;
+        if (!(inv.getHolder() instanceof SellHolder holder)) return;
 
         var worthService = plugin.economy().worth();
         double guiWorth = SellSlotMapper.calculateWorth(inv, worthService, definition).total();
@@ -256,12 +267,19 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         if (holder.lastWorth == currentState) return;
         holder.lastWorth = currentState;
 
-        SellSlotMapper.updateConfirmButton(definition, cachedConfirmItem, inv, viewer, guiWorth, totalAll, Map.of("player", viewer.getName()), plugin.economy().formats());
+        boolean alwaysShow = definition.config().getBoolean("always-show-buttons", true);
+        Map<String, String> placeholders = Map.of("player", viewer.getName());
+
+        if (cachedConfirmItem != null && !alwaysShow && guiWorth <= 0) {
+            for (int slot : cachedConfirmItem.slots()) inv.setItem(slot, null);
+        }
 
         GuiDefinition.GuiItem confirmAll = definition.items().get("confirm-all");
-        if (confirmAll != null) {
-            SellSlotMapper.updateConfirmButton(definition, confirmAll, inv, viewer, totalAll, totalAll, Map.of("player", viewer.getName()), plugin.economy().formats());
+        if (confirmAll != null && !alwaysShow && totalAll <= 0) {
+            for (int slot : confirmAll.slots()) inv.setItem(slot, null);
         }
+
+        SellSlotMapper.fillCustom(plugin, inv, definition, viewer, placeholders);
     }
 
     private void distributeToSlots(Inventory top, ItemStack moving, Inventory sourceInv, int sourceSlot) {
@@ -294,13 +312,8 @@ public final class SellManager implements GuiManager.CustomGuiManager {
 
     private boolean isDynamicSlot(int slot) { for (int s : cachedSellSlots) if (s == slot) return true; return false; }
     private boolean isInConfirmSlots(int slot) { if (cachedConfirmSlots == null) return false; for (int s : cachedConfirmSlots) if (s == slot) return true; return false; }
-    private boolean isCustomFillerAt(int slot, @Nullable ItemStack current) { return SellSlotMapper.isCustomFillerAt(definition, slot, current); }
-    private GuiDefinition.GuiItem findItem(int slot) { return SellSlotMapper.findItem(definition, slot); }
-    private GuiDefinition.GuiItem findCustomItemAt(int slot) { return SellSlotMapper.findCustomItemAt(definition, slot); }
 
-    public void executeConfirmActions(Player viewer, String amountFormatted) {
-        if (cachedConfirmItem != null) executeItemActions(cachedConfirmItem, viewer, ClickType.LEFT, Map.of("amount", amountFormatted));
-    }
+    private GuiDefinition.GuiItem findCustomItemAt(int slot) { return SellSlotMapper.findCustomItemAt(definition, slot); }
 
     public void markSaleProcessed(UUID player) {
         processedSales.add(player);
@@ -308,17 +321,37 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     }
 
     public boolean consumeProcessedSale(UUID player) { return processedSales.remove(player); }
-    public void unregisterListeners() { HandlerList.unregisterAll(this.listener); }
-    @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof SellHolder; }
+
+    public void markTransitioning(UUID player) {
+        transitioning.add(player);
+        plugin.scheduler().runDelayed(() -> transitioning.remove(player), 2L);
+    }
+
+    public boolean isTransitioning(UUID player) { return transitioning.contains(player); }
+
+    public void returnItems(Player player, Inventory inv) {
+        var sellSlots = definition.items().get("sell-slots").slots();
+        listener.returnItemsToPlayer(player, inv, sellSlots);
+    }
+
+    public void unregisterListeners() {
+        HandlerList.unregisterAll(this.listener);
+        if (confirmManager != null) {
+            HandlerList.unregisterAll(this.confirmManager);
+        }
+    }
+
+    @Override
+    public boolean owns(Inventory inv) {
+        InventoryHolder holder = inv.getHolder();
+        return holder instanceof SellHolder || holder instanceof ConfirmManager.ConfirmHolder;
+    }
     public GuiDefinition definition() { return definition; }
 
     public static class SellHolder implements InventoryHolder {
         public double lastWorth = -1.0;
         private Inventory inventory;
         public void setInventory(Inventory inventory) { this.inventory = inventory; }
-        @Override
-        public @NotNull Inventory getInventory() {
-            return inventory;
-        }
+        @Override public @NotNull Inventory getInventory() { return inventory; }
     }
 }

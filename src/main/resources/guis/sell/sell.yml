@@ -13,6 +13,11 @@ sell-on-inventory-close: false
 # - false = no console logs
 sell-logs-on-console: true
 
+# Confirm button visibility
+# - true  = confirm buttons are always shown
+# - false = confirm buttons only appear when at least one item can be sold
+always-show-buttons: false
+
 # GUI title and size
 title: "Place your items here"
 rows: 5
@@ -31,8 +36,7 @@ buttons:
     display-name: "<green>Click to confirm</green>"
     lore:
       - "<gray>Total worth: $%worth%</gray>"
-    actions:
-      - "[close]"
+    apply-confirm: false
 
   confirm-all:
     slots: [42]
@@ -40,8 +44,16 @@ buttons:
     display-name: "<green>Click to confirm all</green>"
     lore:
       - "<gray>Total worth: $%worth-all%</gray>"
-    actions:
-      - "[close]"
+    apply-confirm: true
 
 # Custom items
-items: []
+items:
+  empty:
+    slots: [38]
+    material: BARRIER
+    display-name: "<dark_gray>You must place at least one item</dark_gray>"
+
+  empty-all:
+    slots: [42]
+    material: BARRIER
+    display-name: "<dark_gray>There are no items on your inventory</dark_gray>"
