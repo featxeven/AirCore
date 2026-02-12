@@ -1,19 +1,15 @@
-# Toggle whether /sell opens this GUI.
 # - true  = /sell opens the GUI
 # - false = /sell directly sells the item in hand
 enabled: true
 
-# Sale behavior
 # - true  = items are sold automatically when closing the GUI
 # - false = players must click the confirm button to complete the sale
 sell-on-inventory-close: false
 
-# Logging
 # - true  = log successful sales to console
 # - false = no console logs
 sell-logs-on-console: true
 
-# Confirm button visibility
 # - true  = confirm buttons are always shown
 # - false = confirm buttons only appear when at least one item can be sold
 always-show-buttons: false
@@ -23,12 +19,12 @@ title: "Place your items here"
 rows: 5
 
 # Item placement slots
-# These slots define where players can put items they want to sell.
+# These slots define where players can put items they want to sell
 sell-slots: [0-35]
 
 # GUI buttons
 # Special items with fixed actions in the GUI.
-# You can customize their appearance (glow, enchants, tooltips, actions, etc.).
+# You can customize their appearance (glow, enchants, tooltips, actions, etc.)
 buttons:
   confirm:
     slots: [38]

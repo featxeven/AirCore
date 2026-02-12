@@ -1,3 +1,7 @@
+# - true  = Inventory closes after sell confirmation
+# - false = Sell GUI reopens after sell confirmation
+close-on-sell: true
+
 # GUI title and size
 title: "Confirm for $%total%"
 rows: 3

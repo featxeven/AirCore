@@ -93,7 +93,6 @@ public final class ConfirmManager implements Listener {
 
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
-        player.updateInventory();
 
         if (event.getClickedInventory() != event.getView().getTopInventory()) return;
 
@@ -113,18 +112,24 @@ public final class ConfirmManager implements Listener {
 
         String formattedTotal = plugin.economy().formats().formatAmount(holder.result().total());
 
+        sellManager.executeItemActions(clickedItem, player, event.getClick(), Map.of("total", formattedTotal));
+
         if ("confirm".equalsIgnoreCase(clickedKey)) {
-            sellManager.executeItemActions(clickedItem, player, event.getClick(), Map.of("total", formattedTotal));
-
             sellManager.processSale(player, holder.sellInventory, holder.result, holder.isAll);
-            player.closeInventory();
-        } else if ("cancel".equalsIgnoreCase(clickedKey)) {
-            sellManager.executeItemActions(clickedItem, player, event.getClick(), Map.of("total", formattedTotal));
 
+            boolean closeOnSell = definition.config().getBoolean("close-on-sell", true);
+
+            if (closeOnSell) {
+                player.closeInventory();
+            } else {
+                sellManager.markTransitioning(player.getUniqueId());
+                player.openInventory(holder.sellInventory);
+                sellManager.refreshConfirmButton(holder.sellInventory, player);
+            }
+        }
+        else if ("cancel".equalsIgnoreCase(clickedKey)) {
             sellManager.markTransitioning(player.getUniqueId());
             player.openInventory(holder.sellInventory);
-        } else {
-            sellManager.executeItemActions(clickedItem, player, event.getClick(), Map.of("total", formattedTotal));
         }
     }
 
