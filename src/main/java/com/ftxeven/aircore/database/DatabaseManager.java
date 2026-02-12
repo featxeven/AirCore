@@ -2,7 +2,6 @@ package com.ftxeven.aircore.database;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.database.player.*;
-import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.sql.*;
@@ -21,8 +20,6 @@ public final class DatabaseManager {
     private PlayerKits playerKits;
     private PlayerCooldowns playerCooldowns;
     private PlayerInventories playerInventories;
-
-    // Track async tasks so we can wait for them on shutdown
     private final Set<Thread> asyncTasks = Collections.synchronizedSet(new HashSet<>());
 
     public DatabaseManager(AirCore plugin) {
@@ -66,7 +63,8 @@ public final class DatabaseManager {
                 uuid TEXT UNIQUE NOT NULL,
                 name TEXT NOT NULL,
                 balance REAL NOT NULL DEFAULT 0,
-                speed REAL NOT NULL DEFAULT 1.0,
+                walk_speed REAL NOT NULL DEFAULT 1.0,
+                fly_speed REAL NOT NULL DEFAULT 1.0,
                 chat_enabled INTEGER NOT NULL DEFAULT 1,
                 mentions_enabled INTEGER NOT NULL DEFAULT 1,
                 pm_enabled INTEGER NOT NULL DEFAULT 1,

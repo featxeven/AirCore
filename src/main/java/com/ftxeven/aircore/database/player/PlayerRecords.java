@@ -121,21 +121,35 @@ public final class PlayerRecords {
         });
     }
 
-    public double getSpeed(UUID uuid) {
-        String sql = "SELECT speed FROM player_records WHERE uuid = ?;";
+    public double getWalkSpeed(UUID uuid) {
+        String sql = "SELECT walk_speed FROM player_records WHERE uuid = ?;";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getDouble("speed");
+                if (rs.next()) return rs.getDouble("walk_speed");
             }
         } catch (SQLException e) {
-            plugin.getLogger().warning("Failed to fetch speed for " + uuid + ": " + e.getMessage());
+            plugin.getLogger().warning("Failed to fetch walk_speed: " + e.getMessage());
         }
         return 1.0;
     }
 
-    public void setSpeed(UUID uuid, double speed) {
-        String sql = "UPDATE player_records SET speed = ?, updated_at = ? WHERE uuid = ?;";
+    public double getFlySpeed(UUID uuid) {
+        String sql = "SELECT fly_speed FROM player_records WHERE uuid = ?;";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getDouble("fly_speed");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to fetch fly_speed: " + e.getMessage());
+        }
+        return 1.0;
+    }
+
+    public void setSpeed(UUID uuid, String type, double speed) {
+        String column = type.equalsIgnoreCase("flying") ? "fly_speed" : "walk_speed";
+        String sql = "UPDATE player_records SET " + column + " = ?, updated_at = ? WHERE uuid = ?;";
         plugin.database().executeAsync(sql, ps -> {
             ps.setDouble(1, speed);
             ps.setLong(2, Instant.now().getEpochSecond());

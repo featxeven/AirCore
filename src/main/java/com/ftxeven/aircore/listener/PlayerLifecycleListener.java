@@ -100,7 +100,8 @@ public final class PlayerLifecycleListener implements Listener {
             boolean teleport = plugin.database().records().getToggle(uuid, ToggleService.Toggle.TELEPORT.getColumn());
             boolean god = plugin.database().records().getToggle(uuid, ToggleService.Toggle.GOD.getColumn());
             boolean flyEnabled = plugin.database().records().getToggle(uuid, ToggleService.Toggle.FLY.getColumn());
-            double speed = plugin.database().records().getSpeed(uuid);
+            double walkVal = plugin.database().records().getWalkSpeed(uuid);
+            double flyVal = plugin.database().records().getFlySpeed(uuid);
 
             var block = plugin.database().blocks().load(uuid);
             double balance = plugin.database().records().getBalance(uuid);
@@ -121,8 +122,8 @@ public final class PlayerLifecycleListener implements Listener {
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.GOD, god);
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.FLY, flyEnabled);
 
-                float walkSpeed = (float) Math.min(Math.max(speed * 0.2, 0.0), 1.0);
-                float flySpeed = (float) Math.min(Math.max(speed * 0.1, 0.0), 1.0);
+                float walkSpeed = (float) Math.min(Math.max(walkVal * 0.2, 0.0), 1.0);
+                float flySpeed = (float) Math.min(Math.max(flyVal * 0.1, 0.0), 1.0);
 
                 player.setWalkSpeed(walkSpeed);
                 player.setFlySpeed(flySpeed);
@@ -226,16 +227,17 @@ public final class PlayerLifecycleListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        if (!plugin.scheduler().isFoliaServer()) return;
-
         Player player = event.getEntity();
         UUID uuid = player.getUniqueId();
-        justDied.add(uuid);
 
         plugin.utility().back().setLastDeath(uuid, player.getLocation());
 
         if (plugin.core().teleports().hasCountdown(player)) {
             plugin.core().teleports().cancelCountdown(player, false);
+        }
+
+        if (plugin.scheduler().isFoliaServer()) {
+            justDied.add(uuid);
         }
     }
 
