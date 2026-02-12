@@ -31,14 +31,20 @@
 # -----------------------------
 general:
   prefix: "<gray>[<gradient:#00ffcc:#0066ff>AirCore</gradient>]</gray>"
+  console-name: "@Console"
 
   plugin-usage: "%prefix% <green>Available commands:</green>
     <newline> <yellow>/aircore reload</yellow> <gray>- Reload configuration and messages</gray>
     <newline> <yellow>/aircore version</yellow> <gray>- Show plugin version</gray>"
-  plugin-reloaded: "%prefix% <green>Configuration successfully reloaded.</green>"
   plugin-version: "%prefix% <green>Plugin version:</green> <gray>%version%</gray>"
+  plugin-reloaded: "%prefix% <green>Configuration successfully reloaded (<yellow>%module%</yellow>).</green>"
 
-  console-name: "@Console"
+  modules:
+    all: "All"
+    config: "Config"
+    messages: "Messages"
+    guis: "GUIs"
+    placeholders: "Placeholders"
 
 # -----------------------------
 # CHAT & MESSAGING
