@@ -1,6 +1,6 @@
 name: AirCore
 main: com.ftxeven.aircore.AirCore
-version: 1.1.0
+version: 1.1.1
 api-version: "1.21"
 author: ftxeven
 description: Core commands and features for all servers.
@@ -746,10 +746,6 @@ permissions:
 
   aircore.command.back:
     description: Allows the player to use /back.
-    default: op
-
-  aircore.command.back.others:
-    description: Allows the player to use /back for other players.
     default: op
 
   aircore.command.sell:
