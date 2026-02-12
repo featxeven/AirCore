@@ -75,7 +75,7 @@ public final class SpeedCommand implements TabExecutor {
             String consoleName = plugin.lang().get("general.console-name");
 
             if (args.length < 2) {
-                sender.sendMessage("Usage: /" + label + " [walking|flying] <speed> <player...>");
+                sender.sendMessage("Usage: /" + label + " [walking|flying] <speed> <player>");
                 return true;
             }
 
