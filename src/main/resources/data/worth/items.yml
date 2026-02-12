@@ -771,6 +771,7 @@ suspicious_sand: 3
 suspicious_gravel: 3
 farmland: 0.5
 hay_block: 1.5
+muddy_mangrove_roots: 1
 
 # Stone & Rock
 stone: 0.5

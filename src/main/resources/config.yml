@@ -83,7 +83,8 @@ chat:
   chat-mentions:
     enabled: true
     format: "<gold>@%player%</gold>"     # How mention appears in chat
-    case-sensitive: true
+    allow-self: false
+    case-sensitive: false
     sound:
       name: "entity.experience_orb.pickup"
       volume: 0.8
@@ -108,7 +109,7 @@ chat:
         - "[item]"
       format: "<gold>[x%amount% %item%]</gold>"
 
-    # You can also create your own display tags.
+    # You can also create your own display tags
     balance-tag:
       keys:
         - "[bal]"

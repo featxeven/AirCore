@@ -23,16 +23,17 @@ public final class MentionService {
 
     public Component processMentions(Player sender, Component message) {
         if (!plugin.config().mentionsEnabled()) return message;
-
         if (!sender.hasPermission("aircore.chat.mention")) return message;
 
         String format = plugin.config().mentionFormat();
         if (format.isBlank()) return message;
 
+        boolean allowSelf = plugin.config().mentionAllowSelf();
+
         Component result = message;
 
         for (Player target : Bukkit.getOnlinePlayers()) {
-            if (target.equals(sender)) continue;
+            if (target.equals(sender) && !allowSelf) continue;
 
             String token = "@" + target.getName();
             Component mentionComp = buildMentionComponent(target, format);
@@ -51,11 +52,18 @@ public final class MentionService {
                 );
             }
 
-            // If replacement occurred, check toggle + block before notifying
-            if (!result.equals(before)
-                    && plugin.core().toggles().isEnabled(target.getUniqueId(), ToggleService.Toggle.MENTIONS)
-                    && !plugin.core().blocks().isBlocked(target.getUniqueId(), sender.getUniqueId())) {
-                notifyMention(sender, target);
+            if (!result.equals(before)) {
+                var toggles = plugin.core().toggles();
+                var blocks = plugin.core().blocks();
+                java.util.UUID targetId = target.getUniqueId();
+
+                boolean canNotify = toggles.isEnabled(targetId, ToggleService.Toggle.MENTIONS)
+                        && toggles.isEnabled(targetId, ToggleService.Toggle.CHAT)
+                        && !blocks.isBlocked(targetId, sender.getUniqueId());
+
+                if (canNotify) {
+                    notifyMention(sender, target);
+                }
             }
         }
 

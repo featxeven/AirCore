@@ -393,6 +393,7 @@ utilities:
     placeholders:
       walking: "walking"
       flying: "flying"
+      both: "walking/flying" # Triggers when player is offline (when no type is specified)
 
   repair:
     item: "%prefix% <green>Item repaired successfully.</green>"

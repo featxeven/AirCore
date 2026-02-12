@@ -124,6 +124,7 @@ public final class ConfigManager {
     public boolean mentionCaseSensitive() {
         return config.getBoolean("chat.chat-mentions.case-sensitive", true);
     }
+    public boolean mentionAllowSelf() { return config.getBoolean("chat.chat-mentions.allow-self", false); }
 
     // Mentions - Sound
     public String mentionSoundName() { return config.getString("chat.chat-mentions.sound.name", ""); }
