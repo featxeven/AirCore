@@ -95,21 +95,18 @@ public final class TpOfflineCommand implements TabExecutor {
     }
 
     private OfflinePlayer resolve(Player sender, String name) {
-        // Online players first
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.getName().equalsIgnoreCase(name)) {
                 return online;
             }
         }
 
-        // Cache lookup
         UUID cached = plugin.getNameCache().get(name.toLowerCase());
         if (cached != null) {
             return Bukkit.getOfflinePlayer(cached);
         }
 
-        // No match
-        MessageUtil.send(sender, "errors.player-never-joined", Map.of("player", name));
+        MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
     }
 }

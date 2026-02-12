@@ -102,7 +102,7 @@ public final class UnblockCommand implements TabExecutor {
             return Bukkit.getOfflinePlayer(cached);
         }
 
-        MessageUtil.send(sender, "errors.player-never-joined", Map.of("player", name));
+        MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
     }
 }

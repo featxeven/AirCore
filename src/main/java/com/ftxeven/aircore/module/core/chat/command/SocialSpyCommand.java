@@ -146,7 +146,7 @@ public final class SocialSpyCommand implements TabExecutor {
         }
 
         if (sender instanceof Player p) {
-            MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
+            MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
             sender.sendMessage("Player not found");
         }

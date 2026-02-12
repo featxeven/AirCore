@@ -564,7 +564,7 @@ public final class EcoCommand implements TabExecutor {
         UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
         if (cached != null) return Bukkit.getOfflinePlayer(cached);
 
-        if (sender != null) MessageUtil.send(sender, "errors.player-never-joined", Map.of("player", name));
+        if (sender != null) MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
     }
 
