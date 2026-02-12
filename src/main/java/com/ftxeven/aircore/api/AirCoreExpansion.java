@@ -216,6 +216,11 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
             return bool(plugin.utility().warps().hasPermission(uuid, warpName));
         }
 
+        if (params.startsWith("key_")) {
+            String key = params.substring("key_".length());
+            return plugin.placeholders().resolve(player, key);
+        }
+
         return null;
     }
 

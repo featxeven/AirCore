@@ -27,6 +27,7 @@ import com.ftxeven.aircore.module.core.economy.EconomyManager;
 import com.ftxeven.aircore.module.core.economy.service.EconomyProvider;
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.config.LangManager;
+import com.ftxeven.aircore.module.placeholders.PlaceholderManager;
 import com.ftxeven.aircore.util.*;
 import com.ftxeven.aircore.database.DatabaseManager;
 import net.milkbowl.vault.economy.Economy;
@@ -60,6 +61,7 @@ public final class AirCore extends JavaPlugin {
     private KitManager kitManager;
     private UtilityManager utilityManager;
     private GuiManager guiManager;
+    private PlaceholderManager placeholderManager;
     private SchedulerUtil schedulerUtil;
     private final Map<String, UUID> nameCache = new ConcurrentHashMap<>();
 
@@ -93,6 +95,7 @@ public final class AirCore extends JavaPlugin {
         }
 
         // Core managers
+        this.placeholderManager = new PlaceholderManager(this);
         this.coreManager = new CoreManager(this, scheduler());
         this.chatManager = new ChatManager(this);
         this.economyManager = new EconomyManager(this);
@@ -337,6 +340,7 @@ public final class AirCore extends JavaPlugin {
     public KitManager kit() { return kitManager; }
     public UtilityManager utility() { return utilityManager; }
     public GuiManager gui() { return guiManager; }
+    public PlaceholderManager placeholders() { return placeholderManager; }
     public SchedulerUtil scheduler() { return schedulerUtil; }
 
     public Map<String, UUID> getNameCache() { return nameCache; }

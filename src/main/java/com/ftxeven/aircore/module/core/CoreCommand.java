@@ -56,6 +56,7 @@ public final class CoreCommand implements TabExecutor {
                 plugin.kit().reload();
                 plugin.teleport().reload();
                 plugin.utility().reload();
+                plugin.placeholders().reload();
 
                 if (sender instanceof Player p) {
                     MessageUtil.send(p, "general.plugin-reloaded", Map.of());

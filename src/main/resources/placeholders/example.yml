@@ -1,0 +1,98 @@
+# -----------------------------
+# AirCore Custom Placeholders
+# -----------------------------
+
+# You can create your own .yml files and sub-folders within the /placeholders/ directory
+# Example: /placeholders/staff/tags.yml
+
+# %aircore_key_[key]% to use placeholders anywhere
+
+# The 'fallback' field is optional
+# - If provided: The placeholder will return this text when conditions are not met
+# - If omitted: The placeholder will not parse (remain as %...%) if requirements are not met
+
+# Supported operators:
+# ==  : Equals (Case-sensitive)
+# !=  : Not Equals (Case-sensitive)
+# =~  : Equals (Case-insensitive)
+# !~  : Not Equals (Case-insensitive)
+# |-  : Starts with
+# -|  : Ends with
+# <>  : Contains
+# ><  : Does not contain
+# >   : Greater than (Numeric)
+# <   : Less than (Numeric)
+# >=  : Greater than or equal (Numeric)
+# <=  : Less than or equal (Numeric)
+
+placeholders:
+  # Example 1: Basic Boolean Toggle
+  example:
+    conditions: "%aircore_player_toggle_god% == true"
+    output: "[GOD]"
+    fallback: "[MORTAL]"
+
+  # Example 2: String comparison, equals (case-insensitive)
+  player_name_equals:
+    conditions: "%player_name% =~ 'FTxEven'"
+    output: "Yes"
+
+  # Example 3: String comparison, not equals (case-insensitive)
+  player_name_notequals:
+    conditions: "%player_name% !~ 'FTxEven'"
+    output: "Yes"
+
+  # Example 4: String comparison, starts with
+  starts_with:
+    conditions: "%player_name% |- 'f'"
+    output: "It starts with f"
+    fallback: "It doesn't start with f"
+
+  # Example 5: String comparison, ends with
+  ends_with:
+    conditions: "%player_name% -| 'n'"
+    output: "It ends with n"
+    fallback: "It doesn't ends with n"
+
+  # Example 6: String comparison, contains
+  contains:
+    conditions: "%player_name% <> 'eve'"
+    output: "It contains eve"
+    fallback: "It doesn't contain eve"
+
+  # Example 7: String comparison, does not contains
+  doesnot_contains:
+    conditions: "%player_name% >< 'eve'"
+    output: "It doesn't not contains eve"
+    fallback: "It contain eve"
+
+  # Example 8: Numeric comparison
+  greater_than:
+    conditions: "%aircore_player_balance_raw% > 1000000"
+    output: "$$$ %aircore_player_balance_short%"
+    fallback: "$ %aircore_player_balance_short%"
+
+  # Example 9: Condition chain (Both must be true)
+  conditions_chain:
+    conditions:
+      - "%luckperms_primary_group_name% == 'admin'"
+      - "%aircore_player_balance_raw% > 100"
+    output: "%player% is Admin and has >$100"
+
+  # Example 10: Multiple condition priority & condition chain
+  # Priority 0 is checked first. If it fails, it moves to 1, and so on.
+  conditions_chain_priority:
+    priority:
+      0: # Highest priority
+        conditions:
+          - "%aircore_player_balance_raw% >= 100"
+          - "%player_name% == 'ftxeven'"
+        output: "%player% has >=$100"
+      1:
+        conditions:
+          - "%aircore_player_balance_raw% > 1000"
+        output: "%player% has >$1000"
+      2:
+        conditions:
+          - "%aircore_player_balance_raw% > 10000"
+        output: "%player% has >$10000"
