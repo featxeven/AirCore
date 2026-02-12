@@ -57,41 +57,38 @@ public final class DatabaseManager {
 
     private void createTables() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
+
             stmt.executeUpdate("""
             CREATE TABLE IF NOT EXISTS player_records (
                 join_index INTEGER PRIMARY KEY AUTOINCREMENT,
                 uuid TEXT UNIQUE NOT NULL,
                 name TEXT NOT NULL,
-                balance REAL NOT NULL DEFAULT 0,
-                walk_speed REAL NOT NULL DEFAULT 1.0,
-                fly_speed REAL NOT NULL DEFAULT 1.0,
-                chat_enabled INTEGER NOT NULL DEFAULT 1,
-                mentions_enabled INTEGER NOT NULL DEFAULT 1,
-                pm_enabled INTEGER NOT NULL DEFAULT 1,
-                socialspy_enabled INTEGER NOT NULL DEFAULT 0,
-                pay_enabled INTEGER NOT NULL DEFAULT 1,
-                teleport_enabled INTEGER NOT NULL DEFAULT 1,
-                god_enabled INTEGER NOT NULL DEFAULT 0,
-                fly_enabled INTEGER NOT NULL DEFAULT 0,
-                world TEXT,
-                x REAL,
-                y REAL,
-                z REAL,
-                yaw REAL,
-                pitch REAL,
                 updated_at INTEGER NOT NULL
             );
-            """);
+        """);
+            addColumn(stmt, "player_records", "balance", "REAL NOT NULL DEFAULT 0");
+            addColumn(stmt, "player_records", "walk_speed", "REAL NOT NULL DEFAULT 1.0");
+            addColumn(stmt, "player_records", "fly_speed", "REAL NOT NULL DEFAULT 1.0");
+            addColumn(stmt, "player_records", "chat_enabled", "INTEGER NOT NULL DEFAULT 1");
+            addColumn(stmt, "player_records", "mentions_enabled", "INTEGER NOT NULL DEFAULT 1");
+            addColumn(stmt, "player_records", "pm_enabled", "INTEGER NOT NULL DEFAULT 1");
+            addColumn(stmt, "player_records", "socialspy_enabled", "INTEGER NOT NULL DEFAULT 0");
+            addColumn(stmt, "player_records", "pay_enabled", "INTEGER NOT NULL DEFAULT 1");
+            addColumn(stmt, "player_records", "teleport_enabled", "INTEGER NOT NULL DEFAULT 1");
+            addColumn(stmt, "player_records", "god_enabled", "INTEGER NOT NULL DEFAULT 0");
+            addColumn(stmt, "player_records", "fly_enabled", "INTEGER NOT NULL DEFAULT 0");
+            addColumn(stmt, "player_records", "world", "TEXT");
+            addColumn(stmt, "player_records", "x", "REAL");
+            addColumn(stmt, "player_records", "y", "REAL");
+            addColumn(stmt, "player_records", "z", "REAL");
+            addColumn(stmt, "player_records", "yaw", "REAL");
+            addColumn(stmt, "player_records", "pitch", "REAL");
 
-            stmt.executeUpdate("""
-            CREATE TABLE IF NOT EXISTS player_inventories (
-                uuid TEXT PRIMARY KEY,
-                contents BLOB,
-                armor BLOB,
-                offhand BLOB,
-                enderchest BLOB
-            );
-            """);
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_inventories (uuid TEXT PRIMARY KEY);");
+            addColumn(stmt, "player_inventories", "contents", "BLOB");
+            addColumn(stmt, "player_inventories", "armor", "BLOB");
+            addColumn(stmt, "player_inventories", "offhand", "BLOB");
+            addColumn(stmt, "player_inventories", "enderchest", "BLOB");
 
             stmt.executeUpdate("""
             CREATE TABLE IF NOT EXISTS player_cooldowns (
@@ -100,7 +97,7 @@ public final class DatabaseManager {
                 expiry INTEGER NOT NULL,
                 PRIMARY KEY (uuid, command)
             );
-            """);
+        """);
 
             stmt.executeUpdate("""
             CREATE TABLE IF NOT EXISTS player_blocks (
@@ -109,7 +106,7 @@ public final class DatabaseManager {
                 created_at INTEGER NOT NULL,
                 PRIMARY KEY (uuid, blocked_uuid)
             );
-            """);
+        """);
 
             stmt.executeUpdate("""
             CREATE TABLE IF NOT EXISTS player_homes (
@@ -124,23 +121,35 @@ public final class DatabaseManager {
                 created_at INTEGER NOT NULL,
                 PRIMARY KEY (uuid, name)
             );
-            """);
+        """);
 
             stmt.executeUpdate("""
             CREATE TABLE IF NOT EXISTS player_kits (
                 uuid TEXT NOT NULL,
                 kit TEXT NOT NULL,
-                last_claim INTEGER NOT NULL DEFAULT 0,
-                one_time_claimed INTEGER NOT NULL DEFAULT 0,
-                last_cooldown INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY (uuid, kit)
             );
-            """);
+        """);
+            addColumn(stmt, "player_kits", "last_claim", "INTEGER NOT NULL DEFAULT 0");
+            addColumn(stmt, "player_kits", "one_time_claimed", "INTEGER NOT NULL DEFAULT 0");
+            addColumn(stmt, "player_kits", "last_cooldown", "INTEGER NOT NULL DEFAULT 0");
+        }
+    }
+
+    private void addColumn(Statement stmt, String table, String column, String type) throws SQLException {
+        if (!columnExists(table, column)) {
+            plugin.getLogger().warning("Adding missing column '" + column + "' to table '" + table + "'");
+            stmt.executeUpdate("ALTER TABLE " + table + " ADD COLUMN " + column + " " + type + ";");
+        }
+    }
+
+    private boolean columnExists(String table, String column) throws SQLException {
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, table, column)) {
+            return rs.next();
         }
     }
 
     public void close() {
-        // Wait for async tasks to finish
         synchronized (asyncTasks) {
             for (Thread t : asyncTasks) {
                 try {
