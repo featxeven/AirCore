@@ -12,6 +12,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,122 +37,110 @@ public final class BlockCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.block")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.block"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.block"));
             return true;
         }
 
-        if (args.length != 1) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("block", label)));
+        if (args.length == 0) {
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("block", label)));
             return true;
         }
 
-        UUID playerId = player.getUniqueId();
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("block", label)));
+            return true;
+        }
+
         String targetName = args[0];
 
-        OfflinePlayer resolved = resolve(player, targetName);
-        if (resolved == null) return true;
+        plugin.scheduler().runAsync(() -> {
+            OfflinePlayer resolved = resolveOffline(targetName);
 
-        UUID targetId = resolved.getUniqueId();
-        String displayName = resolved.getName() != null ? resolved.getName() : targetName;
-
-        if (targetId.equals(playerId)) {
-            MessageUtil.send(player, "chat.blocking.error-self", Map.of());
-            return true;
-        }
-
-        if (resolved instanceof Player targetOnline) {
-            if (targetOnline.hasPermission("aircore.bypass.block")) {
-                MessageUtil.send(player, "chat.blocking.error-cannot", Map.of("player", displayName));
-                return true;
+            if (resolved == null) {
+                plugin.scheduler().runTask(() -> MessageUtil.send(player, "errors.player-never-joined", Map.of()));
+                return;
             }
-        } else {
-            if (hasLuckPermsPermission(targetId)) {
-                MessageUtil.send(player, "chat.blocking.error-cannot", Map.of("player", displayName));
-                return true;
-            }
-        }
 
-        blockPlayer(playerId, targetId, displayName);
+            if (resolved.getUniqueId().equals(player.getUniqueId())) {
+                plugin.scheduler().runTask(() -> MessageUtil.send(player, "utilities.blocking.error-self", Map.of()));
+                return;
+            }
+
+            boolean bypass = hasBypassPermission(resolved);
+            String displayName = resolved.getName() != null ? resolved.getName() : targetName;
+
+            plugin.scheduler().runTask(() -> {
+                if (!player.isOnline()) return;
+
+                if (bypass) {
+                    MessageUtil.send(player, "utilities.blocking.error-cannot", Map.of("player", displayName));
+                    return;
+                }
+
+                executeBlock(player, resolved.getUniqueId(), displayName);
+            });
+        });
+
         return true;
     }
 
-    private void blockPlayer(UUID playerId, UUID targetId, String displayName) {
-        Player executor = Bukkit.getPlayer(playerId);
+    private void executeBlock(Player executor, UUID targetId, String displayName) {
+        UUID playerId = executor.getUniqueId();
 
         if (plugin.core().blocks().isBlocked(playerId, targetId)) {
-            MessageUtil.send(executor, "chat.blocking.already", Map.of("player", displayName));
+            MessageUtil.send(executor, "utilities.blocking.already", Map.of("player", displayName));
             return;
         }
 
         int limit = plugin.core().blocks().getBlockLimit(playerId);
         int current = plugin.core().blocks().getBlocked(playerId).size();
+
         if (current >= limit) {
-            MessageUtil.send(executor, "chat.blocking.limit",
-                    Map.of("limit", String.valueOf(limit)));
+            MessageUtil.send(executor, "utilities.blocking.limit", Map.of("limit", String.valueOf(limit)));
             return;
         }
 
         plugin.core().blocks().block(playerId, targetId);
-        plugin.scheduler().runAsync(() ->
-                plugin.database().blocks().add(playerId, targetId)
-        );
+        plugin.scheduler().runAsync(() -> plugin.database().blocks().add(playerId, targetId));
 
-        MessageUtil.send(executor, "chat.blocking.added", Map.of("player", displayName));
+        MessageUtil.send(executor, "utilities.blocking.added", Map.of("player", displayName));
+    }
+
+    private boolean hasBypassPermission(OfflinePlayer target) {
+        if (target.isOp()) return true;
+
+        if (target instanceof Player online) {
+            return online.hasPermission("aircore.bypass.block");
+        }
+
+        var registration = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+        if (registration == null) return false;
+
+        LuckPerms api = registration.getProvider();
+        User user = api.getUserManager().loadUser(target.getUniqueId()).join();
+
+        return user != null && user.getCachedData().getPermissionData()
+                .checkPermission("aircore.bypass.block").asBoolean();
+    }
+
+    private OfflinePlayer resolveOffline(String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
+
+        UUID cached = plugin.getNameCache().get(name.toLowerCase());
+        return (cached != null) ? Bukkit.getOfflinePlayer(cached) : null;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-
-        if (!(sender instanceof Player player)) return List.of();
-        if (!player.hasPermission("aircore.command.block")) return List.of();
-        if (args.length != 1) return List.of();
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
+        if (!player.hasPermission("aircore.command.block")) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
-
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)
                 .toList();
-    }
-
-    private boolean hasLuckPermsPermission(UUID uuid) {
-        try {
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-            if (offlinePlayer.isOp()) return true;
-
-            var registration = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-            if (registration == null) return false;
-
-            LuckPerms api = registration.getProvider();
-            User user = api.getUserManager().loadUser(uuid).join();
-            if (user == null) return false;
-
-            return user.getCachedData().getPermissionData()
-                    .checkPermission("aircore.bypass.block").asBoolean();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private OfflinePlayer resolve(Player sender, String name) {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
-        }
-
-        UUID cached = plugin.getNameCache().get(name.toLowerCase());
-        if (cached != null) {
-            return Bukkit.getOfflinePlayer(cached);
-        }
-
-        MessageUtil.send(sender, "errors.player-never-joined", Map.of());
-        return null;
     }
 }

@@ -42,7 +42,13 @@ public final class DeleteKitCommand implements TabExecutor {
 
         if (args.length < 1) {
             MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("deletekit", label)));
+                    Map.of("usage", plugin.config().getUsage("delkit", label)));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("delkit", label)));
             return true;
         }
 

@@ -10,6 +10,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public final class WarpCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            sender.sendMessage("Only players may use this command.");
             return true;
         }
 
@@ -40,8 +41,14 @@ public final class WarpCommand implements TabExecutor {
             return true;
         }
 
-        if (args.length < 1) {
+        if (args.length == 0) {
             MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("warp", label)));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
                     Map.of("usage", plugin.config().getUsage("warp", label)));
             return true;
         }
@@ -78,21 +85,22 @@ public final class WarpCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return List.of();
-        if (!player.hasPermission("aircore.command.warp")) return List.of();
+        if (!(sender instanceof Player player)) return Collections.emptyList();
+        if (!player.hasPermission("aircore.command.warp")) return Collections.emptyList();
 
         if (args.length == 1) {
             var section = manager.warps().getConfig().getConfigurationSection("warps");
-            if (section == null) return List.of();
+            if (section == null) return Collections.emptyList();
 
+            String input = args[0].toLowerCase();
             return section.getKeys(false).stream()
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(input))
                     .filter(name ->
                             player.hasPermission("aircore.command.warp.*") ||
                                     player.hasPermission("aircore.command.warp." + name.toLowerCase()))
                     .limit(20)
                     .toList();
         }
-        return List.of();
+        return Collections.emptyList();
     }
 }

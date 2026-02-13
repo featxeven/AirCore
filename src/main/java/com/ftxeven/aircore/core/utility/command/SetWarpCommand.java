@@ -9,6 +9,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,12 @@ public final class SetWarpCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("setwarp", label)));
+            return true;
+        }
+
         String warpName = args[0].toLowerCase();
 
         if (manager.warps().getConfig().contains("warps." + warpName)) {
@@ -62,6 +69,6 @@ public final class SetWarpCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

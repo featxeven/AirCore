@@ -38,21 +38,23 @@ public final class TpaHereCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.tpahere")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.tpahere"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tpahere"));
             return true;
         }
 
         if (args.length < 1) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("tpahere", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("tpahere", label)));
             return true;
         }
 
-        String targetName = args[0];
-        Player target = Bukkit.getPlayerExact(targetName);
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("tpahere", label)));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of("player", targetName));
+            MessageUtil.send(player, "errors.player-not-found", Map.of("player", args[0]));
             return true;
         }
 
@@ -61,36 +63,26 @@ public final class TpaHereCommand implements TabExecutor {
             return true;
         }
 
-        // Block check
         if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
-            MessageUtil.send(player, "errors.cannot-interact-with-player",
-                    Map.of("player", target.getName()));
+            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", target.getName()));
             return true;
         }
 
-        // Toggle check
         boolean bypassToggle = player.hasPermission("aircore.bypass.teleport.toggle");
         if (!bypassToggle && !plugin.core().toggles().isEnabled(target.getUniqueId(), ToggleService.Toggle.TELEPORT)) {
-            MessageUtil.send(player, "teleport.requests.error-disabled",
-                    Map.of("player", target.getName()));
+            MessageUtil.send(player, "teleport.requests.error-disabled", Map.of("player", target.getName()));
             return true;
         }
 
-        // Cooldown check
         int cooldownSeconds = plugin.config().teleportRequestCooldown();
-        if (cooldownSeconds > 0 &&
-                manager.cooldowns().isOnCooldown(player.getUniqueId(), target.getUniqueId(), cooldownSeconds)) {
+        if (cooldownSeconds > 0 && manager.cooldowns().isOnCooldown(player.getUniqueId(), target.getUniqueId(), cooldownSeconds)) {
             long remaining = manager.cooldowns().getRemaining(player.getUniqueId(), target.getUniqueId(), cooldownSeconds);
-            String formatted = TimeUtil.formatSeconds(plugin, remaining);
-            MessageUtil.send(player, "teleport.requests.error-cooldown", Map.of("time", formatted));
+            MessageUtil.send(player, "teleport.requests.error-cooldown", Map.of("time", TimeUtil.formatSeconds(plugin, remaining)));
             return true;
         }
 
-        // Add request
         int expireSeconds = plugin.config().teleportRequestExpireTime();
-        long expiryTime = expireSeconds > 0
-                ? System.currentTimeMillis() + (expireSeconds * 1000L)
-                : Long.MAX_VALUE;
+        long expiryTime = expireSeconds > 0 ? System.currentTimeMillis() + (expireSeconds * 1000L) : Long.MAX_VALUE;
 
         manager.requests().addRequest(
                 player.getUniqueId(), player.getName(),
@@ -103,23 +95,16 @@ public final class TpaHereCommand implements TabExecutor {
         MessageUtil.send(player, "teleport.requests.tpahere-to", Map.of("player", target.getName()));
         MessageUtil.send(target, "teleport.requests.tpahere-from", Map.of("player", player.getName()));
 
-        // AFK notify check
         if (plugin.utility().afk().isAfk(target.getUniqueId())) {
-            MessageUtil.send(player, "errors.afk-interaction-notify",
-                    Map.of("player", target.getName()));
+            MessageUtil.send(player, "errors.afk-interaction-notify", Map.of("player", target.getName()));
         }
 
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        if (!(sender instanceof Player)) return List.of();
-        if (args.length != 1) return List.of();
-
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (!(sender instanceof Player) || args.length != 1) return List.of();
         String input = args[0].toLowerCase();
 
         return Bukkit.getOnlinePlayers().stream()

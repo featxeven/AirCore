@@ -37,8 +37,12 @@ public final class SellCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.sell")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.sell"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.sell"));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("sell", label)));
             return true;
         }
 
@@ -48,13 +52,14 @@ public final class SellCommand implements TabExecutor {
             guiManager.openGui("sell", player, Map.of("player", player.getName()));
         } else {
             ItemStack inHand = player.getInventory().getItemInMainHand();
-            double worthPerItem = plugin.economy().worth().getWorth(inHand);
-            double worth = worthPerItem * inHand.getAmount();
 
             if (inHand.getType().isAir()) {
                 MessageUtil.send(player, "economy.sell.error-invalid", Map.of());
                 return true;
             }
+
+            double worthPerItem = plugin.economy().worth().getWorth(inHand);
+            double worth = worthPerItem * inHand.getAmount();
 
             if (worth <= 0) {
                 MessageUtil.send(player, "economy.sell.error-failed", Map.of());
@@ -78,10 +83,7 @@ public final class SellCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         return List.of();
     }
 }

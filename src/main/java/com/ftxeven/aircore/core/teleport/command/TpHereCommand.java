@@ -12,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class TpHereCommand implements TabExecutor {
 
@@ -34,45 +33,27 @@ public final class TpHereCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.tphere")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.tphere"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tphere"));
             return true;
         }
 
         if (args.length < 1) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("tphere", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("tphere", label)));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("tphere", label)));
             return true;
         }
 
         String targetName = args[0];
 
-        // Handle @a (teleport everyone)
         if (targetName.equalsIgnoreCase("@a")) {
-            if (!player.hasPermission("aircore.command.tphere.all")) {
-                MessageUtil.send(player, "errors.player-not-found", Map.of("player", "@a"));
-                return true;
-            }
-
-            List<Player> others = Bukkit.getOnlinePlayers().stream()
-                    .filter(p -> !p.equals(player))
-                    .collect(Collectors.toList());
-
-            if (others.isEmpty()) {
-                MessageUtil.send(player, "errors.no-players-online", Map.of());
-                return true;
-            }
-
-            // Teleport everyone to executor
-            for (Player other : others) {
-                plugin.core().teleports().teleport(other, player.getLocation());
-            }
-
-            MessageUtil.send(player, "teleport.direct.everyone-to-self", Map.of());
+            handleTeleportAll(player);
             return true;
         }
 
-        // Normal single-target teleport
         Player target = Bukkit.getPlayerExact(targetName);
         if (target == null) {
             MessageUtil.send(player, "errors.player-not-found", Map.of("player", targetName));
@@ -80,18 +61,38 @@ public final class TpHereCommand implements TabExecutor {
         }
 
         plugin.core().teleports().teleport(target, player.getLocation());
-
-        MessageUtil.send(player, "teleport.direct.player-to-self",
-                Map.of("player", target.getName()));
+        MessageUtil.send(player, "teleport.direct.player-to-self", Map.of("player", target.getName()));
 
         return true;
+    }
+
+    private void handleTeleportAll(Player player) {
+        if (!player.hasPermission("aircore.command.tphere.all")) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tphere.all"));
+            return;
+        }
+
+        List<? extends Player> others = Bukkit.getOnlinePlayers().stream()
+                .filter(p -> !p.equals(player))
+                .toList();
+
+        if (others.isEmpty()) {
+            MessageUtil.send(player, "errors.no-players-online", Map.of());
+            return;
+        }
+
+        for (Player other : others) {
+            plugin.core().teleports().teleport(other, player.getLocation());
+        }
+
+        MessageUtil.send(player, "teleport.direct.everyone-to-self", Map.of());
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command cmd,
                                       @NotNull String label,
-                                      String[] args) {
+                                      @NotNull String[] args) {
 
         if (args.length != 1) return List.of();
 

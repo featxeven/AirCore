@@ -48,6 +48,12 @@ public final class EditKitCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 3) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("editkit", label)));
+            return true;
+        }
+
         String kitName = args[0].toLowerCase();
         YamlConfiguration kitsConfig = manager.kits().getConfig();
 
@@ -76,7 +82,6 @@ public final class EditKitCommand implements TabExecutor {
             }
         }
 
-        // Override items with current inventory
         List<Map<String, Object>> items = new ArrayList<>();
         for (var stack : player.getInventory().getContents()) {
             if (stack == null || stack.getType().isAir()) continue;
@@ -105,21 +110,30 @@ public final class EditKitCommand implements TabExecutor {
         var section = manager.kits().getConfig().getConfigurationSection("kits");
         if (section == null) return List.of();
 
+        String currentInput = args[args.length - 1].toLowerCase();
+
         if (args.length == 1) {
             return section.getKeys(false).stream()
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
+                    .filter(name -> name.toLowerCase().startsWith(currentInput))
                     .limit(20)
                     .toList();
         }
 
-        if (args.length == 2) {
+        if (args.length <= 3) {
             String kitName = args[0].toLowerCase();
             if (!section.getKeys(false).contains(kitName)) {
                 return List.of();
             }
 
-            String current = args[args.length - 1].toLowerCase();
-            if ("-onetime".startsWith(current)) {
+            boolean hasOneTime = false;
+            for (String arg : args) {
+                if (arg.equalsIgnoreCase("-onetime")) {
+                    hasOneTime = true;
+                    break;
+                }
+            }
+
+            if (!hasOneTime && "-onetime".startsWith(currentInput)) {
                 return List.of("-onetime");
             }
         }

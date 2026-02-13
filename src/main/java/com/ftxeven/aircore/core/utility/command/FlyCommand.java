@@ -4,14 +4,17 @@ import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.service.ToggleService;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public final class FlyCommand implements TabExecutor {
 
@@ -28,89 +31,102 @@ public final class FlyCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            String consoleName = plugin.lang().get("general.console-name");
-
-            if (args.length != 1) {
+            if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-
-            Player target = Bukkit.getPlayerExact(args[0]);
-            if (target == null) {
-                sender.sendMessage("Player not found.");
-                return true;
-            }
-
-            toggleFlyAsync(target, null, consoleName, false, sender);
+            handleFly(sender, args[0]);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.fly")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.fly"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.fly"));
+            return true;
+        }
+
+        if (args.length > 0 && !player.hasPermission("aircore.command.fly.others")) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.fly.others"));
             return true;
         }
 
         if (args.length == 0) {
-            toggleFlyAsync(player, player, player.getName(), true, null);
+            handleFly(player, player.getName());
             return true;
         }
 
-        Player target = Bukkit.getPlayerExact(args[0]);
-
-        if (target != null && target.equals(player)) {
-            toggleFlyAsync(player, player, player.getName(), true, null);
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("fly", "others", label)));
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.fly.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.fly.others"));
-            return true;
-        }
-
-        if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of("player", args[0]));
-            return true;
-        }
-
-        toggleFlyAsync(target, player, player.getName(), false, null);
+        handleFly(player, args[0]);
         return true;
     }
 
-    private void toggleFlyAsync(Player target, Player sender, String senderName,
-                                boolean selfToggle, CommandSender console) {
-        plugin.scheduler().runEntityTask(target, () -> {
-            boolean newState = !target.getAllowFlight();
-            target.setAllowFlight(newState);
-            if (!newState && target.isFlying()) {
-                target.setFlying(false);
-            }
+    private void handleFly(CommandSender sender, String targetArg) {
+        OfflinePlayer resolved = resolve(sender, targetArg);
+        if (resolved == null) return;
 
-            plugin.core().toggles().set(target.getUniqueId(), ToggleService.Toggle.FLY, newState);
+        UUID uuid = resolved.getUniqueId();
+        String finalName = resolved.getName() != null ? resolved.getName() : targetArg;
+        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
 
-            if (selfToggle) {
-                MessageUtil.send(target, newState ? "utilities.fly.enabled" : "utilities.fly.disabled", Map.of());
-            } else {
-                if (sender != null) {
-                    // Player sender
-                    MessageUtil.send(sender,
-                            newState ? "utilities.fly.enabled-for" : "utilities.fly.disabled-for",
-                            Map.of("player", target.getName()));
-                    MessageUtil.send(target,
-                            newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by",
-                            Map.of("player", senderName));
-                } else if (console != null) {
-                    console.sendMessage("Fly for " + target.getName() + " -> "
-                            + (newState ? "enabled" : "disabled"));
-                    if (plugin.config().consoleToPlayerFeedback()) {
-                        MessageUtil.send(target,
-                                newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by",
-                                Map.of("player", senderName));
+        boolean currentState = resolved.isOnline() && resolved.getPlayer() != null
+                ? resolved.getPlayer().getAllowFlight()
+                : plugin.core().toggles().isEnabled(uuid, ToggleService.Toggle.FLY);
+
+        boolean newState = !currentState;
+
+        plugin.scheduler().runAsync(() -> {
+            plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.FLY, newState);
+            plugin.database().records().setToggle(uuid, ToggleService.Toggle.FLY.getColumn(), newState);
+
+            plugin.scheduler().runTask(() -> {
+                if (resolved.isOnline() && resolved.getPlayer() != null) {
+                    Player onlineTarget = resolved.getPlayer();
+                    onlineTarget.setAllowFlight(newState);
+                    if (!newState && onlineTarget.isFlying()) {
+                        onlineTarget.setFlying(false);
                     }
                 }
-            }
+
+                if (sender instanceof Player p) {
+                    if (uuid.equals(p.getUniqueId())) {
+                        MessageUtil.send(p, newState ? "utilities.fly.enabled" : "utilities.fly.disabled", Map.of());
+                    } else {
+                        MessageUtil.send(p, newState ? "utilities.fly.enabled-for" : "utilities.fly.disabled-for",
+                                Map.of("player", finalName));
+                    }
+                } else {
+                    sender.sendMessage("Fly mode for " + finalName + " -> " + (newState ? "enabled" : "disabled"));
+                }
+
+                if (resolved.isOnline() && resolved.getPlayer() != null) {
+                    Player onlineTarget = resolved.getPlayer();
+                    if (sender instanceof Player p && onlineTarget.equals(p)) return;
+                    if (!(sender instanceof Player) && !plugin.config().consoleToPlayerFeedback()) return;
+
+                    MessageUtil.send(onlineTarget, newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by",
+                            Map.of("player", senderName));
+                }
+            });
         });
+    }
+
+    private OfflinePlayer resolve(CommandSender sender, String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
+
+        UUID cached = plugin.getNameCache().get(name.toLowerCase());
+        if (cached != null) return Bukkit.getOfflinePlayer(cached);
+
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
+        } else {
+            sender.sendMessage("Player not found.");
+        }
+        return null;
     }
 
     @Override
@@ -118,15 +134,12 @@ public final class FlyCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-
-        if (args.length != 1) return List.of();
+        if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
 
         if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.fly.others")) {
-                return List.of();
-            }
+            if (!player.hasPermission("aircore.command.fly.others")) return Collections.emptyList();
         }
 
         return Bukkit.getOnlinePlayers().stream()

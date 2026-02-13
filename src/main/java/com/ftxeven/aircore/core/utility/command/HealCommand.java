@@ -9,9 +9,10 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class HealCommand implements TabExecutor {
 
@@ -27,11 +28,10 @@ public final class HealCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
             String consoleName = plugin.lang().get("general.console-name");
 
-            if (args.length != 1) {
+            if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player|@a>");
                 return true;
             }
@@ -61,61 +61,72 @@ public final class HealCommand implements TabExecutor {
             return true;
         }
 
-        // Player execution
         if (!player.hasPermission("aircore.command.heal")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.heal"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.heal"));
             return true;
         }
 
-        // /heal (self)
         if (args.length == 0) {
             healPlayer(player);
             MessageUtil.send(player, "utilities.heal.self", Map.of());
             return true;
         }
 
-        // /heal @a
-        if (args[0].equalsIgnoreCase("@a")) {
-            if (!player.hasPermission("aircore.command.heal.all")) {
-                MessageUtil.send(player, "errors.player-not-found", Map.of("player", "@a"));
+        boolean hasOthers = player.hasPermission("aircore.command.heal.others");
+        boolean hasAll = player.hasPermission("aircore.command.heal.all");
+        String targetArg = args[0];
+
+        if (targetArg.equalsIgnoreCase("@a")) {
+            if (!hasAll) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.heal.all"));
                 return true;
             }
+        } else if (!targetArg.equalsIgnoreCase(player.getName())) {
+            if (!hasOthers) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.heal.others"));
+                return true;
+            }
+        }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            String usage = (hasOthers || hasAll)
+                    ? plugin.config().getUsage("heal", "others", label)
+                    : plugin.config().getUsage("heal", label);
+
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+            return true;
+        }
+
+        handleHeal(player, targetArg);
+        return true;
+    }
+
+    private void handleHeal(Player sender, String targetArg) {
+        if (targetArg.equalsIgnoreCase("@a")) {
             for (Player target : Bukkit.getOnlinePlayers()) {
                 healPlayer(target);
-                if (!target.equals(player)) {
-                    MessageUtil.send(target, "utilities.heal.by", Map.of("player", player.getName()));
+                if (!target.equals(sender)) {
+                    MessageUtil.send(target, "utilities.heal.by", Map.of("player", sender.getName()));
                 }
             }
-            MessageUtil.send(player, "utilities.heal.everyone", Map.of());
-            return true;
+            MessageUtil.send(sender, "utilities.heal.everyone", Map.of());
+            return;
         }
 
-        // /heal <player>
-        if (!player.hasPermission("aircore.command.heal.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.heal.others"));
-            return true;
-        }
-
-        Player target = Bukkit.getPlayerExact(args[0]);
+        Player target = Bukkit.getPlayerExact(targetArg);
         if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of("player", args[0]));
-            return true;
-        }
-
-        if (target.equals(player)) {
-            healPlayer(player);
-            MessageUtil.send(player, "utilities.heal.self", Map.of());
-            return true;
+            MessageUtil.send(sender, "errors.player-not-found", Map.of("player", targetArg));
+            return;
         }
 
         healPlayer(target);
-        MessageUtil.send(player, "utilities.heal.for", Map.of("player", target.getName()));
-        MessageUtil.send(target, "utilities.heal.by", Map.of("player", player.getName()));
 
-        return true;
+        if (target.equals(sender)) {
+            MessageUtil.send(sender, "utilities.heal.self", Map.of());
+        } else {
+            MessageUtil.send(sender, "utilities.heal.for", Map.of("player", target.getName()));
+            MessageUtil.send(target, "utilities.heal.by", Map.of("player", sender.getName()));
+        }
     }
 
     private void healPlayer(Player player) {
@@ -133,31 +144,31 @@ public final class HealCommand implements TabExecutor {
                                       @NotNull String label,
                                       String @NotNull [] args) {
 
-        if (args.length != 1) return List.of();
+        if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
+        List<String> suggestions = new ArrayList<>();
 
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.heal")) {
-                return List.of();
-            }
-        }
-
-        List<String> suggestions = List.of();
-
-        if (!(sender instanceof Player) || sender.hasPermission("aircore.command.heal.others")) {
-            suggestions = Bukkit.getOnlinePlayers().stream()
+        if (!(sender instanceof Player player)) {
+            if ("@a".startsWith(input)) suggestions.add("@a");
+            Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
                     .limit(20)
-                    .collect(Collectors.toList());
+                    .forEach(suggestions::add);
+            return suggestions;
         }
 
-        if (!(sender instanceof Player) || sender.hasPermission("aircore.command.heal.all")) {
-            if ("@a".startsWith(input)) {
-                suggestions = new java.util.ArrayList<>(suggestions);
-                suggestions.add("@a");
-            }
+        if (!player.hasPermission("aircore.command.heal")) return Collections.emptyList();
+
+        if (player.hasPermission("aircore.command.heal.others")) {
+            Bukkit.getOnlinePlayers().forEach(p -> {
+                if (p.getName().toLowerCase().startsWith(input)) suggestions.add(p.getName());
+            });
+        }
+
+        if (player.hasPermission("aircore.command.heal.all") && "@a".startsWith(input)) {
+            suggestions.add("@a");
         }
 
         return suggestions;

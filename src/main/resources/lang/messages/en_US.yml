@@ -38,7 +38,7 @@ general:
     <newline> <yellow>/aircore version</yellow> <gray>- Show plugin version</gray>"
   plugin-version: "%prefix% <green>Plugin version:</green> <gray>%version%</gray>"
   plugin-outdated: "%prefix% <green>There is a new update available! You are currently using <gold>%current%</gold> (latest version is <gold>%latest%</gold>).<green>
-    <newline><yellow>https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/</yellow>"
+    <newline><yellow><click:open_url:'https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/'>https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/</click></yellow>"
   plugin-reloaded: "%prefix% <green>Configuration successfully reloaded (<yellow>%module%</yellow>).</green>"
 
   modules:
@@ -97,16 +97,6 @@ chat:
     disabled-for: "%prefix% <green>Social spy disabled for <yellow>%player%</yellow>.</green>"
     enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled social spy for you.</green>"
     disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled social spy for you.</green>"
-
-  blocking:
-    added: "%prefix% <green>You have blocked <yellow>%player%</yellow>.</green>"
-    already: "%prefix% <red><yellow>%player%</yellow> is already blocked.</red>"
-    removed: "%prefix% <green>You have unblocked <yellow>%player%</yellow>.</green>"
-    limit: "%prefix% <red>You've reached the maximum number of blocks (%limit%).</red>"
-    not-blocked: "%prefix% <red><yellow>%player%</yellow> is not blocked.</red>"
-    error-cannot: "%prefix% <red>You cannot block <yellow>%player%</yellow>.</red>"
-    error-self: "%prefix% <red>You cannot block yourself.</red>"
-    error-blocked-by: "%prefix% <red>You cannot interact with <yellow>%player%</yellow> because they blocked you.</red>"
 
 # -----------------------------
 # ECONOMY
@@ -411,6 +401,16 @@ utilities:
     invalid-item: "%prefix% <red>You must hold an item in your hand to repair.</red>"
     inventory-not-damaged: "%prefix% <red>You have no damaged items in your inventory.</red>"
 
+  blocking:
+    added: "%prefix% <green>You have blocked <yellow>%player%</yellow>.</green>"
+    already: "%prefix% <red><yellow>%player%</yellow> is already blocked.</red>"
+    removed: "%prefix% <green>You have unblocked <yellow>%player%</yellow>.</green>"
+    limit: "%prefix% <red>You've reached the maximum number of blocks (%limit%).</red>"
+    not-blocked: "%prefix% <red><yellow>%player%</yellow> is not blocked.</red>"
+    error-cannot: "%prefix% <red>You cannot block <yellow>%player%</yellow>.</red>"
+    error-self: "%prefix% <red>You cannot block yourself.</red>"
+    error-blocked-by: "%prefix% <red>You cannot interact with <yellow>%player%</yellow> because they blocked you.</red>"
+
   errors:
     invsee-self: "%prefix% <red>You can only view other players' inventory.</red>"
 
@@ -520,6 +520,7 @@ death:
 errors:
   no-permission: "%prefix% <red>You need <dark_red>%permission%</dark_red> to do that.</red>"
   incorrect-usage: "%prefix% <red>Correct usage: <dark_red>%usage%</dark_red></red>"
+  too-many-arguments: "%prefix% <red>Too many arguments! Correct usage: <dark_red>%usage%</dark_red></red>"
   player-not-found: "%prefix% <red>Player not found.</red>"
   player-never-joined: "%prefix% <red>That player never joined the server before.</red>"
   none-online: "%prefix% <red>No players are online right now.</red>"

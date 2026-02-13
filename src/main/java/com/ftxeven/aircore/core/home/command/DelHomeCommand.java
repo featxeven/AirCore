@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -33,168 +34,159 @@ public final class DelHomeCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            if (args.length < 2) {
+                sender.sendMessage("Usage: /" + label + " <player> <homename>");
+                return true;
+            }
+
+            OfflinePlayer target = resolve(sender, args[0]);
+            if (target == null) return true;
+
+            handleDelete(sender, target, args[1], plugin.lang().get("general.console-name"), true);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.delhome")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.delhome"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.delhome"));
             return true;
         }
 
         if (args.length > 0 && args[0].equalsIgnoreCase("@p")) {
             if (!player.hasPermission("aircore.command.delhome.others")) {
-                MessageUtil.send(player, "errors.no-permission",
-                        Map.of("permission", "aircore.command.delhome.others"));
-                return true;
-            }
-
-            if (args.length < 2) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("delhome", "others", label)));
-                return true;
-            }
-
-            OfflinePlayer target = resolve(player, args[1]);
-            if (target == null) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.delhome.others"));
                 return true;
             }
 
             if (args.length < 3) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("delhome", "others", label)));
+                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("delhome", "others", label)));
                 return true;
             }
 
-            String homeName = args[2].toLowerCase();
-
-            var homes = manager.homes().getHomes(target.getUniqueId());
-            if (homes.isEmpty()) {
-                var loaded = plugin.database().homes().load(target.getUniqueId());
-                manager.homes().loadFromDatabase(target.getUniqueId(), loaded);
-                homes = manager.homes().getHomes(target.getUniqueId());
-            }
-
-            if (!homes.containsKey(homeName)) {
-                String displayName = target.getName() != null ? target.getName() : args[1];
-                if (target.getUniqueId().equals(player.getUniqueId())) {
-                    MessageUtil.send(player, "homes.errors.not-found", Map.of("name", homeName));
-                } else {
-                    MessageUtil.send(player, "homes.errors.not-found-for",
-                            Map.of("player", displayName, "name", homeName));
-                }
+            if (plugin.config().errorOnExcessArgs() && args.length > 3) {
+                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("delhome", "others", label)));
                 return true;
             }
 
-            manager.homes().deleteHome(target.getUniqueId(), homeName);
+            OfflinePlayer target = resolve(player, args[1]);
+            if (target == null) return true;
 
-            if (target.getUniqueId().equals(player.getUniqueId())) {
-                MessageUtil.send(player, "homes.management.deleted", Map.of("name", homeName));
-            } else {
-                String displayName = target.getName() != null ? target.getName() : args[1];
-                MessageUtil.send(player, "homes.management.deleted-for",
-                        Map.of("player", displayName, "name", homeName));
-
-                if (target.isOnline()) {
-                    Player targetOnline = target.getPlayer();
-                    MessageUtil.send(targetOnline, "homes.management.deleted-by",
-                            Map.of("player", player.getName(), "name", homeName));
-                }
-            }
+            handleDelete(player, target, args[2], player.getName(), false);
             return true;
         }
 
         if (args.length < 1) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("delhome", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("delhome", label)));
             return true;
         }
 
-        String homeName = args[0].toLowerCase();
-
-        var homes = manager.homes().getHomes(player.getUniqueId());
-        if (homes.isEmpty()) {
-            var loaded = plugin.database().homes().load(player.getUniqueId());
-            manager.homes().loadFromDatabase(player.getUniqueId(), loaded);
-            homes = manager.homes().getHomes(player.getUniqueId());
-        }
-
-        if (!homes.containsKey(homeName)) {
-            MessageUtil.send(player, "homes.errors.not-found", Map.of("name", homeName));
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("delhome", label)));
             return true;
         }
 
-        manager.homes().deleteHome(player.getUniqueId(), homeName);
-        MessageUtil.send(player, "homes.management.deleted", Map.of("name", homeName));
+        handleDelete(player, player, args[0], player.getName(), false);
         return true;
     }
 
+    private void handleDelete(CommandSender sender, OfflinePlayer target, String homeName, String actorName, boolean isConsole) {
+        UUID uuid = target.getUniqueId();
+        String nameLower = homeName.toLowerCase();
+
+        var homes = manager.homes().getHomes(uuid);
+        if (homes.isEmpty()) {
+            var loaded = plugin.database().homes().load(uuid);
+            manager.homes().loadFromDatabase(uuid, loaded);
+            homes = manager.homes().getHomes(uuid);
+        }
+
+        if (!homes.containsKey(nameLower)) {
+            if (sender instanceof Player p) {
+                if (uuid.equals(p.getUniqueId())) {
+                    MessageUtil.send(p, "homes.errors.not-found", Map.of("name", homeName));
+                } else {
+                    String displayName = target.getName() != null ? target.getName() : uuid.toString();
+                    MessageUtil.send(p, "homes.errors.not-found-for", Map.of("player", displayName, "name", homeName));
+                }
+            } else {
+                sender.sendMessage("Home '" + homeName + "' not found for " + (target.getName() != null ? target.getName() : uuid));
+            }
+            return;
+        }
+
+        manager.homes().deleteHome(uuid, nameLower);
+
+        if (sender instanceof Player p) {
+            if (uuid.equals(p.getUniqueId())) {
+                MessageUtil.send(p, "homes.management.deleted", Map.of("name", homeName));
+            } else {
+                String displayName = target.getName() != null ? target.getName() : uuid.toString();
+                MessageUtil.send(p, "homes.management.deleted-for", Map.of("player", displayName, "name", homeName));
+            }
+        } else {
+            sender.sendMessage("Deleted home '" + homeName + "' for " + (target.getName() != null ? target.getName() : uuid));
+        }
+
+        if (target.isOnline() && target.getPlayer() != null) {
+            Player onlineTarget = target.getPlayer();
+            if (sender instanceof Player p && onlineTarget.equals(p)) return;
+
+            if (!isConsole || plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(onlineTarget, "homes.management.deleted-by", Map.of("player", actorName, "name", homeName));
+            }
+        }
+    }
+
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return List.of();
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        String input = args[args.length - 1].toLowerCase();
+
+        if (!(sender instanceof Player player)) {
+            if (args.length == 1) {
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
+            }
+            if (args.length == 2) {
+                return getHomeCompletions(args[0], input);
+            }
+            return List.of();
+        }
 
         if (args.length == 1) {
-            Stream<String> names = manager.homes()
-                    .getHomes(player.getUniqueId())
-                    .keySet()
-                    .stream();
-
+            Stream<String> homes = manager.homes().getHomes(player.getUniqueId()).keySet().stream();
             if (player.hasPermission("aircore.command.delhome.others")) {
-                names = Stream.concat(names, Stream.of("@p"));
+                homes = Stream.concat(homes, Stream.of("@p"));
             }
-
-            return names.filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .limit(20)
-                    .toList();
+            return homes.filter(n -> n.toLowerCase().startsWith(input)).toList();
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("@p")
-                && player.hasPermission("aircore.command.delhome.others")) {
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                    .limit(20)
-                    .toList();
+        if (args.length == 2 && args[0].equalsIgnoreCase("@p") && player.hasPermission("aircore.command.delhome.others")) {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("@p")
-                && player.hasPermission("aircore.command.delhome.others")) {
-            UUID targetId = plugin.getNameCache().get(args[1].toLowerCase());
-            if (targetId == null) return List.of();
-
-            var homes = manager.homes().getHomes(targetId);
-            if (homes.isEmpty()) {
-                var loaded = plugin.database().homes().load(targetId);
-                manager.homes().loadFromDatabase(targetId, loaded);
-                homes = manager.homes().getHomes(targetId);
-            }
-
-            return homes.keySet().stream()
-                    .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
-                    .limit(20)
-                    .toList();
+        if (args.length == 3 && args[0].equalsIgnoreCase("@p") && player.hasPermission("aircore.command.delhome.others")) {
+            return getHomeCompletions(args[1], input);
         }
 
         return List.of();
     }
 
-    private OfflinePlayer resolve(Player sender, String name) {
+    private List<String> getHomeCompletions(String targetName, String input) {
+        UUID id = plugin.getNameCache().get(targetName.toLowerCase(Locale.ROOT));
+        if (id == null) return List.of();
+        return manager.homes().getHomes(id).keySet().stream().filter(n -> n.toLowerCase().startsWith(input)).toList();
+    }
+
+    private OfflinePlayer resolve(CommandSender sender, String name) {
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
+            if (online.getName().equalsIgnoreCase(name)) return online;
         }
+        UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
+        if (cached != null) return Bukkit.getOfflinePlayer(cached);
 
-        UUID cached = plugin.getNameCache().get(name.toLowerCase());
-        if (cached != null) {
-            return Bukkit.getOfflinePlayer(cached);
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "errors.player-never-joined", Map.of());
+        } else {
+            sender.sendMessage("Player not found in database.");
         }
-
-        MessageUtil.send(sender, "errors.player-never-joined", Map.of("player", name));
         return null;
     }
 }

@@ -11,6 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.event.inventory.InventoryType;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,12 @@ public final class SmithingTableCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("smithingtable", label)));
+            return true;
+        }
+
         plugin.scheduler().runEntityTask(player, () -> {
             Inventory smithing = Bukkit.createInventory(player, InventoryType.SMITHING);
             player.openInventory(smithing);
@@ -52,6 +59,6 @@ public final class SmithingTableCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

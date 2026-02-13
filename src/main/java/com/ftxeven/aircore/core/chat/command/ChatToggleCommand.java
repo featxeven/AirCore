@@ -31,91 +31,74 @@ public final class ChatToggleCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            String consoleName = plugin.lang().get("general.console-name");
-
-            if (args.length != 1) {
+            if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-
-            OfflinePlayer target = resolve(null, args[0]);
-            if (target == null) return true;
-
-            boolean newState = plugin.core().toggles().toggle(target.getUniqueId(), ToggleService.Toggle.CHAT);
-            String targetName = target.getName() != null ? target.getName() : args[0];
-            sender.sendMessage("Chat toggle status for " + targetName + " -> "
-                    + (newState ? "enabled" : "disabled"));
-
-            if (target.isOnline() && plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target.getPlayer(),
-                        newState ? "chat.toggles.chat.enabled-by" : "chat.toggles.chat.disabled-by",
-                        Map.of("player", consoleName));
-            }
+            handleToggle(sender, args[0], plugin.lang().get("general.console-name"), true);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.chattoggle")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.chattoggle"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.chattoggle"));
             return true;
         }
 
         if (args.length == 0) {
-            boolean newState = plugin.core().toggles().toggle(player.getUniqueId(), ToggleService.Toggle.CHAT);
-            MessageUtil.send(player,
-                    newState ? "chat.toggles.chat.enabled" : "chat.toggles.chat.disabled",
-                    Map.of());
-            return true;
-        }
-
-        OfflinePlayer resolved = resolve(player, args[0]);
-        if (resolved == null) return true;
-
-        if (resolved.getUniqueId().equals(player.getUniqueId())) {
-            boolean newState = plugin.core().toggles().toggle(player.getUniqueId(), ToggleService.Toggle.CHAT);
-            MessageUtil.send(player,
-                    newState ? "chat.toggles.chat.enabled" : "chat.toggles.chat.disabled",
-                    Map.of());
+            handleToggle(player, player.getName(), player.getName(), false);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.chattoggle.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.chattoggle.others"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.chattoggle.others"));
             return true;
         }
 
-        boolean newState = plugin.core().toggles().toggle(resolved.getUniqueId(), ToggleService.Toggle.CHAT);
-        String targetName = resolved.getName() != null ? resolved.getName() : args[0];
-
-        MessageUtil.send(player,
-                newState ? "chat.toggles.chat.enabled-for" : "chat.toggles.chat.disabled-for",
-                Map.of("player", targetName));
-
-        if (resolved.isOnline()) {
-            MessageUtil.send(resolved.getPlayer(),
-                    newState ? "chat.toggles.chat.enabled-by" : "chat.toggles.chat.disabled-by",
-                    Map.of("player", player.getName()));
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("chattoggle", "others", label)));
+            return true;
         }
 
+        handleToggle(player, args[0], player.getName(), false);
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
+    private void handleToggle(CommandSender sender, String targetName, String senderName, boolean isConsole) {
+        OfflinePlayer resolved = resolve(sender, targetName);
+        if (resolved == null) return;
 
-        if (args.length != 1) return List.of();
+        UUID uuid = resolved.getUniqueId();
+        boolean newState = plugin.core().toggles().toggle(uuid, ToggleService.Toggle.CHAT);
+        String finalTargetName = resolved.getName() != null ? resolved.getName() : targetName;
 
-        String input = args[0].toLowerCase();
+        if (sender instanceof Player p) {
+            if (uuid.equals(p.getUniqueId())) {
+                MessageUtil.send(p, newState ? "chat.toggles.chat.enabled" : "chat.toggles.chat.disabled", Map.of());
+            } else {
+                MessageUtil.send(p, newState ? "chat.toggles.chat.enabled-for" : "chat.toggles.chat.disabled-for",
+                        Map.of("player", finalTargetName));
+            }
+        } else {
+            sender.sendMessage("Chat toggle status for " + finalTargetName + " -> " + (newState ? "enabled" : "disabled"));
+        }
 
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.chattoggle.others")) {
-                return List.of();
+        if (resolved.isOnline() && resolved.getPlayer() != null) {
+            Player onlineTarget = resolved.getPlayer();
+            if (sender instanceof Player p && onlineTarget.equals(p)) return;
+
+            if (!isConsole || plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(onlineTarget, newState ? "chat.toggles.chat.enabled-by" : "chat.toggles.chat.disabled-by",
+                        Map.of("player", senderName));
             }
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (args.length != 1) return List.of();
+        String input = args[0].toLowerCase();
+        if (sender instanceof Player player && !player.hasPermission("aircore.command.chattoggle.others")) return List.of();
 
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
@@ -126,20 +109,15 @@ public final class ChatToggleCommand implements TabExecutor {
 
     private OfflinePlayer resolve(CommandSender sender, String name) {
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
+            if (online.getName().equalsIgnoreCase(name)) return online;
         }
-
         UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
-        if (cached != null) {
-            return Bukkit.getOfflinePlayer(cached);
-        }
+        if (cached != null) return Bukkit.getOfflinePlayer(cached);
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
-            sender.sendMessage("Player not found");
+            sender.sendMessage("Player not found in database.");
         }
         return null;
     }

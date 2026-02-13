@@ -47,6 +47,11 @@ public final class KitCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("kit", label)));
+            return true;
+        }
+
         String kitName = args[0].toLowerCase();
         YamlConfiguration kitsConfig = manager.kits().getConfig();
 

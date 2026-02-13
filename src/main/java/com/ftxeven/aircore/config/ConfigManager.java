@@ -25,15 +25,14 @@ public final class ConfigManager {
 
     // General settings
     public boolean notifyUpdates() { return config.getBoolean("notify-updates", true); }
-    public String getLocale() {
-        return config.getString("lang", "en_US");
-    }
+    public String getLocale() { return config.getString("lang", "en_US"); }
     public boolean consoleToPlayerFeedback() {
         return config.getBoolean("console-to-player-feedback", true);
     }
     public List<String> disabledCommands() {
         return config.getStringList("disabled-commands");
     }
+    public boolean errorOnExcessArgs() { return config.getBoolean("error-on-excess-args", true); }
 
     // Time format settings
     public String timeFormatMode() {

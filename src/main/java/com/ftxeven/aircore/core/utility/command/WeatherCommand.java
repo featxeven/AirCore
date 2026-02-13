@@ -10,9 +10,9 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class WeatherCommand implements TabExecutor {
@@ -29,94 +29,84 @@ public final class WeatherCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
-            if (args.length != 2) {
+            if (args.length < 2) {
                 sender.sendMessage("Usage: /" + label + " <clear|rain|thunder> <world>");
                 return true;
             }
 
             String type = args[0].toLowerCase();
-            if (!type.equals("clear") && !type.equals("rain") && !type.equals("thunder")) {
+            World targetWorld = Bukkit.getWorld(args[1]);
+
+            if (!isValidWeather(type)) {
                 sender.sendMessage("Invalid weather type. Use clear, rain, or thunder.");
                 return true;
             }
 
-            World targetWorld = Bukkit.getWorld(args[1]);
             if (targetWorld == null) {
                 sender.sendMessage("World not found.");
                 return true;
             }
 
             setWeather(targetWorld, type, () -> sender.sendMessage("Set weather in " + targetWorld.getName() + " to " + type));
-
             return true;
         }
 
-        // Player execution
         if (!player.hasPermission("aircore.command.weather")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.weather"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.weather"));
             return true;
         }
 
         if (args.length == 0) {
-            if (player.hasPermission("aircore.command.weather.world")) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("weather", "world", label)));
-            } else {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("weather", label)));
-            }
+            sendUsage(player, label);
             return true;
         }
 
+        boolean hasWorldPerm = player.hasPermission("aircore.command.weather.world");
         String type = args[0].toLowerCase();
-        if (!type.equals("clear") && !type.equals("rain") && !type.equals("thunder")) {
-            if (player.hasPermission("aircore.command.weather.world")) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("weather", "world", label)));
-            } else {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("weather", label)));
+
+        if (args.length >= 2 && !hasWorldPerm) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.weather.world"));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs()) {
+            int limit = hasWorldPerm ? 2 : 1;
+            if (args.length > limit) {
+                sendTooManyArgs(player, label, hasWorldPerm);
+                return true;
             }
+        }
+
+        if (!isValidWeather(type)) {
+            sendUsage(player, label);
             return true;
         }
 
         World targetWorld = player.getWorld();
-
         if (args.length == 2) {
-            if (!player.hasPermission("aircore.command.weather.world")) {
-                MessageUtil.send(player, "errors.no-permission",
-                        Map.of("permission", "aircore.command.weather.world"));
-                return true;
-            }
             targetWorld = Bukkit.getWorld(args[1]);
             if (targetWorld == null) {
-                MessageUtil.send(player, "errors.world-not-found",
-                        Map.of("world", args[1]));
+                MessageUtil.send(player, "errors.world-not-found", Map.of("world", args[1]));
                 return true;
             }
-        } else if (args.length > 2) {
-            MessageUtil.send(player, "errors.invalid-format", Map.of());
-            return true;
         }
 
-        World finalTargetWorld = targetWorld;
-        setWeather(targetWorld, type, () -> {
+        final World finalWorld = targetWorld;
+        setWeather(finalWorld, type, () -> plugin.scheduler().runEntityTask(player, () -> {
+            String typeDisplay = plugin.lang().get("utilities.weather.placeholders." + type);
             if (args.length == 2) {
-                plugin.scheduler().runEntityTask(player, () ->
-                        MessageUtil.send(player, "utilities.weather.set-in",
-                                Map.of("type", plugin.lang().get("utilities.weather.placeholders." + type),
-                                        "world", finalTargetWorld.getName())));
+                MessageUtil.send(player, "utilities.weather.set-in", Map.of("type", typeDisplay, "world", finalWorld.getName()));
             } else {
-                plugin.scheduler().runEntityTask(player, () ->
-                        MessageUtil.send(player, "utilities.weather.set",
-                                Map.of("type", plugin.lang().get("utilities.weather.placeholders." + type))));
+                MessageUtil.send(player, "utilities.weather.set", Map.of("type", typeDisplay));
             }
-        });
+        }));
 
         return true;
+    }
+
+    private boolean isValidWeather(String type) {
+        return type.equals("clear") || type.equals("rain") || type.equals("thunder");
     }
 
     private void setWeather(World world, String type, Runnable post) {
@@ -139,36 +129,51 @@ public final class WeatherCommand implements TabExecutor {
         });
     }
 
+    private void sendUsage(Player player, String label) {
+        String usage;
+        if (player.hasPermission("aircore.command.weather.world")) {
+            usage = plugin.config().getUsage("weather", "world", label);
+        } else {
+            usage = plugin.config().getUsage("weather", label);
+        }
+        MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", usage));
+    }
+
+    private void sendTooManyArgs(Player player, String label, boolean hasWorldPerm) {
+        String usage;
+        if (hasWorldPerm) {
+            usage = plugin.config().getUsage("weather", "world", label);
+        } else {
+            usage = plugin.config().getUsage("weather", label);
+        }
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.weather")) {
-                return List.of();
-            }
+        String input = args[args.length - 1].toLowerCase();
+
+        if (sender instanceof Player player && !player.hasPermission("aircore.command.weather")) {
+            return Collections.emptyList();
         }
 
         if (args.length == 1) {
-            return Stream.of("clear", "rain", "thunder")
-                    .filter(opt -> opt.startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
+            return Stream.of("clear", "rain", "thunder").filter(opt -> opt.startsWith(input)).toList();
         }
 
         if (args.length == 2) {
-            String type = args[0].toLowerCase();
-            if (type.equals("clear") || type.equals("rain") || type.equals("thunder")) {
-                if (!(sender instanceof Player) || sender.hasPermission("aircore.command.weather.world")) {
-                    return Bukkit.getWorlds().stream()
-                            .map(World::getName)
-                            .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                            .limit(20)
-                            .collect(Collectors.toList());
-                }
+            if (!(sender instanceof Player player) || player.hasPermission("aircore.command.weather.world")) {
+                return Bukkit.getWorlds().stream()
+                        .map(World::getName)
+                        .filter(name -> name.toLowerCase().startsWith(input))
+                        .limit(20)
+                        .toList();
             }
         }
 
-        return List.of();
+        return Collections.emptyList();
     }
 }

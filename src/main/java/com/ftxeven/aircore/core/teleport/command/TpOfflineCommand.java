@@ -3,8 +3,8 @@ package com.ftxeven.aircore.core.teleport.command;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -35,71 +35,49 @@ public final class TpOfflineCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.tpoffline")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.tpoffline"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tpoffline"));
             return true;
         }
 
-        if (args.length != 1) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("tpoffline", label)));
+        if (args.length < 1) {
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("tpoffline", label)));
             return true;
         }
 
-        String targetName = args[0];
-        OfflinePlayer resolved = resolve(player, targetName);
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("tpoffline", label)));
+            return true;
+        }
+
+        OfflinePlayer resolved = resolve(player, args[0]);
         if (resolved == null) return true;
 
+        String displayName = resolved.getName() != null ? resolved.getName() : args[0];
+
         // Online case
-        if (resolved.isOnline()) {
-            Player targetOnline = resolved.getPlayer();
-            if (targetOnline != null) {
-                plugin.core().teleports().teleport(player, targetOnline.getLocation());
-                MessageUtil.send(player, "teleport.direct.to-player",
-                        Map.of("player", targetOnline.getName()));
-                return true;
-            }
+        Player targetOnline = resolved.getPlayer();
+        if (targetOnline != null) {
+            plugin.core().teleports().teleport(player, targetOnline.getLocation());
+            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", displayName));
+            return true;
         }
 
         // Offline case
         Location loc = plugin.database().records().getLocation(resolved.getUniqueId());
         if (loc == null) {
-            String displayName = resolved.getName() != null ? resolved.getName() : args[0];
-            MessageUtil.send(player, "teleport.errors.location-not-found",
-                    Map.of("player", displayName));
+            MessageUtil.send(player, "teleport.errors.location-not-found", Map.of("player", displayName));
             return true;
         }
 
         plugin.core().teleports().teleport(player, loc);
-
-        String displayName = resolved.getName() != null ? resolved.getName() : args[0];
-        MessageUtil.send(player, "teleport.direct.to-player-last",
-                Map.of("player", displayName));
+        MessageUtil.send(player, "teleport.direct.to-player-last", Map.of("player", displayName));
 
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String[] args) {
-        if (args.length != 1) return List.of();
-        String input = args[0].toLowerCase();
-
-        return Bukkit.getOnlinePlayers().stream()
-                .map(Player::getName)
-                .filter(name -> name.toLowerCase().startsWith(input))
-                .limit(20)
-                .toList();
-    }
-
     private OfflinePlayer resolve(Player sender, String name) {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
-        }
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
 
         UUID cached = plugin.getNameCache().get(name.toLowerCase());
         if (cached != null) {
@@ -108,5 +86,20 @@ public final class TpOfflineCommand implements TabExecutor {
 
         MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender,
+                                      @NotNull Command cmd,
+                                      @NotNull String label,
+                                      String @NotNull [] args) {
+        if (args.length != 1) return List.of();
+        String input = args[0].toLowerCase();
+
+        return Bukkit.getOnlinePlayers().stream()
+                .map(Player::getName)
+                .filter(name -> name.toLowerCase().startsWith(input))
+                .limit(20)
+                .toList();
     }
 }

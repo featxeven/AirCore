@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -32,71 +33,67 @@ public final class BalanceCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            if (args.length != 1) {
-                sender.sendMessage("Usage: /balance <player>");
+            if (args.length < 1) {
+                sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-
-            OfflinePlayer target = resolve(sender, args[0]);
-            if (target == null) return true;
-
-            double balance = manager.balances().getBalance(target.getUniqueId());
-            String targetName = target.getName() != null ? target.getName() : args[0];
-            sender.sendMessage(targetName + "'s balance: " + manager.formats().formatAmount(balance));
+            handleBalance(sender, args[0]);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.balance")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.balance"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.balance"));
             return true;
         }
 
         if (args.length == 0) {
-            double balance = manager.balances().getBalance(player.getUniqueId());
-            MessageUtil.send(player, "economy.balance.self",
-                    Map.of("balance", manager.formats().formatAmount(balance)));
+            handleBalance(player, player.getName());
             return true;
         }
 
         if (!player.hasPermission("aircore.command.balance.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.balance.others"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.balance.others"));
             return true;
         }
 
-        OfflinePlayer resolved = resolve(player, args[0]);
-        if (resolved == null) return true;
-
-        if (resolved.getUniqueId().equals(player.getUniqueId())) {
-            double balance = manager.balances().getBalance(player.getUniqueId());
-            MessageUtil.send(player, "economy.balance.self",
-                    Map.of("balance", manager.formats().formatAmount(balance)));
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("balance", "others", label)));
             return true;
         }
 
-        String targetName = resolved.getName() != null ? resolved.getName() : args[0];
-        double balance = manager.balances().getBalance(resolved.getUniqueId());
-        MessageUtil.send(player, "economy.balance.player",
-                Map.of("player", targetName,
-                        "balance", manager.formats().formatAmount(balance)));
+        handleBalance(player, args[0]);
         return true;
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
+    private void handleBalance(CommandSender sender, String targetName) {
+        OfflinePlayer resolved = resolve(sender, targetName);
+        if (resolved == null) return;
 
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.balance")) return List.of();
-            if (!player.hasPermission("aircore.command.balance.others")) return List.of();
+        double balance = manager.balances().getBalance(resolved.getUniqueId());
+        String formatted = manager.formats().formatAmount(balance);
+        String finalName = resolved.getName() != null ? resolved.getName() : targetName;
+
+        if (sender instanceof Player p) {
+            if (resolved.getUniqueId().equals(p.getUniqueId())) {
+                MessageUtil.send(p, "economy.balance.self", Map.of("balance", formatted));
+            } else {
+                MessageUtil.send(p, "economy.balance.player", Map.of("player", finalName, "balance", formatted));
+            }
+        } else {
+            sender.sendMessage(finalName + "'s balance: " + formatted);
+        }
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (args.length != 1) return List.of();
+        String input = args[0].toLowerCase();
+
+        if (sender instanceof Player player && !player.hasPermission("aircore.command.balance.others")) {
+            return List.of();
         }
 
-        if (args.length != 1) return List.of();
-
-        String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
@@ -106,20 +103,15 @@ public final class BalanceCommand implements TabExecutor {
 
     private OfflinePlayer resolve(CommandSender sender, String name) {
         for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
+            if (online.getName().equalsIgnoreCase(name)) return online;
         }
-
-        UUID cached = plugin.getNameCache().get(name.toLowerCase());
-        if (cached != null) {
-            return Bukkit.getOfflinePlayer(cached);
-        }
+        UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
+        if (cached != null) return Bukkit.getOfflinePlayer(cached);
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
-            sender.sendMessage("Player not found");
+            sender.sendMessage("Player not found in database.");
         }
         return null;
     }

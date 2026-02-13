@@ -10,6 +10,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public final class UnblockCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            sender.sendMessage("Only players may use this command.");
             return true;
         }
 
@@ -39,8 +40,14 @@ public final class UnblockCommand implements TabExecutor {
             return true;
         }
 
-        if (args.length != 1) {
+        if (args.length == 0) {
             MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("unblock", label)));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
                     Map.of("usage", plugin.config().getUsage("unblock", label)));
             return true;
         }
@@ -55,7 +62,7 @@ public final class UnblockCommand implements TabExecutor {
         String displayName = resolved.getName() != null ? resolved.getName() : targetName;
 
         if (!plugin.core().blocks().isBlocked(playerId, targetId)) {
-            MessageUtil.send(player, "chat.blocking.not-blocked",
+            MessageUtil.send(player, "utilities.blocking.not-blocked",
                     Map.of("player", displayName));
             return true;
         }
@@ -65,7 +72,7 @@ public final class UnblockCommand implements TabExecutor {
                 plugin.database().blocks().remove(playerId, targetId)
         );
 
-        MessageUtil.send(player, "chat.blocking.removed",
+        MessageUtil.send(player, "utilities.blocking.removed",
                 Map.of("player", displayName));
         return true;
     }
@@ -76,31 +83,26 @@ public final class UnblockCommand implements TabExecutor {
                                       @NotNull String label,
                                       String @NotNull [] args) {
 
-        if (!(sender instanceof Player player)) return List.of();
-        if (!player.hasPermission("aircore.command.unblock")) return List.of();
-        if (args.length != 1) return List.of();
+        if (!(sender instanceof Player player)) return Collections.emptyList();
+        if (!player.hasPermission("aircore.command.unblock")) return Collections.emptyList();
+        if (args.length != 1) return Collections.emptyList();
 
         UUID playerId = player.getUniqueId();
         String input = args[0].toLowerCase();
 
         return plugin.core().blocks().getBlocked(playerId).stream()
-                .map(uuid -> plugin.getServer().getOfflinePlayer(uuid).getName())
+                .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
                 .filter(name -> name != null && name.toLowerCase().startsWith(input))
                 .limit(20)
                 .toList();
     }
 
     private OfflinePlayer resolve(Player sender, String name) {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
-        }
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
 
         UUID cached = plugin.getNameCache().get(name.toLowerCase());
-        if (cached != null) {
-            return Bukkit.getOfflinePlayer(cached);
-        }
+        if (cached != null) return Bukkit.getOfflinePlayer(cached);
 
         MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;

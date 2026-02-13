@@ -35,12 +35,12 @@ public final class EcoCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            handleConsole(sender, args);
+            handleConsole(sender, args, label);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.eco") && !player.hasPermission("aircore.command.eco.*")) {
-            MessageUtil.send(player, "no-permission", Map.of("permission", "aircore.command.eco"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.eco"));
             return true;
         }
 
@@ -57,12 +57,12 @@ public final class EcoCommand implements TabExecutor {
             case "reset" -> Op.RESET;
             default -> null;
         };
+
         if (op == null) {
             MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("eco", label)));
             return true;
         }
 
-        // sub permission
         if (!player.hasPermission("aircore.command.eco.*") && !player.hasPermission("aircore.command.eco." + sub)) {
             MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.eco." + sub));
             return true;
@@ -78,16 +78,14 @@ public final class EcoCommand implements TabExecutor {
         OfflinePlayer target = null;
 
         if (targetArg.equalsIgnoreCase("@o")) {
-            if (!player.hasPermission("aircore.command.eco.*") &&
-                    !player.hasPermission("aircore.command.eco." + sub + ".online")) {
-                MessageUtil.send(player, "errors.player-never-joined", Map.of());
+            if (!player.hasPermission("aircore.command.eco.*") && !player.hasPermission("aircore.command.eco." + sub + ".online")) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.eco." + sub + ".online"));
                 return true;
             }
             scope = Scope.ONLINE;
         } else if (targetArg.equalsIgnoreCase("@a")) {
-            if (!player.hasPermission("aircore.command.eco.*") &&
-                    !player.hasPermission("aircore.command.eco." + sub + ".all")) {
-                MessageUtil.send(player, "errors.player-never-joined", Map.of());
+            if (!player.hasPermission("aircore.command.eco.*") && !player.hasPermission("aircore.command.eco." + sub + ".all")) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.eco." + sub + ".all"));
                 return true;
             }
             scope = Scope.ALL;
@@ -109,9 +107,18 @@ public final class EcoCommand implements TabExecutor {
                 return true;
             }
             amount = parsed;
+
+            if (plugin.config().errorOnExcessArgs() && args.length > 3) {
+                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("eco", sub, label)));
+                return true;
+            }
+        } else {
+            if (plugin.config().errorOnExcessArgs() && args.length > 2) {
+                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("eco", sub, label)));
+                return true;
+            }
         }
 
-        // dispatch to shared handlers
         switch (op) {
             case GIVE -> handleGive(player, scope, target, targetArg, amount);
             case TAKE -> handleTake(player, scope, target, targetArg, amount);
@@ -122,10 +129,9 @@ public final class EcoCommand implements TabExecutor {
         return true;
     }
 
-    // Console branch
-    private void handleConsole(CommandSender console, String[] args) {
+    private void handleConsole(CommandSender console, String[] args, String label) {
         if (args.length < 2) {
-            console.sendMessage("Usage: /eco give|set|take|reset <player|@o|@a> [amount]");
+            console.sendMessage("Usage: /" + label + " give|set|take|reset <player|@o|@a> [amount]");
             return;
         }
 
@@ -138,7 +144,7 @@ public final class EcoCommand implements TabExecutor {
             default -> null;
         };
         if (op == null) {
-            console.sendMessage("Usage: /eco give|set|take|reset <player|@o|@a> [amount]");
+            console.sendMessage("Usage: /" + label + " give|set|take|reset <player|@o|@a> [amount]");
             return;
         }
 
@@ -152,7 +158,7 @@ public final class EcoCommand implements TabExecutor {
             scope = Scope.SINGLE;
             target = resolve(null, targetArg);
             if (target == null) {
-                console.sendMessage("Player not found.");
+                console.sendMessage("Player not found in database.");
                 return;
             }
         }
@@ -160,7 +166,7 @@ public final class EcoCommand implements TabExecutor {
         double amount = 0;
         if (op != Op.RESET) {
             if (args.length < 3) {
-                console.sendMessage("Usage: /eco " + sub + " <player|@o|@a> <amount>");
+                console.sendMessage("Usage: /" + label + " " + sub + " <player|@o|@a> <amount>");
                 return;
             }
             Double parsed = manager.formats().parseAmount(args[2]);
@@ -171,7 +177,6 @@ public final class EcoCommand implements TabExecutor {
             amount = parsed;
         }
 
-        // delegate to same handlers
         switch (op) {
             case GIVE -> handleGive(null, scope, target, targetArg, amount);
             case TAKE -> handleTake(null, scope, target, targetArg, amount);
@@ -184,7 +189,6 @@ public final class EcoCommand implements TabExecutor {
         return (sender != null) ? sender.getName() : plugin.lang().get("general.console-name");
     }
 
-    // Handlers
     private void handleGive(Player sender, Scope scope, OfflinePlayer target, String targetArg, double amount) {
         if (scope == Scope.SINGLE) {
             EconomyManager.Result res = manager.transactions().deposit(target.getUniqueId(), amount);
@@ -196,7 +200,6 @@ public final class EcoCommand implements TabExecutor {
                 return;
             }
 
-            // notify target only if the actor is not the same player
             if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
                 handleResult(sender, target, res, "economy.give.by", Map.of("amount", manager.formats().formatAmount(amount)));
             }
@@ -204,10 +207,8 @@ public final class EcoCommand implements TabExecutor {
             if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
                 MessageUtil.send(sender, "economy.give.player", Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
             } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                // giving to self
                 MessageUtil.send(sender, "economy.give.self", Map.of("amount", manager.formats().formatAmount(amount)));
             } else if (sender == null) {
-                // console feedback
                 sendToSender(null, "economy.give.player",
                         "Gave " + manager.formats().formatAmount(amount) + " to " + targetName,
                         Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
@@ -289,23 +290,19 @@ public final class EcoCommand implements TabExecutor {
 
         if (scope == Scope.SINGLE) {
             double current = manager.balances().getBalance(target.getUniqueId());
-            double allowed = (min != -1) ? current - min : amount; // how much may be removed without violating min
-
+            double allowed = (min != -1) ? current - min : amount;
             String targetName = target.getName() != null ? target.getName() : targetArg;
 
-            // If the allowed amount is less than the requested amount, refuse
             if (allowed < amount) {
                 sendToSender(sender, "economy.take.error-insufficient", "Insufficient funds.", Map.of("player", targetName));
                 return;
             }
 
-            // Proceed to withdraw the full requested amount
             EconomyManager.Result res = manager.transactions().withdraw(target.getUniqueId(), amount);
             if (res.type() == EconomyManager.ResultType.SUCCESS) {
                 double actualTaken = manager.formats().round(current - res.balance());
                 if (target.isOnline() && (sender != null || plugin.config().consoleToPlayerFeedback())) {
                     String actor = consoleName(sender);
-                    // skip notifying the target when the actor is the same player
                     if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
                         notifyPlayer(target.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", manager.formats().formatAmount(actualTaken)));
                     }
@@ -314,22 +311,18 @@ public final class EcoCommand implements TabExecutor {
                 if (sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
                     MessageUtil.send(sender, "economy.take.player", Map.of("player", targetName, "amount", manager.formats().formatAmount(actualTaken)));
                 } else if (sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                    // taking from self
                     MessageUtil.send(sender, "economy.take.self", Map.of("amount", manager.formats().formatAmount(actualTaken)));
                 } else if (sender == null) {
-                    // console feedback
                     sendToSender(null, "economy.take.player",
                             "Took " + manager.formats().formatAmount(actualTaken) + " from " + targetName,
                             Map.of("player", targetName, "amount", manager.formats().formatAmount(actualTaken)));
                 }
             } else {
-                // If transaction failed for some other reason, handleResult sends appropriate message
                 handleResult(sender, target, res, "economy.take.by", Map.of("amount", manager.formats().formatAmount(amount)));
             }
             return;
         }
 
-        // ONLINE or ALL - bulk async
         if (scope == Scope.ONLINE) {
             if (max >= 0 && amount > max) {
                 sendToSender(sender, "economy.take.error-max-amount", "Amount exceeds max.", Map.of("amount", manager.formats().formatAmount(max)));
@@ -346,9 +339,7 @@ public final class EcoCommand implements TabExecutor {
                     if (taken <= 0) continue;
 
                     EconomyManager.Result res = manager.transactions().withdraw(p.getUniqueId(), taken);
-                    if (res.type() == EconomyManager.ResultType.SUCCESS
-                            && shouldNotify
-                            && (sender == null || !Objects.equals(p, sender))) {
+                    if (res.type() == EconomyManager.ResultType.SUCCESS && shouldNotify && (sender == null || !Objects.equals(p, sender))) {
                         double actualTaken = manager.formats().round(current - res.balance());
                         notifyPlayer(p.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", manager.formats().formatAmount(actualTaken)));
                     }
@@ -375,10 +366,7 @@ public final class EcoCommand implements TabExecutor {
                     if (taken <= 0) continue;
 
                     EconomyManager.Result res = manager.transactions().withdraw(p.getUniqueId(), taken);
-                    if (res.type() == EconomyManager.ResultType.SUCCESS
-                            && p.isOnline()
-                            && shouldNotify
-                            && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
+                    if (res.type() == EconomyManager.ResultType.SUCCESS && p.isOnline() && shouldNotify && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
                         double actualTaken = manager.formats().round(current - res.balance());
                         notifyPlayer(p.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", manager.formats().formatAmount(actualTaken)));
                     }
@@ -390,7 +378,6 @@ public final class EcoCommand implements TabExecutor {
 
     private void handleSet(Player sender, Scope scope, OfflinePlayer target, String targetArg, double amount) {
         if (scope == Scope.SINGLE) {
-            // Validate min and max limits before attempting to set
             double min = plugin.config().economyMinBalance();
             double max = plugin.config().economyMaxBalance();
 
@@ -398,14 +385,12 @@ public final class EcoCommand implements TabExecutor {
                 sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(min)));
                 return;
             }
-
             if (max >= 0 && amount > max) {
                 sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(max)));
                 return;
             }
 
             EconomyManager.Result res = manager.transactions().setBalance(target.getUniqueId(), amount);
-            // notify target only if actor is not the same player
             if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
                 handleResult(sender, target, res, "economy.set.by", Map.of("amount", manager.formats().formatAmount(amount)));
             }
@@ -414,19 +399,15 @@ public final class EcoCommand implements TabExecutor {
                 String targetName = target.getName() != null ? target.getName() : targetArg;
                 MessageUtil.send(sender, "economy.set.player", Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
             } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                // set your own balance
                 MessageUtil.send(sender, "economy.set.self", Map.of("amount", manager.formats().formatAmount(amount)));
             } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender == null) {
                 String targetName = target.getName() != null ? target.getName() : targetArg;
-                sendToSender(null, "economy.set.player",
-                        "Set " + targetName + "'s balance to " + manager.formats().formatAmount(amount),
-                        Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
+                sendToSender(null, "economy.set.player", "Set " + targetName + "'s balance to " + manager.formats().formatAmount(amount), Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
             }
             return;
         }
 
-        // ONLINE or ALL - set across players and aggregate result flags
-        Runnable task = () -> {
+        plugin.scheduler().runAsync(() -> {
             AtomicBoolean anyInvalid = new AtomicBoolean(false);
             AtomicBoolean anyMin = new AtomicBoolean(false);
             AtomicBoolean anyMax = new AtomicBoolean(false);
@@ -456,18 +437,11 @@ public final class EcoCommand implements TabExecutor {
                 }
             }
 
-            if (anyInvalid.get()) {
-                sendToSender(sender, "errors.invalid-amount", "Invalid amount.", Map.of());
-            } else if (anyMin.get()) {
-                sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMinBalance())));
-            } else if (anyMax.get()) {
-                sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
-            } else {
-                sendToSender(sender, scope == Scope.ONLINE ? "economy.set.online" : "economy.set.all", "Set balances.", Map.of("amount", manager.formats().formatAmount(amount)));
-            }
-        };
-
-        plugin.scheduler().runAsync(task);
+            if (anyInvalid.get()) sendToSender(sender, "errors.invalid-amount", "Invalid amount.", Map.of());
+            else if (anyMin.get()) sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMinBalance())));
+            else if (anyMax.get()) sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
+            else sendToSender(sender, scope == Scope.ONLINE ? "economy.set.online" : "economy.set.all", "Set balances.", Map.of("amount", manager.formats().formatAmount(amount)));
+        });
     }
 
     private void handleReset(Player sender, Scope scope, OfflinePlayer target, String targetArg) {
@@ -483,7 +457,6 @@ public final class EcoCommand implements TabExecutor {
                 String targetName = target.getName() != null ? target.getName() : targetArg;
                 MessageUtil.send(sender, "economy.reset.player", Map.of("player", targetName));
             } else if (sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                // reset your own balance
                 MessageUtil.send(sender, "economy.reset.self", Map.of());
             } else if (sender == null) {
                 String targetName = target.getName() != null ? target.getName() : targetArg;
@@ -492,7 +465,7 @@ public final class EcoCommand implements TabExecutor {
             return;
         }
 
-        Runnable task = () -> {
+        plugin.scheduler().runAsync(() -> {
             boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
             String actor = consoleName(sender);
             if (scope == Scope.ONLINE) {
@@ -513,18 +486,12 @@ public final class EcoCommand implements TabExecutor {
                 }
                 sendToSender(sender, "economy.reset.all", "Reset all players.", Map.of());
             }
-        };
-
-        plugin.scheduler().runAsync(task);
+        });
     }
 
     private void sendToSender(Player sender, String key, String fallback, Map<String, String> placeholders) {
-        if (sender == null) {
-            // When console invoked, send the fallback text only
-            Bukkit.getConsoleSender().sendMessage(fallback);
-        } else {
-            MessageUtil.send(sender, key, placeholders);
-        }
+        if (sender == null) Bukkit.getConsoleSender().sendMessage(fallback);
+        else MessageUtil.send(sender, key, placeholders);
     }
 
     private void notifyPlayer(UUID uuid, String key, Map<String, String> placeholders) {
@@ -533,11 +500,7 @@ public final class EcoCommand implements TabExecutor {
         plugin.scheduler().runTask(() -> MessageUtil.send(p, key, placeholders));
     }
 
-    private void handleResult(Player sender,
-                              OfflinePlayer target,
-                              EconomyManager.Result res,
-                              String notifyKey,
-                              Map<String, String> placeholders) {
+    private void handleResult(Player sender, OfflinePlayer target, EconomyManager.Result res, String notifyKey, Map<String, String> placeholders) {
         switch (res.type()) {
             case SUCCESS -> {
                 if (target.isOnline() && (sender != null || plugin.config().consoleToPlayerFeedback())) {
@@ -546,13 +509,10 @@ public final class EcoCommand implements TabExecutor {
                     MessageUtil.send(target.getPlayer(), notifyKey, merged);
                 }
             }
-            case MAX_LIMIT -> sendToSender(sender, "economy.error-max",
-                    "Hit max limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
-            case MIN_LIMIT -> sendToSender(sender, "economy.error-min",
-                    "Hit min limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMinBalance())));
+            case MAX_LIMIT -> sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
+            case MIN_LIMIT -> sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMinBalance())));
             case INVALID -> sendToSender(sender, "errors.invalid-amount", "Invalid amount.", Map.of());
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -560,68 +520,34 @@ public final class EcoCommand implements TabExecutor {
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.getName().equalsIgnoreCase(name)) return online;
         }
-
         UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
         if (cached != null) return Bukkit.getOfflinePlayer(cached);
-
         if (sender != null) MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         List<String> completions = new ArrayList<>();
-        if (!sender.hasPermission("aircore.command.eco") && !sender.hasPermission("aircore.command.eco.*"))
-            return completions;
+        if (!sender.hasPermission("aircore.command.eco") && !sender.hasPermission("aircore.command.eco.*")) return completions;
 
         if (args.length == 1) {
             String input = args[0].toLowerCase(Locale.ROOT);
-            if (sender.hasPermission("aircore.command.eco.give") || sender.hasPermission("aircore.command.eco.*"))
-                if ("give".startsWith(input)) completions.add("give");
-            if (sender.hasPermission("aircore.command.eco.take") || sender.hasPermission("aircore.command.eco.*"))
-                if ("take".startsWith(input)) completions.add("take");
-            if (sender.hasPermission("aircore.command.eco.set") || sender.hasPermission("aircore.command.eco.*"))
-                if ("set".startsWith(input)) completions.add("set");
-            if (sender.hasPermission("aircore.command.eco.reset") || sender.hasPermission("aircore.command.eco.*"))
-                if ("reset".startsWith(input)) completions.add("reset");
+            for (String sub : List.of("give", "take", "set", "reset")) {
+                if (sender.hasPermission("aircore.command.eco." + sub) || sender.hasPermission("aircore.command.eco.*")) {
+                    if (sub.startsWith(input)) completions.add(sub);
+                }
+            }
             return completions;
         }
 
         if (args.length == 2) {
             String sub = args[0].toLowerCase(Locale.ROOT);
             String input = args[1].toLowerCase(Locale.ROOT);
-
-            boolean allowed = switch (sub) {
-                case "give" ->
-                        sender.hasPermission("aircore.command.eco.give") || sender.hasPermission("aircore.command.eco.*");
-                case "take" ->
-                        sender.hasPermission("aircore.command.eco.take") || sender.hasPermission("aircore.command.eco.*");
-                case "set" ->
-                        sender.hasPermission("aircore.command.eco.set") || sender.hasPermission("aircore.command.eco.*");
-                case "reset" ->
-                        sender.hasPermission("aircore.command.eco.reset") || sender.hasPermission("aircore.command.eco.*");
-                default -> false;
-            };
-            if (!allowed) return completions;
-
-            if (sender.hasPermission("aircore.command.eco." + sub + ".online") || sender.hasPermission("aircore.command.eco.*"))
-                if ("@o".startsWith(input)) completions.add("@o");
-            if (sender.hasPermission("aircore.command.eco." + sub + ".all") || sender.hasPermission("aircore.command.eco.*"))
-                if ("@a".startsWith(input)) completions.add("@a");
-
-            Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(input))
-                    .limit(20)
-                    .forEach(completions::add);
-
-            return completions;
+            if (sender.hasPermission("aircore.command.eco." + sub + ".online") || sender.hasPermission("aircore.command.eco.*")) if ("@o".startsWith(input)) completions.add("@o");
+            if (sender.hasPermission("aircore.command.eco." + sub + ".all") || sender.hasPermission("aircore.command.eco.*")) if ("@a".startsWith(input)) completions.add("@a");
+            Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(input)).limit(20).forEach(completions::add);
         }
-
         return completions;
     }
 }

@@ -10,9 +10,13 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public final class SpeedCommand implements TabExecutor {
 
@@ -25,122 +29,90 @@ public final class SpeedCommand implements TabExecutor {
         this.plugin = plugin;
     }
 
-    private float toApiSpeed(String type, double value) {
-        double scaled = type.equals("flying") ? (value * 0.1) : (value * 0.2);
-        if (scaled < 0.0) scaled = 0.0;
-        if (scaled > 1.0) scaled = 1.0;
-        return (float) scaled;
-    }
-
-    private String formatSpeed(double value) {
-        if (value == Math.floor(value)) {
-            return String.valueOf((int) value);
-        }
-        return String.valueOf(value);
-    }
-
-    private String formatType(String type) {
-        if (type == null) return plugin.lang().get("utilities.speed.placeholders.both");
-        return type.equals("flying") ? plugin.lang().get("utilities.speed.placeholders.flying") : plugin.lang().get("utilities.speed.placeholders.walking");
-    }
-
-    private void applySpeedToOffline(UUID uuid, String type, double value) {
-        if (type == null) {
-            plugin.database().records().setSpeed(uuid, "walking", value);
-            plugin.database().records().setSpeed(uuid, "flying", value);
-        } else {
-            plugin.database().records().setSpeed(uuid, type, value);
-        }
-    }
-
-    private void applySpeed(Player target, String type, double value) {
-        float apiValue = toApiSpeed(type, value);
-        plugin.scheduler().runEntityTask(target, () -> {
-            if (type.equals("flying")) {
-                target.setFlySpeed(apiValue);
-            } else {
-                target.setWalkSpeed(apiValue);
-            }
-        });
-        plugin.database().records().setSpeed(target.getUniqueId(), type, value);
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender,
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        if (!(sender instanceof Player player)) {
-            String consoleName = plugin.lang().get("general.console-name");
-
-            if (args.length < 2) {
-                sender.sendMessage("Usage: /" + label + " [walking|flying] <speed> <player>");
-                return true;
-            }
-
-            String type = null;
-            int index = 0;
-            if (args[0].equalsIgnoreCase("walking") || args[0].equalsIgnoreCase("flying")) {
-                type = args[0].toLowerCase();
-                index++;
-            }
-
-            double value = parseSpeed(sender, args[index]);
-            if (value < 0) return true;
-
-            if (args.length <= index + 1) {
-                sender.sendMessage("Usage: /" + label + " [walking|flying] <speed> <player>");
-                return true;
-            }
-
-            for (int i = index + 1; i < args.length; i++) {
-                processSpeedChange(sender, args[i], type, value, consoleName, true);
-            }
-            return true;
-        }
-
-        if (!player.hasPermission("aircore.command.speed")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.speed"));
-            return true;
-        }
-
         if (args.length < 1) {
-            String usageKey = player.hasPermission("aircore.command.speed.others") ? "others" : null;
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("speed", usageKey, label)));
+            sendUsage(sender, label);
             return true;
         }
 
-        String type = null;
-        int index = 0;
-        if (args[0].equalsIgnoreCase("walking") || args[0].equalsIgnoreCase("flying")) {
-            type = args[0].toLowerCase();
-            index++;
-        }
-
-        if (args.length <= index) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("speed", label)));
+        if (sender instanceof Player p && !p.hasPermission("aircore.command.speed")) {
+            MessageUtil.send(p, "errors.no-permission", Map.of("permission", "aircore.command.speed"));
             return true;
         }
 
-        double value = parseSpeed(player, args[index]);
+        if (sender instanceof Player p && plugin.config().errorOnExcessArgs()) {
+            boolean hasOthers = p.hasPermission("aircore.command.speed.others");
+            int limit = hasOthers ? 3 : 2;
+
+            if (args.length > limit) {
+                if (hasOthers) {
+                    MessageUtil.send(p, "errors.too-many-arguments",
+                            Map.of("usage", plugin.config().getUsage("speed", "others", label)));
+                } else {
+                    MessageUtil.send(p, "errors.too-many-arguments",
+                            Map.of("usage", plugin.config().getUsage("speed", label)));
+                }
+                return true;
+            }
+        }
+
+        double value = parseSpeed(sender, args[0]);
         if (value < 0) return true;
 
-        if (player.hasPermission("aircore.command.speed.others") && args.length > index + 1) {
-            for (int i = index + 1; i < args.length; i++) {
-                processSpeedChange(player, args[i], type, value, player.getName(), false);
+        String type = null;
+        String targetName = null;
+
+        if (args.length >= 2) {
+            String secondArg = args[1].toLowerCase();
+            if (secondArg.equals("walking") || secondArg.equals("flying")) {
+                type = secondArg;
+                if (args.length >= 3) {
+                    targetName = args[2];
+                }
+            } else {
+                targetName = args[1];
             }
-            return true;
         }
 
-        // Self behavior
-        String finalType = (type == null) ? (player.isFlying() ? "flying" : "walking") : type;
-        applySpeed(player, finalType, value);
-        MessageUtil.send(player, "utilities.speed.set",
-                Map.of("type", formatType(finalType), "speed", formatSpeed(value)));
+        if (targetName != null) {
+            if (sender instanceof Player p && !p.hasPermission("aircore.command.speed.others")) {
+                MessageUtil.send(p, "errors.no-permission", Map.of("permission", "aircore.command.speed.others"));
+                return true;
+            }
+
+            processSpeedChange(sender, targetName, type, value);
+        } else {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage("Usage: /" + label + " <speed> [walking|flying] <player>");
+                return true;
+            }
+
+            String finalType = (type == null) ? (player.isFlying() ? "flying" : "walking") : type;
+            applySpeed(player, finalType, value);
+            MessageUtil.send(player, "utilities.speed.set",
+                    Map.of("type", formatType(finalType), "speed", formatSpeed(value)));
+        }
 
         return true;
+    }
+
+    private void sendUsage(CommandSender sender, String label) {
+        if (sender instanceof Player p) {
+            if (p.hasPermission("aircore.command.speed.others")) {
+                MessageUtil.send(p, "errors.incorrect-usage",
+                        Map.of("usage", plugin.config().getUsage("speed", "others", label)));
+            } else {
+                MessageUtil.send(p, "errors.incorrect-usage",
+                        Map.of("usage", plugin.config().getUsage("speed", label)));
+            }
+        } else {
+            sender.sendMessage("Usage: /" + label + " <speed> [walking|flying] <player>");
+        }
     }
 
     private double parseSpeed(CommandSender sender, String input) {
@@ -162,20 +134,20 @@ public final class SpeedCommand implements TabExecutor {
         }
     }
 
-    private void processSpeedChange(CommandSender sender, String targetName, String type, double value, String senderName, boolean isConsole) {
+    private void processSpeedChange(CommandSender sender, String targetName, String type, double value) {
         OfflinePlayer resolved = resolve(sender, targetName);
         if (resolved == null) return;
 
         String displayName = resolved.getName() != null ? resolved.getName() : targetName;
+        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
 
         if (resolved.isOnline() && resolved.getPlayer() != null) {
             Player targetPlayer = resolved.getPlayer();
-            // If online and type is null, we determine it based on their current state
             String finalType = (type == null) ? (targetPlayer.isFlying() ? "flying" : "walking") : type;
 
             applySpeed(targetPlayer, finalType, value);
 
-            if (!isConsole && sender instanceof Player p) {
+            if (sender instanceof Player p) {
                 if (targetPlayer.equals(p)) {
                     MessageUtil.send(p, "utilities.speed.set", Map.of("type", formatType(finalType), "speed", formatSpeed(value)));
                 } else {
@@ -192,7 +164,7 @@ public final class SpeedCommand implements TabExecutor {
             applySpeedToOffline(resolved.getUniqueId(), type, value);
             String typeDisplay = formatType(type);
 
-            if (!isConsole && sender instanceof Player p) {
+            if (sender instanceof Player p) {
                 MessageUtil.send(p, "utilities.speed.set-for", Map.of("type", typeDisplay, "speed", formatSpeed(value), "player", displayName));
             } else {
                 sender.sendMessage("Set " + typeDisplay + " speed for " + displayName + " (Offline) -> " + formatSpeed(value));
@@ -200,37 +172,86 @@ public final class SpeedCommand implements TabExecutor {
         }
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        if (args.length == 1) {
-            if (sender instanceof Player p && !p.hasPermission("aircore.command.speed")) return List.of();
-            return List.of("walking", "flying");
-        }
-        if (args.length >= 2) {
-            if (!(sender instanceof Player) || sender.hasPermission("aircore.command.speed.others")) {
-                String input = args[args.length - 1].toLowerCase();
-                return Bukkit.getOnlinePlayers().stream()
-                        .map(Player::getName)
-                        .filter(name -> name.toLowerCase().startsWith(input))
-                        .limit(20)
-                        .toList();
-            }
-        }
-        return List.of();
+    private OfflinePlayer resolveSilent(String name) {
+        if (name == null) return null;
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
+
+        UUID cached = plugin.getNameCache().get(name.toLowerCase(Locale.ROOT));
+        return (cached != null) ? Bukkit.getOfflinePlayer(cached) : null;
     }
 
     private OfflinePlayer resolve(CommandSender sender, String name) {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) return online;
-        }
-        UUID cached = plugin.getNameCache().get(name.toLowerCase());
-        if (cached != null) return Bukkit.getOfflinePlayer(cached);
+        OfflinePlayer found = resolveSilent(name);
+        if (found != null) return found;
 
-        if (sender instanceof Player p) MessageUtil.send(p, "errors.player-never-joined", Map.of());
-        else sender.sendMessage("Player not found.");
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
+        } else {
+            sender.sendMessage("Player not found in database.");
+        }
         return null;
+    }
+
+    private void applySpeed(Player target, String type, double value) {
+        float apiValue = toApiSpeed(type, value);
+        plugin.scheduler().runEntityTask(target, () -> {
+            if (type.equals("flying")) target.setFlySpeed(apiValue);
+            else target.setWalkSpeed(apiValue);
+        });
+        plugin.database().records().setSpeed(target.getUniqueId(), type, value);
+    }
+
+    private float toApiSpeed(String type, double value) {
+        double scaled = "flying".equals(type) ? (value * 0.1) : (value * 0.2);
+        return (float) Math.min(1.0, Math.max(0.0, scaled));
+    }
+
+    private String formatSpeed(double value) {
+        return (value == Math.floor(value)) ? String.valueOf((int) value) : String.valueOf(value);
+    }
+
+    private String formatType(String type) {
+        if (type == null) return plugin.lang().get("utilities.speed.placeholders.both");
+        return type.equals("flying") ? plugin.lang().get("utilities.speed.placeholders.flying") : plugin.lang().get("utilities.speed.placeholders.walking");
+    }
+
+    private void applySpeedToOffline(UUID uuid, String type, double value) {
+        if (type == null) {
+            plugin.database().records().setSpeed(uuid, "walking", value);
+            plugin.database().records().setSpeed(uuid, "flying", value);
+        } else {
+            plugin.database().records().setSpeed(uuid, type, value);
+        }
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        String input = args[args.length - 1].toLowerCase();
+        if (args.length == 1) return Collections.emptyList();
+
+        boolean isConsole = !(sender instanceof Player);
+        boolean hasOthers = isConsole || sender.hasPermission("aircore.command.speed.others");
+
+        if (args.length == 2) {
+            List<String> completions = new ArrayList<>(Stream.of("walking", "flying")
+                    .filter(s -> s.startsWith(input)).toList());
+
+            if (hasOthers) {
+                Bukkit.getOnlinePlayers().forEach(p -> {
+                    if (p.getName().toLowerCase().startsWith(input)) completions.add(p.getName());
+                });
+            }
+            return completions;
+        }
+
+        if (args.length == 3 && hasOthers) {
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .limit(20)
+                    .toList();
+        }
+        return Collections.emptyList();
     }
 }

@@ -3,10 +3,13 @@ package com.ftxeven.aircore.core.utility.command;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.utility.UtilityManager;
 import com.ftxeven.aircore.util.MessageUtil;
-import org.bukkit.command.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +40,14 @@ public final class DelWarpCommand implements TabExecutor {
             return true;
         }
 
-        if (args.length < 1) {
+        if (args.length == 0) {
             MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("delwarp", label)));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
                     Map.of("usage", plugin.config().getUsage("delwarp", label)));
             return true;
         }
@@ -59,18 +68,16 @@ public final class DelWarpCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return List.of();
-        if (!player.hasPermission("aircore.command.delwarp")) return List.of();
+        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
+        if (!player.hasPermission("aircore.command.delwarp")) return Collections.emptyList();
 
-        if (args.length == 1) {
-            var section = manager.warps().getConfig().getConfigurationSection("warps");
-            if (section == null) return List.of();
+        var section = manager.warps().getConfig().getConfigurationSection("warps");
+        if (section == null) return Collections.emptyList();
 
-            return section.getKeys(false).stream()
-                    .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .limit(20)
-                    .toList();
-        }
-        return List.of();
+        String input = args[0].toLowerCase();
+        return section.getKeys(false).stream()
+                .filter(name -> name.toLowerCase().startsWith(input))
+                .limit(20)
+                .toList();
     }
 }

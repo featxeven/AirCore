@@ -75,7 +75,7 @@ public final class CoreInitializer {
         reg("tpa", new TpaCommand(plugin, plugin.teleport()));
         reg("tpahere", new TpaHereCommand(plugin, plugin.teleport()));
         reg("tpaccept", new TpAcceptCommand(plugin, plugin.teleport()));
-        reg("tpdeny", new TpDenyCommand(plugin.teleport()));
+        reg("tpdeny", new TpDenyCommand(plugin, plugin.teleport()));
         reg("tptoggle", new TpToggleCommand(plugin));
         reg("tp", new TpCommand(plugin));
         reg("tphere", new TpHereCommand(plugin));
@@ -94,7 +94,7 @@ public final class CoreInitializer {
         reg("block", new BlockCommand(plugin));
         reg("unblock", new UnblockCommand(plugin));
         reg("spawn", new SpawnCommand(plugin, plugin.utility()));
-        reg("setspawn", new SetSpawnCommand(plugin.utility()));
+        reg("setspawn", new SetSpawnCommand(plugin, plugin.utility()));
         reg("warp", new WarpCommand(plugin, plugin.utility()));
         reg("setwarp", new SetWarpCommand(plugin, plugin.utility()));
         reg("delwarp", new DelWarpCommand(plugin, plugin.utility()));
@@ -105,7 +105,7 @@ public final class CoreInitializer {
         reg("weather", new WeatherCommand(plugin));
         reg("craftingtable", new CraftingTableCommand(plugin));
         reg("anvil", new AnvilCommand(plugin));
-        reg("cartography", new CartographyCommand());
+        reg("cartography", new CartographyCommand(plugin));
         reg("loom", new LoomCommand(plugin));
         reg("smithingtable", new SmithingTableCommand(plugin));
         reg("stonecutter", new StonecutterCommand(plugin));

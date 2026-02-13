@@ -2,15 +2,13 @@ package com.ftxeven.aircore.core.utility.command;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.MessageUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.event.inventory.InventoryType;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +27,7 @@ public final class StonecutterCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            sender.sendMessage("Only players may use this command.");
             return true;
         }
 
@@ -39,10 +37,13 @@ public final class StonecutterCommand implements TabExecutor {
             return true;
         }
 
-        plugin.scheduler().runEntityTask(player, () -> {
-            Inventory stonecutter = Bukkit.createInventory(player, InventoryType.STONECUTTER);
-            player.openInventory(stonecutter);
-        });
+        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("stonecutter", label)));
+            return true;
+        }
+
+        plugin.scheduler().runEntityTask(player, () -> player.openStonecutter(null, true));
 
         return true;
     }
@@ -52,6 +53,6 @@ public final class StonecutterCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

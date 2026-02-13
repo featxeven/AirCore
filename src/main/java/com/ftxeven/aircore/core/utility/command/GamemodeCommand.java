@@ -4,10 +4,13 @@ import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Bukkit;
-import org.bukkit.command.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -26,110 +29,93 @@ public final class GamemodeCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
-            String consoleName = plugin.lang().get("general.console-name");
-
-            if (args.length != 2) {
+            if (args.length < 2) {
                 sender.sendMessage("Usage: /" + label + " <gamemode> <player>");
                 return true;
             }
-
-            GameMode mode = parseMode(args[0]);
-            if (mode == null) {
-                sender.sendMessage("Invalid gamemode.");
-                return true;
-            }
-
-            Player target = Bukkit.getPlayerExact(args[1]);
-            if (target == null) {
-                sender.sendMessage("Player not found.");
-                return true;
-            }
-
-            setGameMode(target, mode);
-            sender.sendMessage("Set gamemode for " + target.getName() + " -> " + mode.name().toLowerCase());
-
-            if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target, "utilities.gamemode.set-by",
-                        Map.of("player", consoleName,
-                                "gamemode", plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase())));
-            }
+            handleGamemode(sender, args[0], args[1]);
             return true;
         }
 
-        // Player execution
         if (!player.hasPermission("aircore.command.gamemode")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.gamemode"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.gamemode"));
             return true;
         }
 
-        if (args.length < 1) {
-            if (player.hasPermission("aircore.command.gamemode.others")) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("gamemode", "others", label)));
-            } else {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("gamemode", label)));
-            }
+        if (args.length == 0) {
+            String usageKey = player.hasPermission("aircore.command.gamemode.others") ? "others" : null;
+            MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("gamemode", usageKey, label)));
+            return true;
+        }
+
+        boolean hasOthers = player.hasPermission("aircore.command.gamemode.others");
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 2) {
+            String usageKey = hasOthers ? "others" : null;
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("gamemode", usageKey, label)));
             return true;
         }
 
         GameMode mode = parseMode(args[0]);
         if (mode == null) {
-            if (player.hasPermission("aircore.command.gamemode.others")) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("gamemode", "others", label)));
-            } else {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("gamemode", label)));
-            }
+            String usageKey = hasOthers ? "others" : null;
+            MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("gamemode", usageKey, label)));
             return true;
         }
 
-        // /gamemode <mode>
         if (args.length == 1) {
-            setGameMode(player, mode);
-            MessageUtil.send(player, "utilities.gamemode.set",
-                    Map.of("gamemode", plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase())));
+            handleGamemode(player, args[0], player.getName());
             return true;
         }
 
-        // /gamemode <mode> <player>
-        if (!player.hasPermission("aircore.command.gamemode.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.gamemode.others"));
+        if (!hasOthers) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.gamemode.others"));
             return true;
         }
 
-        Player target = Bukkit.getPlayerExact(args[1]);
-        if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of("player", args[1]));
-            return true;
-        }
-
-        setGameMode(target, mode);
-
-        if (target.equals(player)) {
-            MessageUtil.send(player, "utilities.gamemode.set",
-                    Map.of("gamemode", plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase())));
-        } else {
-            MessageUtil.send(player, "utilities.gamemode.set-for",
-                    Map.of("gamemode", plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase()),
-                            "player", target.getName()));
-
-            MessageUtil.send(target, "utilities.gamemode.set-by",
-                    Map.of("player", player.getName(),
-                            "gamemode", plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase())));
-        }
+        handleGamemode(player, args[0], args[1]);
         return true;
     }
 
-    private void setGameMode(Player target, GameMode mode) {
-        plugin.scheduler().runEntityTask(target, () ->
-                target.setGameMode(mode)
-        );
+    private void handleGamemode(CommandSender sender, String modeInput, String targetName) {
+        GameMode mode = parseMode(modeInput);
+        if (mode == null) {
+            if (!(sender instanceof Player)) sender.sendMessage("Invalid gamemode.");
+            return;
+        }
+
+        Player target = Bukkit.getPlayerExact(targetName);
+        if (target == null) {
+            if (sender instanceof Player p) {
+                MessageUtil.send(p, "errors.player-not-found", Map.of("player", targetName));
+            } else {
+                sender.sendMessage("Player not found.");
+            }
+            return;
+        }
+
+        plugin.scheduler().runEntityTask(target, () -> target.setGameMode(mode));
+
+        String modeName = plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase());
+        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
+
+        if (sender instanceof Player p) {
+            if (target.equals(p)) {
+                MessageUtil.send(p, "utilities.gamemode.set", Map.of("gamemode", modeName));
+            } else {
+                MessageUtil.send(p, "utilities.gamemode.set-for", Map.of("gamemode", modeName, "player", target.getName()));
+                MessageUtil.send(target, "utilities.gamemode.set-by", Map.of("player", p.getName(), "gamemode", modeName));
+            }
+        } else {
+            sender.sendMessage("Set gamemode for " + target.getName() + " -> " + mode.name().toLowerCase());
+            if (plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(target, "utilities.gamemode.set-by", Map.of("player", senderName, "gamemode", modeName));
+            }
+        }
     }
 
     private GameMode parseMode(String input) {
@@ -147,28 +133,29 @@ public final class GamemodeCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (args.length == 1) {
-            if (sender instanceof Player player) {
-                if (!player.hasPermission("aircore.command.gamemode")) {
-                    return List.of();
-                }
-            }
 
+        String input = args[args.length - 1].toLowerCase();
+
+        if (args.length == 1) {
+            if (sender instanceof Player player && !player.hasPermission("aircore.command.gamemode")) {
+                return Collections.emptyList();
+            }
             return Stream.of("survival", "creative", "adventure", "spectator")
-                    .filter(opt -> opt.startsWith(args[0].toLowerCase()))
+                    .filter(opt -> opt.startsWith(input))
                     .toList();
         }
 
         if (args.length == 2) {
-            if (!(sender instanceof Player) || sender.hasPermission("aircore.command.gamemode.others")) {
-                return Bukkit.getOnlinePlayers().stream()
-                        .map(Player::getName)
-                        .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
-                        .limit(20)
-                        .toList();
+            if (sender instanceof Player player) {
+                if (!player.hasPermission("aircore.command.gamemode.others")) return Collections.emptyList();
             }
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .limit(20)
+                    .toList();
         }
 
-        return List.of();
+        return Collections.emptyList();
     }
 }

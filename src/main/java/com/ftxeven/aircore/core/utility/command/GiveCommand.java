@@ -31,92 +31,43 @@ public final class GiveCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
             if (args.length < 2) {
                 sender.sendMessage("Usage: /" + label + " <item> [amount] [player|@a]");
                 return true;
             }
-
-            Material material = Material.matchMaterial(args[0]);
-            if (material == null || !material.isItem()) {
-                sender.sendMessage("Invalid item: " + args[0]);
-                return true;
-            }
-
-            int amount = 1;
-            String targetArg = null;
-
-            if (args.length == 2) {
-                if (isInteger(args[1])) {
-                    amount = Integer.parseInt(args[1]);
-                } else {
-                    targetArg = args[1];
-                }
-            } else {
-                if (!isInteger(args[1])) {
-                    sender.sendMessage("Invalid amount: " + args[1]);
-                    return true;
-                }
-                amount = Integer.parseInt(args[1]);
-                targetArg = args[2];
-            }
-
-            ItemStack stack = new ItemStack(material, amount);
-            String itemName = getItemName(material);
-
-            if (targetArg == null) {
-                sender.sendMessage("Console must specify a player or @a.");
-                return true;
-            }
-
-            if (targetArg.equalsIgnoreCase("@a")) {
-                for (Player target : Bukkit.getOnlinePlayers()) {
-                    giveItem(target, stack.clone());
-                    if (plugin.config().consoleToPlayerFeedback()) {
-                        MessageUtil.send(target, "utilities.give.by",
-                                Map.of("player", plugin.lang().get("general.console-name"),
-                                        "amount", String.valueOf(amount),
-                                        "item", itemName));
-                    }
-                }
-                sender.sendMessage("Gave " + amount + " " + itemName + " to everyone.");
-                return true;
-            }
-
-            Player target = Bukkit.getPlayerExact(targetArg);
-            if (target == null) {
-                sender.sendMessage("Player not found.");
-                return true;
-            }
-
-            giveItem(target, stack);
-            sender.sendMessage("Gave " + amount + " " + itemName + " to " + target.getName());
-            if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target, "utilities.give.by",
-                        Map.of("player", plugin.lang().get("general.console-name"),
-                                "amount", String.valueOf(amount),
-                                "item", itemName));
-            }
+            handleGive(sender, args);
             return true;
         }
 
-        // Player execution
         if (!player.hasPermission("aircore.command.give")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.give"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.give"));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission("aircore.command.give.others");
+        boolean hasAll = player.hasPermission("aircore.command.give.all");
 
         if (args.length == 0) {
-            if (player.hasPermission("aircore.command.give.others")) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("give", "others", label)));
-            } else {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("give", label)));
-            }
+            String usage = (hasOthers || hasAll)
+                    ? plugin.config().getUsage("give", "others", label)
+                    : plugin.config().getUsage("give", label);
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", usage));
             return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs()) {
+            boolean isTooMany = false;
+            if (!hasOthers && !hasAll && args.length > 2) isTooMany = true;
+            else if (args.length > 3) isTooMany = true;
+
+            if (isTooMany) {
+                String usage = (hasOthers || hasAll)
+                        ? plugin.config().getUsage("give", "others", label)
+                        : plugin.config().getUsage("give", label);
+                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+                return true;
+            }
         }
 
         Material material = Material.matchMaterial(args[0]);
@@ -125,6 +76,48 @@ public final class GiveCommand implements TabExecutor {
             return true;
         }
 
+        if (args.length >= 2) {
+            String arg1 = args[1];
+            boolean arg1IsInt = isInteger(arg1);
+            boolean arg1IsAllSelector = arg1.equalsIgnoreCase("@a");
+
+            if (!arg1IsInt) {
+                if (arg1IsAllSelector) {
+                    if (!hasAll) {
+                        MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.give.all"));
+                        return true;
+                    }
+                } else if (!hasOthers) {
+                    MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.give.others"));
+                    return true;
+                }
+            }
+        }
+
+        if (args.length == 3) {
+            String arg2 = args[2];
+            boolean arg2IsInt = isInteger(arg2);
+            boolean arg2IsAllSelector = arg2.equalsIgnoreCase("@a");
+
+            if (!arg2IsInt) {
+                if (arg2IsAllSelector) {
+                    if (!hasAll) {
+                        MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.give.all"));
+                        return true;
+                    }
+                } else if (!hasOthers) {
+                    MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.give.others"));
+                    return true;
+                }
+            }
+        }
+
+        handleGive(player, args);
+        return true;
+    }
+
+    private void handleGive(CommandSender sender, String[] args) {
+        Material material = Material.matchMaterial(args[0]);
         int amount = 1;
         String targetArg = null;
 
@@ -135,139 +128,82 @@ public final class GiveCommand implements TabExecutor {
                 targetArg = args[1];
             }
         } else if (args.length == 3) {
-            if (!isInteger(args[1])) {
-                MessageUtil.send(player, "utilities.give.invalid-amount", Map.of());
-                return true;
+            if (isInteger(args[1])) {
+                amount = Integer.parseInt(args[1]);
+                targetArg = args[2];
+            } else if (isInteger(args[2])) {
+                targetArg = args[1];
+                amount = Integer.parseInt(args[2]);
+            } else {
+                if (sender instanceof Player p) {
+                    MessageUtil.send(p, "errors.invalid-amount", Map.of());
+                } else {
+                    sender.sendMessage("Invalid amount.");
+                }
+                return;
             }
-            amount = Integer.parseInt(args[1]);
-            targetArg = args[2];
         }
 
-        ItemStack stack = new ItemStack(material, amount);
-        String itemName = getItemName(material);
+        assert material != null;
+        ItemStack stack = new ItemStack(material, Math.max(1, amount));
+        String itemName = plugin.core().itemTranslations().translate(material);
+        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
 
-        // Self give
         if (targetArg == null) {
-            giveItem(player, stack);
-            MessageUtil.send(player, "utilities.give.self",
-                    Map.of("amount", String.valueOf(amount),
-                            "item", itemName));
-            return true;
+            if (!(sender instanceof Player p)) {
+                sender.sendMessage("Console must specify a player or @a.");
+                return;
+            }
+            giveItem(p, stack);
+            MessageUtil.send(p, "utilities.give.self", Map.of("amount", String.valueOf(amount), "item", itemName));
+            return;
         }
 
-        // Give to all
         if (targetArg.equalsIgnoreCase("@a")) {
-            if (!player.hasPermission("aircore.command.give.all")) {
-                MessageUtil.send(player, "errors.no-permission",
-                        Map.of("permission", "aircore.command.give.all"));
-                return true;
-            }
-
             for (Player target : Bukkit.getOnlinePlayers()) {
                 giveItem(target, stack.clone());
-                if (!target.equals(player)) {
-                    MessageUtil.send(target, "utilities.give.by",
-                            Map.of("player", player.getName(),
-                                    "amount", String.valueOf(amount),
-                                    "item", itemName));
+                if (!target.equals(sender)) {
+                    MessageUtil.send(target, "utilities.give.by", Map.of("player", senderName, "amount", String.valueOf(amount), "item", itemName));
                 }
             }
-            MessageUtil.send(player, "utilities.give.everyone",
-                    Map.of("amount", String.valueOf(amount),
-                            "item", itemName));
-            return true;
-        }
 
-        // Give to specific player
-        if (!player.hasPermission("aircore.command.give.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.give.others"));
-            return true;
+            if (sender instanceof Player p) {
+                MessageUtil.send(p, "utilities.give.everyone", Map.of("amount", String.valueOf(amount), "item", itemName));
+            } else {
+                sender.sendMessage("Gave " + amount + " " + itemName + " to everyone.");
+            }
+            return;
         }
 
         Player target = Bukkit.getPlayerExact(targetArg);
         if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found",
-                    Map.of("player", targetArg));
-            return true;
-        }
-
-        // If target is the same as sender, treat as self
-        if (target.equals(player)) {
-            giveItem(player, stack);
-            MessageUtil.send(player, "utilities.give.self",
-                    Map.of("amount", String.valueOf(amount),
-                            "item", itemName));
-            return true;
+            if (sender instanceof Player p) {
+                MessageUtil.send(p, "errors.player-not-found", Map.of("player", targetArg));
+            } else {
+                sender.sendMessage("Player not found.");
+            }
+            return;
         }
 
         giveItem(target, stack);
-        MessageUtil.send(player, "utilities.give.for",
-                Map.of("player", target.getName(),
-                        "amount", String.valueOf(amount),
-                        "item", itemName));
-        MessageUtil.send(target, "utilities.give.by",
-                Map.of("player", player.getName(),
-                        "amount", String.valueOf(amount),
-                        "item", itemName));
-        return true;
+
+        if (sender instanceof Player p) {
+            if (target.equals(p)) {
+                MessageUtil.send(p, "utilities.give.self", Map.of("amount", String.valueOf(amount), "item", itemName));
+            } else {
+                MessageUtil.send(p, "utilities.give.for", Map.of("player", target.getName(), "amount", String.valueOf(amount), "item", itemName));
+                MessageUtil.send(target, "utilities.give.by", Map.of("player", p.getName(), "amount", String.valueOf(amount), "item", itemName));
+            }
+        } else {
+            sender.sendMessage("Gave " + amount + " " + itemName + " to " + target.getName());
+            if (plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(target, "utilities.give.by", Map.of("player", senderName, "amount", String.valueOf(amount), "item", itemName));
+            }
+        }
     }
 
     private void giveItem(Player target, ItemStack stack) {
-        plugin.scheduler().runEntityTask(target, () ->
-                target.getInventory().addItem(stack)
-        );
-    }
-
-    private String getItemName(Material material) {
-        return plugin.core().itemTranslations().translate(material);
-    }
-
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        if (args.length == 1) {
-            if (sender instanceof Player player) {
-                if (!player.hasPermission("aircore.command.give")) {
-                    return List.of();
-                }
-            }
-
-            String input = args[0].toLowerCase();
-            List<String> matches = new ArrayList<>();
-            for (String id : ITEM_IDS) {
-                if (id.contains(input)) {
-                    matches.add(id);
-                }
-            }
-            return matches;
-        }
-
-        if (args.length == 2 || args.length == 3) {
-            String input = args[args.length - 1].toLowerCase();
-            List<String> suggestions = new ArrayList<>();
-
-            if (!(sender instanceof Player) || sender.hasPermission("aircore.command.give.others")) {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    String name = p.getName();
-                    if (name.toLowerCase().startsWith(input)) {
-                        suggestions.add(name);
-                    }
-                }
-            }
-
-            if (!(sender instanceof Player) || sender.hasPermission("aircore.command.give.all")) {
-                if ("@a".startsWith(input)) {
-                    suggestions.add("@a");
-                }
-            }
-
-            return suggestions;
-        }
-
-        return List.of();
+        plugin.scheduler().runEntityTask(target, () -> target.getInventory().addItem(stack));
     }
 
     private boolean isInteger(String s) {
@@ -277,5 +213,50 @@ public final class GiveCommand implements TabExecutor {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        String input = args[args.length - 1].toLowerCase();
+
+        if (sender instanceof Player player) {
+            if (!player.hasPermission("aircore.command.give")) return Collections.emptyList();
+
+            if (args.length == 1) {
+                return ITEM_IDS.stream().filter(id -> id.contains(input)).toList();
+            }
+
+            if (args.length == 2 || args.length == 3) {
+                List<String> suggestions = new ArrayList<>();
+                if (player.hasPermission("aircore.command.give.others")) {
+                    Bukkit.getOnlinePlayers().stream()
+                            .map(Player::getName)
+                            .filter(name -> name.toLowerCase().startsWith(input))
+                            .limit(20)
+                            .forEach(suggestions::add);
+                }
+                if (player.hasPermission("aircore.command.give.all") && "@a".startsWith(input)) {
+                    suggestions.add("@a");
+                }
+                return suggestions;
+            }
+        } else {
+            if (args.length == 1) {
+                return ITEM_IDS.stream().filter(id -> id.contains(input)).toList();
+            }
+
+            if (args.length == 2 || args.length == 3) {
+                List<String> suggestions = new ArrayList<>();
+                if ("@a".startsWith(input)) suggestions.add("@a");
+                Bukkit.getOnlinePlayers().stream()
+                        .map(Player::getName)
+                        .filter(name -> name.toLowerCase().startsWith(input))
+                        .limit(20)
+                        .forEach(suggestions::add);
+                return suggestions;
+            }
+        }
+
+        return Collections.emptyList();
     }
 }

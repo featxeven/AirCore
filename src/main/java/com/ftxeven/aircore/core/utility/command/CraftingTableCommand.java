@@ -7,10 +7,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,12 @@ public final class CraftingTableCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("craftingtable", label)));
+            return true;
+        }
+
         plugin.scheduler().runEntityTask(player, () -> {
             Inventory workbench = Bukkit.createInventory(player, InventoryType.WORKBENCH);
             player.openInventory(workbench);
@@ -52,6 +59,6 @@ public final class CraftingTableCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

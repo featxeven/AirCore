@@ -32,34 +32,44 @@ public final class MsgCommand implements TabExecutor {
         if (!(sender instanceof Player player)) {
             String consoleName = plugin.lang().get("general.console-name");
 
-            if (args.length < 2) {
+            if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player|@a> <message>");
                 return true;
             }
 
             String targetName = args[0];
-            String message = String.join(" ", args).substring(args[0].length()).trim();
 
+            List<Player> recipients = new ArrayList<>();
             if (targetName.equalsIgnoreCase("@a")) {
-                List<Player> recipients = new ArrayList<>(Bukkit.getOnlinePlayers());
+                recipients.addAll(Bukkit.getOnlinePlayers());
                 if (recipients.isEmpty()) {
-                    sender.sendMessage(plugin.lang().get("errors.none-online"));
+                    sender.sendMessage("No players are currently online.");
                     return true;
                 }
+            } else {
+                Player target = Bukkit.getPlayerExact(targetName);
+                if (target == null) {
+                    sender.sendMessage("Player not found.");
+                    return true;
+                }
+                recipients.add(target);
+            }
 
+            if (args.length < 2) {
+                sender.sendMessage("Usage: /" + label + " <player|@a> <message>");
+                return true;
+            }
+
+            String message = String.join(" ", args).substring(targetName.length()).trim();
+
+            if (targetName.equalsIgnoreCase("@a")) {
                 plugin.chat().messages().sendPrivateMessageEveryoneFromConsole(consoleName, recipients, message);
                 sender.sendMessage("Message sent to everyone: " + message);
-                return true;
+            } else {
+                Player target = recipients.getFirst();
+                plugin.chat().messages().sendPrivateMessageFromConsole(consoleName, target, message);
+                sender.sendMessage("Message sent to " + target.getName() + ": " + message);
             }
-
-            Player target = Bukkit.getPlayerExact(targetName);
-            if (target == null) {
-                sender.sendMessage(plugin.lang().get("errors.player-not-found"));
-                return true;
-            }
-
-            plugin.chat().messages().sendPrivateMessageFromConsole(consoleName, target, message);
-            sender.sendMessage("Message sent to " + target.getName() + ": " + message);
             return true;
         }
 
@@ -69,14 +79,14 @@ public final class MsgCommand implements TabExecutor {
             return true;
         }
 
-        if (args.length < 2) {
+        if (args.length < 1) {
             MessageUtil.send(player, "errors.incorrect-usage",
                     Map.of("usage", plugin.config().getUsage("msg", label)));
             return true;
         }
 
-        boolean bypassToggle = player.hasPermission("aircore.bypass.chat.toggle");
         String targetName = args[0];
+        boolean bypassToggle = player.hasPermission("aircore.bypass.chat.toggle");
 
         if (targetName.equalsIgnoreCase("@a")) {
             if (!player.hasPermission("aircore.command.msg.all")) {
@@ -84,16 +94,48 @@ public final class MsgCommand implements TabExecutor {
                         Map.of("permission", "aircore.command.msg.all"));
                 return true;
             }
-
-            String message = String.join(" ", args).substring(args[0].length()).trim();
-            String sanitized = plugin.chat().formats().sanitizeForChat(player, message);
-            String stripped = sanitized.replaceAll("<[^>]+>", "").trim();
-            if (stripped.isEmpty()) {
-                MessageUtil.send(player, "errors.incorrect-usage",
-                        Map.of("usage", plugin.config().getUsage("msg", label)));
+        } else {
+            Player target = Bukkit.getPlayerExact(targetName);
+            if (target == null) {
+                MessageUtil.send(player, "errors.player-not-found", Map.of());
                 return true;
             }
 
+            if (target.equals(player) && !plugin.config().pmAllowSelfMessage()) {
+                MessageUtil.send(player, "chat.private-messages.error-self", Map.of());
+                return true;
+            }
+
+            if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
+                MessageUtil.send(player, "utilities.blocking.error-blocked-by",
+                        Map.of("player", target.getName()));
+                return true;
+            }
+
+            if (!bypassToggle && !plugin.core().toggles().isEnabled(target.getUniqueId(), ToggleService.Toggle.PM)) {
+                MessageUtil.send(player, "chat.private-messages.error-disabled",
+                        Map.of("player", target.getName()));
+                return true;
+            }
+        }
+
+        if (args.length < 2) {
+            MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("msg", label)));
+            return true;
+        }
+
+        String message = String.join(" ", args).substring(targetName.length()).trim();
+        String sanitized = plugin.chat().formats().sanitizeForChat(player, message);
+        String stripped = sanitized.replaceAll("<[^>]+>", "").trim();
+
+        if (stripped.isEmpty()) {
+            MessageUtil.send(player, "errors.incorrect-usage",
+                    Map.of("usage", plugin.config().getUsage("msg", label)));
+            return true;
+        }
+
+        if (targetName.equalsIgnoreCase("@a")) {
             plugin.scheduler().runAsync(() -> {
                 List<Player> recipients = Bukkit.getOnlinePlayers().stream()
                         .filter(p -> !p.equals(player))
@@ -115,50 +157,21 @@ public final class MsgCommand implements TabExecutor {
                     plugin.chat().messages().sendPrivateMessageEveryone(player, recipients, message);
                 });
             });
-            return true;
-        }
+        } else {
+            Player target = Bukkit.getPlayerExact(targetName);
 
-        Player target = Bukkit.getPlayerExact(targetName);
-        if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found", Map.of());
-            return true;
-        }
+            if (target != null) {
+                plugin.chat().messages().sendPrivateMessage(player, target, message);
 
-        if (target.equals(player)) {
-            if (!plugin.config().pmAllowSelfMessage()) {
-                MessageUtil.send(player, "chat.private-messages.error-self", Map.of());
-                return true;
+                if (plugin.utility().afk().isAfk(target.getUniqueId())) {
+                    MessageUtil.send(player, "utilities.afk.interaction-notify",
+                            Map.of("player", target.getName()));
+                }
+            } else {
+                MessageUtil.send(player, "errors.player-not-found", Map.of());
             }
         }
 
-        if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
-            MessageUtil.send(player, "chat.blocking.error-blocked-by",
-                    Map.of("player", target.getName()));
-            return true;
-        }
-
-        if (!bypassToggle && !plugin.core().toggles().isEnabled(target.getUniqueId(), ToggleService.Toggle.PM)) {
-            MessageUtil.send(player, "chat.private-messages.error-disabled",
-                    Map.of("player", target.getName()));
-            return true;
-        }
-
-        String message = String.join(" ", args).substring(args[0].length()).trim();
-        String sanitized = plugin.chat().formats().sanitizeForChat(player, message);
-        String stripped = sanitized.replaceAll("<[^>]+>", "").trim();
-
-        if (stripped.isEmpty()) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("msg", label)));
-            return true;
-        }
-
-        plugin.chat().messages().sendPrivateMessage(player, target, message);
-
-        if (plugin.utility().afk().isAfk(target.getUniqueId())) {
-            MessageUtil.send(player, "utilities.afk.interaction-notify",
-                    Map.of("player", target.getName()));
-        }
         return true;
     }
 
@@ -179,9 +192,7 @@ public final class MsgCommand implements TabExecutor {
         }
 
         List<String> completions = new ArrayList<>();
-
-        boolean canSeeAll = !(sender instanceof Player)
-                || sender.hasPermission("aircore.command.msg.all");
+        boolean canSeeAll = !(sender instanceof Player) || sender.hasPermission("aircore.command.msg.all");
 
         if (canSeeAll && "@a".startsWith(input)) {
             completions.add("@a");

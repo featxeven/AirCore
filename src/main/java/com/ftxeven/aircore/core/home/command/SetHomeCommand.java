@@ -35,14 +35,17 @@ public final class SetHomeCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.sethome")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.sethome"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.sethome"));
             return true;
         }
 
         if (plugin.config().homesAllowNames() && args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("sethome", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("sethome", label)));
+            return true;
+        }
+
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("sethome", label)));
             return true;
         }
 

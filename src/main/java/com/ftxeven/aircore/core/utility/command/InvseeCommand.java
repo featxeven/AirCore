@@ -11,6 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +47,12 @@ public final class InvseeCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("invsee", label)));
+            return true;
+        }
+
         OfflinePlayer target = resolve(player, args[0]);
         if (target == null) return true;
 
@@ -69,11 +76,11 @@ public final class InvseeCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return List.of();
+        if (!(sender instanceof Player player)) return Collections.emptyList();
 
-        if (!player.hasPermission("aircore.command.invsee")) return List.of();
+        if (!player.hasPermission("aircore.command.invsee")) return Collections.emptyList();
 
-        if (args.length != 1) return List.of();
+        if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()
@@ -84,18 +91,15 @@ public final class InvseeCommand implements TabExecutor {
     }
 
     private OfflinePlayer resolve(Player player, String name) {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) {
-                return online;
-            }
-        }
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
 
         UUID cached = plugin.getNameCache().get(name.toLowerCase());
         if (cached != null) {
             return Bukkit.getOfflinePlayer(cached);
         }
 
-        MessageUtil.send(player, "errors.player-never-joined", Map.of("player", name));
+        MessageUtil.send(player, "errors.player-never-joined", Map.of());
         return null;
     }
 }

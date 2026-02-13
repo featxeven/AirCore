@@ -12,9 +12,9 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class KillCommand implements TabExecutor {
 
@@ -32,11 +32,10 @@ public final class KillCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
             String consoleName = plugin.lang().get("general.console-name");
 
-            if (args.length != 1) {
+            if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player|@a>");
                 return true;
             }
@@ -51,7 +50,7 @@ public final class KillCommand implements TabExecutor {
 
             Player target = Bukkit.getPlayerExact(args[0]);
             if (target == null) {
-                sender.sendMessage("Player not found.");
+                sender.sendMessage("Player not found in database.");
                 return true;
             }
 
@@ -60,64 +59,73 @@ public final class KillCommand implements TabExecutor {
             return true;
         }
 
-        // Player execution
         if (!player.hasPermission("aircore.command.kill")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.kill"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kill"));
             return true;
         }
 
-        // /kill self
         if (args.length == 0) {
             killPlayer(player, null);
             MessageUtil.send(player, "utilities.kill.self", Map.of());
             return true;
         }
 
-        // /kill @a
-        if (args[0].equalsIgnoreCase("@a")) {
-            if (!player.hasPermission("aircore.command.kill.all")) {
-                MessageUtil.send(player, "errors.player-not-found",
-                        Map.of("player", "@a"));
+        boolean hasOthers = player.hasPermission("aircore.command.kill.others");
+        boolean hasAll = player.hasPermission("aircore.command.kill.all");
+        String targetArg = args[0];
+
+        if (targetArg.equalsIgnoreCase("@a")) {
+            if (!hasAll) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kill.all"));
                 return true;
             }
+        } else if (!targetArg.equalsIgnoreCase(player.getName())) {
+            if (!hasOthers) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kill.others"));
+                return true;
+            }
+        }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            String usage = (hasOthers || hasAll)
+                    ? plugin.config().getUsage("kill", "others", label)
+                    : plugin.config().getUsage("kill", label);
+
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+            return true;
+        }
+
+        handleKill(player, targetArg);
+        return true;
+    }
+
+    private void handleKill(Player sender, String targetArg) {
+        if (targetArg.equalsIgnoreCase("@a")) {
             for (Player target : Bukkit.getOnlinePlayers()) {
-                if (!target.equals(player)) {
-                    killPlayerByPlayer(target, player);
+                if (!target.equals(sender)) {
+                    killPlayerByPlayer(target, sender);
                 } else {
                     killPlayer(target, null);
                 }
             }
-            MessageUtil.send(player, "utilities.kill.everyone", Map.of());
-            return true;
+            MessageUtil.send(sender, "utilities.kill.everyone", Map.of());
+            return;
         }
 
-        // /kill <player>
-        if (!player.hasPermission("aircore.command.kill.others")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.kill.others"));
-            return true;
-        }
-
-        Player target = Bukkit.getPlayerExact(args[0]);
+        Player target = Bukkit.getPlayerExact(targetArg);
         if (target == null) {
-            MessageUtil.send(player, "errors.player-not-found",
-                    Map.of("player", args[0]));
-            return true;
+            MessageUtil.send(sender, "errors.player-not-found", Map.of("player", targetArg));
+            return;
         }
 
-        if (target.equals(player)) {
-            killPlayer(player, null);
-            MessageUtil.send(player, "utilities.kill.self", Map.of());
-            return true;
+        if (target.equals(sender)) {
+            killPlayer(sender, null);
+            MessageUtil.send(sender, "utilities.kill.self", Map.of());
+            return;
         }
 
-        killPlayerByPlayer(target, player);
-        MessageUtil.send(player, "utilities.kill.other",
-                Map.of("player", target.getName()));
-
-        return true;
+        killPlayerByPlayer(target, sender);
+        MessageUtil.send(sender, "utilities.kill.other", Map.of("player", target.getName()));
     }
 
     private void killPlayer(Player player, String killerName) {
@@ -134,8 +142,7 @@ public final class KillCommand implements TabExecutor {
         plugin.scheduler().runEntityTask(target, () -> {
             markForcedDeath(target);
             target.setHealth(0.0);
-            MessageUtil.send(target, "utilities.kill.by",
-                    Map.of("player", killer.getName()));
+            MessageUtil.send(target, "utilities.kill.by", Map.of("player", killer.getName()));
         });
     }
 
@@ -148,31 +155,32 @@ public final class KillCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (args.length != 1) return List.of();
+
+        if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
+        List<String> suggestions = new ArrayList<>();
 
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.kill")) {
-                return List.of();
-            }
-        }
-
-        List<String> suggestions = List.of();
-
-        if (!(sender instanceof Player) || sender.hasPermission("aircore.command.kill.others")) {
-            suggestions = Bukkit.getOnlinePlayers().stream()
+        if (!(sender instanceof Player player)) {
+            if ("@a".startsWith(input)) suggestions.add("@a");
+            Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
                     .limit(20)
-                    .collect(Collectors.toList());
+                    .forEach(suggestions::add);
+            return suggestions;
         }
 
-        if (!(sender instanceof Player) || sender.hasPermission("aircore.command.kill.all")) {
-            if ("@a".startsWith(input)) {
-                suggestions = new ArrayList<>(suggestions);
-                suggestions.add("@a");
-            }
+        if (!player.hasPermission("aircore.command.kill")) return Collections.emptyList();
+
+        if (player.hasPermission("aircore.command.kill.others")) {
+            Bukkit.getOnlinePlayers().forEach(p -> {
+                if (p.getName().toLowerCase().startsWith(input)) suggestions.add(p.getName());
+            });
+        }
+
+        if (player.hasPermission("aircore.command.kill.all") && "@a".startsWith(input)) {
+            suggestions.add("@a");
         }
 
         return suggestions;

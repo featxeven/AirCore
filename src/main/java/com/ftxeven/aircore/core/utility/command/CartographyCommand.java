@@ -1,21 +1,26 @@
 package com.ftxeven.aircore.core.utility.command;
 
+import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public final class CartographyCommand implements TabExecutor {
 
-    public CartographyCommand() {
+    private final AirCore plugin;
+
+    public CartographyCommand(AirCore plugin) {
+        this.plugin = plugin;
     }
 
     @Override
@@ -35,8 +40,16 @@ public final class CartographyCommand implements TabExecutor {
             return true;
         }
 
-        Inventory cartography = Bukkit.createInventory(player, InventoryType.CARTOGRAPHY);
-        player.openInventory(cartography);
+        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("cartography", label)));
+            return true;
+        }
+
+        plugin.scheduler().runEntityTask(player, () -> {
+            Inventory cartography = Bukkit.createInventory(player, InventoryType.CARTOGRAPHY);
+            player.openInventory(cartography);
+        });
 
         return true;
     }
@@ -46,6 +59,6 @@ public final class CartographyCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

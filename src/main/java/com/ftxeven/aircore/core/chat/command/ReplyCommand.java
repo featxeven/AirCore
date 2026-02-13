@@ -9,6 +9,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +60,7 @@ public final class ReplyCommand implements TabExecutor {
         }
 
         if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
-            MessageUtil.send(player, "chat.blocking.error-blocked-by",
+            MessageUtil.send(player, "utilities.blocking.error-blocked-by",
                     Map.of("player", target.getName()));
             return true;
         }
@@ -95,6 +96,6 @@ public final class ReplyCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

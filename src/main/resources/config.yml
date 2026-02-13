@@ -9,6 +9,7 @@
 notify-updates: true               # Notify admins when there is a new update
 lang: "en_US"                      # Locale file name (lang/messages/en_US.yml must exist)
 console-to-player-feedback: true   # Send feedback to players when console runs commands targeting them
+error-on-excess-args: true         # Show error message if too many arguments are provided (for commands)
 
 # Time formatting used across the plugin and in placeholders
 time-format:
@@ -244,12 +245,20 @@ command-usages:
     usage: "/%label% <message>"
     aliases: [r]
   msgtoggle:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   mentiontoggle:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   socialspy:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: [msgspy]
   chattoggle:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
 
   eco:
@@ -263,10 +272,15 @@ command-usages:
     usage: "/%label% <player> <amount>"
     aliases: []
   paytoggle:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   balance:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: [bal, money]
   sell:
+    usage: "/%label%"
     aliases: []
 
   tpa:
@@ -276,10 +290,14 @@ command-usages:
     usage: "/%label% <player>"
     aliases: []
   tpaccept:
+    usage: "/%label% [player]"
     aliases: [tpyes]
   tpdeny:
+    usage: "/%label% [player]"
     aliases: [tpno]
   tptoggle:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   tp:
     usage: "/%label% <player>"
@@ -327,8 +345,10 @@ command-usages:
     usage: "/%label% <player>"
     aliases: [unignore]
   spawn:
+    usage: "/%label%"
     aliases: []
   setspawn:
+    usage: "/%label%"
     aliases: []
   warp:
     usage: "/%label% <warpname>"
@@ -340,10 +360,16 @@ command-usages:
     usage: "/%label% <warpname>"
     aliases: [deletewarp, removewarp]
   clearinventory:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: [clear, clearinv]
   feed:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   heal:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   time:
     usage: "/%label% <type> <time>"
@@ -358,20 +384,29 @@ command-usages:
     usage-world: "/%label% <type> [world]"
     aliases: []
   craftingtable:
+    usage: "/%label%"
     aliases: [craft]
   anvil:
+    usage: "/%label%"
     aliases: []
   cartography:
+    usage: "/%label%"
     aliases: []
   loom:
+    usage: "/%label%"
     aliases: []
   smithingtable:
+    usage: "/%label%"
     aliases: []
   stonecutter:
+    usage: "/%label%"
     aliases: []
   grindstone:
+    usage: "/%label%"
     aliases: []
   enderchest:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: [ec]
   invsee:
     usage: "/%label% <player>"
@@ -381,22 +416,32 @@ command-usages:
     usage-others: "/%label% <mode> [player]"
     aliases: [gm]
   kill:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   afk:
+    usage: "/%label%"
     aliases: []
   god:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: [godmode]
   speed:
-    usage: "/%label% [type] <speed>"
-    usage-others: "/%label% [type] <speed> [player]"
+    usage: "/%label% <speed> [type]"
+    usage-others: "/%label% <speed> [type] [player]"
     aliases: []
   fly:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
     aliases: []
   repair:
+    usage: "/%label%"
+    usage-all: "/%label% [all]"
     aliases: [fix]
   give:
     usage: "/%label% <item> [amount]"
     usage-others: "/%label% <item> [amount] [player]"
     aliases: []
   back:
+    usage: "/%label%"
     aliases: []

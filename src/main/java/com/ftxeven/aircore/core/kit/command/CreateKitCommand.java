@@ -46,6 +46,12 @@ public final class CreateKitCommand implements TabExecutor {
             return true;
         }
 
+        if (plugin.config().errorOnExcessArgs() && args.length > 3) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("createkit", label)));
+            return true;
+        }
+
         String kitName = args[0].toLowerCase();
 
         var kitsConfig = manager.kits().getConfig();
@@ -97,9 +103,16 @@ public final class CreateKitCommand implements TabExecutor {
             return List.of();
         }
 
-        if (args.length == 2) {
+        if (args.length >= 2 && args.length <= 3) {
             String current = args[args.length - 1].toLowerCase();
-            if ("-onetime".startsWith(current)) {
+            boolean hasOneTime = false;
+            for (String arg : args) {
+                if (arg.equalsIgnoreCase("-onetime")) {
+                    hasOneTime = true;
+                    break;
+                }
+            }
+            if (!hasOneTime && "-onetime".startsWith(current)) {
                 return List.of("-onetime");
             }
         }

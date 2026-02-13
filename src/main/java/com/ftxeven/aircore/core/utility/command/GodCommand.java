@@ -11,6 +11,8 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,80 +31,93 @@ public final class GodCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // --- CONSOLE / NON-PLAYER BEHAVIOR ---
         if (!(sender instanceof Player player)) {
-            if (args.length != 1) {
+            if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-
-            OfflinePlayer resolved = resolve(sender, args[0]);
-            if (resolved == null) return true;
-
-            handleToggle(sender, resolved, plugin.lang().get("general.console-name"), true);
+            handleGod(sender, args[0]);
             return true;
         }
 
-        // --- PLAYER BEHAVIOR ---
         if (!player.hasPermission("aircore.command.god")) {
             MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.god"));
             return true;
         }
 
-        // Self toggle: /god
         if (args.length == 0) {
-            handleToggle(player, player, player.getName(), false);
+            handleGod(player, player.getName());
             return true;
         }
 
-        // Target toggle: /god <player>
-        if (!player.hasPermission("aircore.command.god.others")) {
+        boolean hasOthers = player.hasPermission("aircore.command.god.others");
+        if (!hasOthers) {
             MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.god.others"));
             return true;
         }
 
-        OfflinePlayer resolved = resolve(player, args[0]);
-        if (resolved == null) return true;
+        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
+            MessageUtil.send(player, "errors.too-many-arguments",
+                    Map.of("usage", plugin.config().getUsage("god", "others", label)));
+            return true;
+        }
 
-        handleToggle(player, resolved, player.getName(), false);
+        handleGod(player, args[0]);
         return true;
     }
 
-    private void handleToggle(CommandSender sender, OfflinePlayer target, String senderName, boolean isConsole) {
-        UUID uuid = target.getUniqueId();
-        String targetName = target.getName() != null ? target.getName() : "Unknown";
+    private void handleGod(CommandSender sender, String targetName) {
+        OfflinePlayer resolved = resolve(sender, targetName);
+        if (resolved == null) return;
 
-        boolean currentState = plugin.core().toggles().isEnabled(uuid, ToggleService.Toggle.GOD);
-        boolean newState = !currentState;
+        UUID uuid = resolved.getUniqueId();
+        String finalName = resolved.getName() != null ? resolved.getName() : targetName;
+        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
 
-        plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.GOD, newState);
-        plugin.database().records().setToggle(uuid, ToggleService.Toggle.GOD.getColumn(), newState);
+        boolean newState = !plugin.core().toggles().isEnabled(uuid, ToggleService.Toggle.GOD);
 
-        if (sender instanceof Player p) {
-            if (target.getUniqueId().equals(p.getUniqueId())) {
-                MessageUtil.send(p, newState ? "utilities.godmode.enabled" : "utilities.godmode.disabled", Map.of());
-            } else {
-                MessageUtil.send(p, newState ? "utilities.godmode.enabled-for" : "utilities.godmode.disabled-for",
-                        Map.of("player", targetName));
-            }
-        } else {
-            sender.sendMessage("God mode for " + targetName + " -> " + (newState ? "enabled" : "disabled"));
-        }
+        plugin.scheduler().runAsync(() -> {
+            plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.GOD, newState);
+            plugin.database().records().setToggle(uuid, ToggleService.Toggle.GOD.getColumn(), newState);
 
-        if (target.isOnline() && target.getPlayer() != null) {
-            Player onlineTarget = target.getPlayer();
-            if (sender instanceof Player p && onlineTarget.equals(p)) return;
+            plugin.scheduler().runTask(() -> {
+                if (sender instanceof Player p) {
+                    if (uuid.equals(p.getUniqueId())) {
+                        MessageUtil.send(p, newState ? "utilities.godmode.enabled" : "utilities.godmode.disabled", Map.of());
+                    } else {
+                        MessageUtil.send(p, newState ? "utilities.godmode.enabled-for" : "utilities.godmode.disabled-for",
+                                Map.of("player", finalName));
+                    }
+                } else {
+                    sender.sendMessage("God mode for " + finalName + " -> " + (newState ? "enabled" : "disabled"));
+                }
 
-            if (isConsole) {
-                if (plugin.config().consoleToPlayerFeedback()) {
+                if (resolved.isOnline() && resolved.getPlayer() != null) {
+                    Player onlineTarget = resolved.getPlayer();
+                    if (sender instanceof Player p && onlineTarget.equals(p)) return;
+
+                    if (!(sender instanceof Player) && !plugin.config().consoleToPlayerFeedback()) return;
+
                     MessageUtil.send(onlineTarget, newState ? "utilities.godmode.enabled-by" : "utilities.godmode.disabled-by",
                             Map.of("player", senderName));
                 }
-            } else {
-                MessageUtil.send(onlineTarget, newState ? "utilities.godmode.enabled-by" : "utilities.godmode.disabled-by",
-                        Map.of("player", senderName));
-            }
+            });
+        });
+    }
+
+    private OfflinePlayer resolve(CommandSender sender, String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) return online;
+
+        UUID cached = plugin.getNameCache().get(name.toLowerCase());
+        if (cached != null) return Bukkit.getOfflinePlayer(cached);
+
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "errors.player-never-joined", Map.of("player", name));
+        } else {
+            sender.sendMessage("Player not found in database.");
         }
+        return null;
     }
 
     @Override
@@ -110,33 +125,24 @@ public final class GodCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (args.length != 1) return List.of();
+        if (args.length != 1) return Collections.emptyList();
+
         String input = args[0].toLowerCase();
 
-        if (sender instanceof Player player && !player.hasPermission("aircore.command.god.others")) {
-            return List.of();
+        if (!(sender instanceof Player player)) {
+            return Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .limit(20)
+                    .toList();
         }
+
+        if (!player.hasPermission("aircore.command.god.others")) return Collections.emptyList();
 
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)
                 .toList();
-    }
-
-    private OfflinePlayer resolve(CommandSender sender, String name) {
-        for (Player online : Bukkit.getOnlinePlayers()) {
-            if (online.getName().equalsIgnoreCase(name)) return online;
-        }
-
-        UUID cached = plugin.getNameCache().get(name.toLowerCase());
-        if (cached != null) return Bukkit.getOfflinePlayer(cached);
-
-        if (sender instanceof Player p) {
-            MessageUtil.send(p, "errors.player-never-joined", Map.of());
-        } else {
-            sender.sendMessage("Player not found.");
-        }
-        return null;
     }
 }

@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class TimeCommand implements TabExecutor {
@@ -31,186 +30,138 @@ public final class TimeCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
 
-        // Console execution
         if (!(sender instanceof Player player)) {
-            if (args.length != 3) {
-                sender.sendMessage("Usage: /" + label + " <set|add> <time> <world>");
+            if (args.length < 2) {
+                sender.sendMessage("Usage: /" + label + " <set|add> <time> [world]");
                 return true;
             }
 
             String type = args[0].toLowerCase();
+            long ticks = parseTicks(args[1]);
+
             if (!type.equals("set") && !type.equals("add")) {
-                sender.sendMessage("Usage: /" + label + " <set|add> <time> <world>");
+                sender.sendMessage("Usage: /" + label + " <set|add> <time> [world]");
                 return true;
             }
 
-            long ticks;
-            switch (args[1].toLowerCase()) {
-                case "day" -> ticks = 1000;
-                case "noon" -> ticks = 6000;
-                case "night" -> ticks = 13000;
-                case "midnight" -> ticks = 18000;
-                default -> {
-                    Long parsed = TimeUtil.parseDurationTicks(args[1]);
-                    if (parsed == null) {
-                        sender.sendMessage("Invalid format");
-                        return true;
-                    }
-                    ticks = parsed;
-                }
+            if (ticks == -1) {
+                sender.sendMessage("Invalid time format.");
+                return true;
             }
 
-            World world = Bukkit.getWorld(args[2]);
+            World world = args.length >= 3 ? Bukkit.getWorld(args[2]) : Bukkit.getWorlds().getFirst();
             if (world == null) {
-                sender.sendMessage("World not found");
+                sender.sendMessage("World not found.");
                 return true;
             }
 
-            if (type.equals("set")) {
-                setWorldTime(world, ticks, () ->
-                        sender.sendMessage("Set time in " + world.getName() + " to " + formatTime(ticks) + " (" + ticks + " ticks)")
-                );
-            } else {
-                addWorldTime(world, ticks, newTime ->
-                        sender.sendMessage("Added " + ticks + " ticks in " + world.getName() + ". New time: " + formatTime(newTime))
-                );
-            }
+            executeTimeLogic(sender, type, world, ticks, args.length >= 3);
             return true;
         }
 
         if (!player.hasPermission("aircore.command.time")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.time"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.time"));
             return true;
         }
 
         if (args.length == 0) {
             World world = player.getWorld();
             long ticks = world.getTime();
-            String formatted = formatTime(ticks);
             MessageUtil.send(player, "utilities.time.get",
-                    Map.of("ticks", String.valueOf(ticks),
-                            "time-formatted", formatted));
+                    Map.of("ticks", String.valueOf(ticks), "time-formatted", formatTime(ticks)));
             return true;
         }
 
+        boolean hasWorldPerm = player.hasPermission("aircore.command.time.world");
         String sub = args[0].toLowerCase();
 
-        // /time set
-        if (sub.equals("set")) {
-            if (args.length < 2) {
-                sendUsage(player, label, "set");
-                return true;
-            }
-
-            long ticks;
-            String option = args[1].toLowerCase();
-            switch (option) {
-                case "day" -> ticks = 1000;
-                case "noon" -> ticks = 6000;
-                case "night" -> ticks = 13000;
-                case "midnight" -> ticks = 18000;
-                default -> {
-                    Long parsed = TimeUtil.parseDurationTicks(option);
-                    if (parsed == null) {
-                        MessageUtil.send(player, "errors.invalid-format", Map.of());
-                        return true;
-                    }
-                    ticks = parsed;
-                }
-            }
-
-            if (args.length == 3) {
-                if (!player.hasPermission("aircore.command.time.world")) {
-                    MessageUtil.send(player, "errors.no-permission",
-                            Map.of("permission", "aircore.command.time.world"));
-                    return true;
-                }
-                World world = Bukkit.getWorld(args[2]);
-                if (world == null) {
-                    MessageUtil.send(player, "errors.world-not-found",
-                            Map.of("world", args[2]));
-                    return true;
-                }
-
-                setWorldTime(world, ticks, () ->
-                        plugin.scheduler().runEntityTask(player, () ->
-                                MessageUtil.send(player, "utilities.time.set-in",
-                                        Map.of("ticks", String.valueOf(ticks),
-                                                "time-formatted", formatTime(ticks),
-                                                "world", world.getName()))
-                        )
-                );
-
-            } else if (args.length > 3) {
-                MessageUtil.send(player, "errors.invalid-format", Map.of());
-                return true;
-            } else {
-                World world = player.getWorld();
-
-                setWorldTime(world, ticks, () ->
-                        plugin.scheduler().runEntityTask(player, () ->
-                                MessageUtil.send(player, "utilities.time.set",
-                                        Map.of("ticks", String.valueOf(ticks),
-                                                "time-formatted", formatTime(ticks))))
-                );
-            }
+        if (args.length >= 3 && !hasWorldPerm) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.time.world"));
             return true;
         }
 
-        // /time add
-        if (sub.equals("add")) {
-            if (args.length < 2) {
-                sendUsage(player, label, "add");
+        if (plugin.config().errorOnExcessArgs()) {
+            int limit = hasWorldPerm ? 3 : 2;
+            if (args.length > limit) {
+                sendTooManyArgs(player, label, sub);
                 return true;
             }
+        }
 
-            Long parsed = TimeUtil.parseDurationTicks(args[1]);
-            if (parsed == null) {
-                MessageUtil.send(player, "errors.invalid-format", Map.of());
-                return true;
-            }
-            long ticks = parsed;
-
-            if (args.length == 3) {
-                if (!player.hasPermission("aircore.command.time.world")) {
-                    MessageUtil.send(player, "errors.no-permission",
-                            Map.of("permission", "aircore.command.time.world"));
-                    return true;
-                }
-                World world = Bukkit.getWorld(args[2]);
-                if (world == null) {
-                    MessageUtil.send(player, "errors.world-not-found",
-                            Map.of("world", args[2]));
-                    return true;
-                }
-
-                addWorldTime(world, ticks, newTime ->
-                        plugin.scheduler().runEntityTask(player, () ->
-                                MessageUtil.send(player, "utilities.time.add-in",
-                                        Map.of("ticks", String.valueOf(ticks),
-                                                "time-formatted", formatTime(newTime),
-                                                "world", world.getName()))
-                        )
-                );
-
-            } else if (args.length > 3) {
-                MessageUtil.send(player, "errors.invalid-format", Map.of());
-                return true;
-            } else {
-                World world = player.getWorld();
-                addWorldTime(world, ticks, newTime ->
-                        plugin.scheduler().runEntityTask(player, () ->
-                                MessageUtil.send(player, "utilities.time.add",
-                                        Map.of("ticks", String.valueOf(ticks),
-                                                "time-formatted", formatTime(newTime))))
-                );
-            }
+        if (!sub.equals("set") && !sub.equals("add")) {
+            sendUsage(player, label, "");
             return true;
         }
 
-        sendUsage(player, label, "");
+        if (args.length < 2) {
+            sendUsage(player, label, sub);
+            return true;
+        }
+
+        long ticks = parseTicks(args[1]);
+        if (ticks == -1) {
+            MessageUtil.send(player, "errors.invalid-format", Map.of());
+            return true;
+        }
+
+        World targetWorld = player.getWorld();
+        if (args.length == 3) {
+            targetWorld = Bukkit.getWorld(args[2]);
+            if (targetWorld == null) {
+                MessageUtil.send(player, "errors.world-not-found", Map.of("world", args[2]));
+                return true;
+            }
+        }
+
+        executeTimeLogic(player, sub, targetWorld, ticks, args.length == 3);
         return true;
+    }
+
+    private void executeTimeLogic(CommandSender sender, String sub, World world, long ticks, boolean isWorldSpecific) {
+        if (sub.equals("set")) {
+            setWorldTime(world, ticks, () -> {
+                if (sender instanceof Player p) {
+                    plugin.scheduler().runEntityTask(p, () -> {
+                        String key = isWorldSpecific ? "utilities.time.set-in" : "utilities.time.set";
+                        MessageUtil.send(p, key, Map.of(
+                                "ticks", String.valueOf(ticks),
+                                "time-formatted", formatTime(ticks),
+                                "world", world.getName()
+                        ));
+                    });
+                } else {
+                    sender.sendMessage("Set time in " + world.getName() + " to " + formatTime(ticks));
+                }
+            });
+        } else {
+            addWorldTime(world, ticks, newTime -> {
+                if (sender instanceof Player p) {
+                    plugin.scheduler().runEntityTask(p, () -> {
+                        String key = isWorldSpecific ? "utilities.time.add-in" : "utilities.time.add";
+                        MessageUtil.send(p, key, Map.of(
+                                "ticks", String.valueOf(ticks),
+                                "time-formatted", formatTime(newTime),
+                                "world", world.getName()
+                        ));
+                    });
+                } else {
+                    sender.sendMessage("Added time in " + world.getName() + ". New time: " + formatTime(newTime));
+                }
+            });
+        }
+    }
+
+    private long parseTicks(String input) {
+        return switch (input.toLowerCase()) {
+            case "day" -> 1000;
+            case "noon" -> 6000;
+            case "night" -> 13000;
+            case "midnight" -> 18000;
+            default -> {
+                Long parsed = TimeUtil.parseDurationTicks(input);
+                yield (parsed != null) ? parsed : -1L;
+            }
+        };
     }
 
     private void setWorldTime(World world, long ticks, Runnable post) {
@@ -229,13 +180,17 @@ public final class TimeCommand implements TabExecutor {
     }
 
     private void sendUsage(Player player, String label, String sub) {
+        String key = sub.isEmpty() ? "" : sub;
         if (player.hasPermission("aircore.command.time.world")) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("time", sub.isEmpty() ? "world" : sub + "-world", label)));
-        } else {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("time", sub.isEmpty() ? "" : sub, label)));
+            key = sub.isEmpty() ? "world" : sub + "-world";
         }
+        MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("time", key, label)));
+    }
+
+    private void sendTooManyArgs(Player player, String label, String sub) {
+        String base = (sub.equals("set") || sub.equals("add")) ? sub : "";
+        String key = (base.isEmpty() ? "world" : base + "-world");
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("time", key, label)));
     }
 
     private String formatTime(long ticks) {
@@ -249,31 +204,27 @@ public final class TimeCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.time")) {
-                return List.of();
-            }
+        String input = args[args.length - 1].toLowerCase();
+
+        if (sender instanceof Player player && !player.hasPermission("aircore.command.time")) {
+            return List.of();
         }
 
         if (args.length == 1) {
-            return Stream.of("set", "add")
-                    .filter(opt -> opt.startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
+            return Stream.of("set", "add").filter(opt -> opt.startsWith(input)).toList();
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("set")) {
-            return Stream.of("day", "noon", "night", "midnight")
-                    .filter(opt -> opt.startsWith(args[1].toLowerCase()))
-                    .collect(Collectors.toList());
+            return Stream.of("day", "noon", "night", "midnight").filter(opt -> opt.startsWith(input)).toList();
         }
 
         if (args.length == 3) {
-            if (!(sender instanceof Player) || sender.hasPermission("aircore.command.time.world")) {
+            if (!(sender instanceof Player player) || player.hasPermission("aircore.command.time.world")) {
                 return Bukkit.getWorlds().stream()
                         .map(World::getName)
-                        .filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase()))
+                        .filter(name -> name.toLowerCase().startsWith(input))
                         .limit(20)
-                        .collect(Collectors.toList());
+                        .toList();
             }
         }
 
