@@ -11,11 +11,13 @@ import com.ftxeven.aircore.core.teleport.TeleportManager;
 import com.ftxeven.aircore.core.utility.UtilityManager;
 import com.ftxeven.aircore.core.gui.GuiManager;
 import com.ftxeven.aircore.util.*;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -114,11 +116,13 @@ public final class AirCore extends JavaPlugin {
 
     private void checkUpdates() {
         scheduler().runAsync(() -> {
-            try (InputStream is = URI.create("https://api.spigotmc.org/legacy/update.php?resource=130425").toURL().openStream();
-                 Scanner scanner = new Scanner(is)) {
+            try (InputStream is = URI.create("https://api.spiget.org/v2/resources/130425/versions/latest").toURL().openStream();
+                 InputStreamReader reader = new InputStreamReader(is)) {
 
-                if (scanner.hasNext()) {
-                    String latest = scanner.next();
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+
+                if (json.has("name")) {
+                    String latest = json.get("name").getAsString();
                     String current = getPluginMeta().getVersion();
 
                     if (!current.equalsIgnoreCase(latest)) {
@@ -129,7 +133,7 @@ public final class AirCore extends JavaPlugin {
                         this.latestVersion = latest;
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 getLogger().warning("Could not check for updates: " + e.getMessage());
             }
         });
