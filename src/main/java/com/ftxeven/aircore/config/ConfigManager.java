@@ -24,6 +24,7 @@ public final class ConfigManager {
     }
 
     // General settings
+    public boolean notifyUpdates() { return config.getBoolean("notify-updates", true); }
     public String getLocale() {
         return config.getString("lang", "en_US");
     }

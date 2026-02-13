@@ -111,4 +111,6 @@ public final class LangManager {
     public String get(String key) {
         return lang.getString(key, "<red>Missing lang key: " + key + "</red>");
     }
+
+    public String get(String key, String fallback) { return lang.getString(key, fallback); }
 }

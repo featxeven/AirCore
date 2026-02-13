@@ -34,9 +34,11 @@ general:
   console-name: "@Console"
 
   plugin-usage: "%prefix% <green>Available commands:</green>
-    <newline> <yellow>/aircore reload</yellow> <gray>- Reload configuration and messages</gray>
+    <newline> <yellow>/aircore reload [module]</yellow> <gray>- Reload configuration</gray>
     <newline> <yellow>/aircore version</yellow> <gray>- Show plugin version</gray>"
   plugin-version: "%prefix% <green>Plugin version:</green> <gray>%version%</gray>"
+  plugin-outdated: "%prefix% <green>There is a new update available! You are currently using <gold>%current%</gold> (latest version is <gold>%latest%</gold>).<green>
+    <newline><yellow>https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/</yellow>"
   plugin-reloaded: "%prefix% <green>Configuration successfully reloaded (<yellow>%module%</yellow>).</green>"
 
   modules:
@@ -419,6 +421,7 @@ death:
   generic: "<red>☠ %player% has died.</red>"
   by-player: "<red>☠ %player% was slain by %killer%.</red>"
   by-mob: "<red>☠ %player% was slain by a %mob%.</red>"
+  by-projectile: "<red>☠ %player% was shot by %projectile%</red>"
 
   environmental:
     fall: "<red>☠ %player% fell from a high place.</red>"
@@ -440,8 +443,8 @@ death:
   special:
     suicide: "<red>☠ %player% took their own life.</red>"
 
-  mob-names:
-    hostile:
+  entity-names:
+    mobs:
       ZOMBIE: "Zombie"
       ZOMBIE_VILLAGER: "Zombie Villager"
       ZOMBIFIED_PIGLIN: "Zombified Piglin"
@@ -464,6 +467,7 @@ death:
       WITHER_SKELETON: "Wither Skeleton"
       HOGLIN: "Hoglin"
       PIGLIN: "Piglin"
+      ZOGLIN: "Zoglin"
       PIGLIN_BRUTE: "Piglin Brute"
       PILLAGER: "Pillager"
       VINDICATOR: "Vindicator"
@@ -481,6 +485,11 @@ death:
       ENDERMAN: "Enderman"
       BOGGED: "Bogged"
       BREEZE: "Breeze"
+      POLAR_BEAR: "Polar Bear"
+      WOLF: "Wolf"
+      BEE: "Bee"
+      GOAT: "Goat"
+      LLAMA: "Llama"
 
     projectiles:
       ARROW: "Arrow"
@@ -502,6 +511,8 @@ death:
       MINECART_TNT: "TNT Minecart"
       BED: "Bed"
       RESPAWN_ANCHOR: "Respawn Anchor"
+      WIND_CHARGE: "a Wind Charge"
+      BREEZE_WIND_CHARGE: "a Breeze Wind Charge"
 
 # -----------------------------
 # GENERAL ERRORS

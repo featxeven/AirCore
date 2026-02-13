@@ -28,9 +28,7 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public @NotNull String getVersion() {
-        return plugin.getDescription().getVersion();
-    }
+    public @NotNull String getVersion() { return plugin.getPluginMeta().getVersion(); }
 
     @Override
     public boolean persist() {
@@ -44,7 +42,6 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String params) {
-        // Server-wide placeholders
         if (params.equalsIgnoreCase("server_afk_total")) {
             return String.valueOf(plugin.utility().afk().getTotalAfk());
         }
@@ -55,7 +52,6 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
         if (player == null) return null;
         UUID uuid = player.getUniqueId();
 
-        // Avoid queries for players who never joined
         if (!plugin.database().records().hasJoinedBefore(uuid)) {
             return null;
         }
@@ -95,7 +91,6 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
             return null;
         }
 
-        // Format: RAW, SHORT, FORMATTED
         if (params.startsWith("player_balance_")) {
             String format = params.substring("player_balance_".length()).toUpperCase();
             double balance = plugin.database().records().getBalance(uuid);
@@ -133,7 +128,6 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
             return bool(plugin.kit().kits().hasPermission(uuid, kitName));
         }
 
-        // Format: kit_name or kit_name_DETAILED/SEQUENTIAL/CUSTOM
         if (params.startsWith("player_kit_cooldown_")) {
             String remainder = params.substring("player_kit_cooldown_".length());
             String[] parts = remainder.split("_", 2);

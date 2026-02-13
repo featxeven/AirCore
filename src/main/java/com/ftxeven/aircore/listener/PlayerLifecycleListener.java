@@ -83,15 +83,13 @@ public final class PlayerLifecycleListener implements Listener {
         UUID uuid = player.getUniqueId();
 
         event.joinMessage(null);
-
         String lowerName = player.getName().toLowerCase();
         plugin.getNameCache().put(lowerName, uuid);
 
-        boolean hasJoinedBefore = plugin.database().records().hasJoinedBefore(uuid);
-
-        plugin.core().commandCooldowns().load(uuid);
-
         plugin.scheduler().runAsync(() -> {
+            boolean hasJoinedBefore = plugin.database().records().hasJoinedBefore(uuid);
+            plugin.core().commandCooldowns().load(uuid);
+
             boolean chat = plugin.database().records().getToggle(uuid, ToggleService.Toggle.CHAT.getColumn());
             boolean mentions = plugin.database().records().getToggle(uuid, ToggleService.Toggle.MENTIONS.getColumn());
             boolean pm = plugin.database().records().getToggle(uuid, ToggleService.Toggle.PM.getColumn());
@@ -100,19 +98,18 @@ public final class PlayerLifecycleListener implements Listener {
             boolean teleport = plugin.database().records().getToggle(uuid, ToggleService.Toggle.TELEPORT.getColumn());
             boolean god = plugin.database().records().getToggle(uuid, ToggleService.Toggle.GOD.getColumn());
             boolean flyEnabled = plugin.database().records().getToggle(uuid, ToggleService.Toggle.FLY.getColumn());
+
             double walkVal = plugin.database().records().getWalkSpeed(uuid);
             double flyVal = plugin.database().records().getFlySpeed(uuid);
+            double balance = plugin.database().records().getBalance(uuid);
 
             var block = plugin.database().blocks().load(uuid);
-            double balance = plugin.database().records().getBalance(uuid);
             var homes = plugin.database().homes().load(uuid);
             var bundle = plugin.database().inventories().loadAllInventory(uuid);
 
-            // Apply data in a single entity task before spawn teleport
             plugin.scheduler().runEntityTask(player, () -> {
                 if (!player.isOnline()) return;
 
-                // Apply toggles
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.CHAT, chat);
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.MENTIONS, mentions);
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.PM, pm);
@@ -122,27 +119,21 @@ public final class PlayerLifecycleListener implements Listener {
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.GOD, god);
                 plugin.core().toggles().setLocal(uuid, ToggleService.Toggle.FLY, flyEnabled);
 
-                float walkSpeed = (float) Math.min(Math.max(walkVal * 0.2, 0.0), 1.0);
-                float flySpeed = (float) Math.min(Math.max(flyVal * 0.1, 0.0), 1.0);
+                player.setWalkSpeed((float) Math.min(Math.max(walkVal * 0.2, 0.0), 1.0));
+                player.setFlySpeed((float) Math.min(Math.max(flyVal * 0.1, 0.0), 1.0));
 
-                player.setWalkSpeed(walkSpeed);
-                player.setFlySpeed(flySpeed);
-
-                GameMode gameMode = player.getGameMode();
-
-                // Handle flight based on toggle
-                if (gameMode == GameMode.CREATIVE || gameMode == GameMode.SPECTATOR) {
+                GameMode mode = player.getGameMode();
+                if (mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR) {
                     player.setAllowFlight(true);
                 } else {
                     player.setAllowFlight(flyEnabled);
-                    player.setFlying(false);
+                    if (!flyEnabled) player.setFlying(false);
                 }
 
                 block.forEach(target -> plugin.core().blocks().block(uuid, target));
                 plugin.economy().balances().setBalanceLocal(uuid, balance);
                 plugin.home().homes().loadFromDatabase(uuid, homes);
 
-                // Restore inventory + enderchest
                 if (bundle != null) {
                     player.getInventory().setContents(bundle.contents());
                     player.getInventory().setArmorContents(bundle.armor());
@@ -151,15 +142,30 @@ public final class PlayerLifecycleListener implements Listener {
                     player.updateInventory();
                 }
 
-                if (!hasJoinedBefore && plugin.config().teleportToSpawnOnFirstJoin()) {
-                    teleportToSpawn(player);
-                } else if (plugin.config().teleportToSpawnOnJoin()) {
+                if ((!hasJoinedBefore && plugin.config().teleportToSpawnOnFirstJoin()) || plugin.config().teleportToSpawnOnJoin()) {
                     teleportToSpawn(player);
                 }
+
+                handleMotdAndBroadcastOnJoin(player, uuid, hasJoinedBefore);
+                handleUpdateNotification(player);
             });
         });
+    }
 
-        handleMotdAndBroadcastOnJoin(player, uuid, hasJoinedBefore);
+    private void handleUpdateNotification(Player player) {
+        if (plugin.config().notifyUpdates()) {
+            String latest = plugin.getLatestVersion();
+            if (latest != null && (player.hasPermission("aircore.command.admin") || player.isOp())) {
+                plugin.scheduler().runDelayed(() -> {
+                    if (player.isOnline()) {
+                        MessageUtil.send(player, "general.plugin-outdated", Map.of(
+                                "current", plugin.getPluginMeta().getVersion(),
+                                "latest", latest
+                        ));
+                    }
+                }, 20L);
+            }
+        }
     }
 
     @EventHandler
@@ -171,7 +177,6 @@ public final class PlayerLifecycleListener implements Listener {
         justDied.remove(uuid);
         dirtyPlayers.remove(uuid);
 
-        // Cancel any active teleport countdowns
         if (plugin.core().teleports().hasCountdown(player)) {
             plugin.core().teleports().cancelCountdown(player, false);
         }

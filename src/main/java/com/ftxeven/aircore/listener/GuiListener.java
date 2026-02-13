@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.listener;
 
-import com.ftxeven.aircore.module.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;

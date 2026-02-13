@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -21,15 +22,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class DeathMessageListener implements Listener {
     private final AirCore plugin;
-    private final Map<UUID, EntityDamageEvent.DamageCause> lastCauses = new ConcurrentHashMap<>();
+    private final Map<UUID, DamageInfo> lastDamageInfo = new ConcurrentHashMap<>();
 
-    public DeathMessageListener(AirCore plugin) { this.plugin = plugin; }
+    public DeathMessageListener(AirCore plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player) {
-            lastCauses.put(player.getUniqueId(), event.getCause());
+            Entity damager = null;
+            if (event instanceof EntityDamageByEntityEvent edbe) {
+                damager = edbe.getDamager();
+            }
+            lastDamageInfo.put(player.getUniqueId(), new DamageInfo(event.getCause(), damager));
         }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        lastDamageInfo.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
@@ -50,12 +62,12 @@ public final class DeathMessageListener implements Listener {
             return;
         }
 
+        DamageInfo info = lastDamageInfo.remove(player.getUniqueId());
+
         Player killer = player.getKiller();
         String keyStr = "death.generic";
-        Map<String,String> placeholders = new HashMap<>();
+        Map<String, String> placeholders = new HashMap<>();
         placeholders.put("player", player.getName());
-
-        EntityDamageEvent.DamageCause cause = lastCauses.remove(player.getUniqueId());
 
         if (killer != null) {
             if (killer.equals(player)) {
@@ -64,7 +76,10 @@ public final class DeathMessageListener implements Listener {
                 keyStr = "death.by-player";
                 placeholders.put("killer", killer.getName());
             }
-        } else if (cause != null) {
+        } else if (info != null) {
+            EntityDamageEvent.DamageCause cause = info.cause();
+            Entity damager = info.damager();
+
             switch (cause) {
                 case FALL -> keyStr = "death.environmental.fall";
                 case FIRE, FIRE_TICK -> keyStr = "death.environmental.fire";
@@ -77,80 +92,69 @@ public final class DeathMessageListener implements Listener {
                 case POISON -> keyStr = "death.environmental.poison";
                 case WITHER -> keyStr = "death.environmental.withering";
                 case MAGIC -> keyStr = "death.environmental.magic";
+                case CONTACT -> keyStr = "death.environmental.contact";
 
                 case ENTITY_EXPLOSION, BLOCK_EXPLOSION -> {
-                    EntityDamageEvent damage = player.getLastDamageCause();
-                    if (damage instanceof EntityDamageByEntityEvent entityEvent) {
-                        Entity damager = entityEvent.getDamager();
-                        if (damager.getType() == EntityType.END_CRYSTAL) {
-                            keyStr = "death.explosions.crystal";
-                        } else {
-                            keyStr = "death.explosions.generic";
-                        }
-                    } else keyStr = "death.explosions.generic";
+                    if (damager instanceof LivingEntity && !(damager instanceof Player)) {
+                        keyStr = "death.by-mob";
+                        placeholders.put("mob", getLocalizedMobName(damager.getType()));
+                    } else if (damager != null && damager.getType() == EntityType.END_CRYSTAL) {
+                        keyStr = "death.explosions.crystal";
+                    } else {
+                        keyStr = "death.explosions.generic";
+                    }
                 }
 
                 case PROJECTILE -> {
-                    EntityDamageEvent damage = player.getLastDamageCause();
-                    if (damage instanceof EntityDamageByEntityEvent entityEvent) {
-                        Entity damager = entityEvent.getDamager();
-                        if (damager instanceof Projectile projectile) {
-                            ProjectileSource shooter = projectile.getShooter();
-                            if (shooter instanceof Player sp) {
-                                if (sp.equals(player)) keyStr = "death.special.suicide";
-                                else {
-                                    keyStr = "death.by-player";
-                                    placeholders.put("killer", sp.getName());
-                                }
-                            } else if (shooter instanceof Entity mob) {
-                                keyStr = "death.by-mob";
-                                placeholders.put("mob", getLocalizedMobName(mob.getType()));
-                            } else {
-                                keyStr = "death.by-mob";
-                                placeholders.put("mob", getLocalizedMobName(damager.getType()));
+                    if (damager instanceof Projectile projectile) {
+                        ProjectileSource shooter = projectile.getShooter();
+                        if (shooter instanceof Player sp) {
+                            if (sp.equals(player)) keyStr = "death.special.suicide";
+                            else {
+                                keyStr = "death.by-player";
+                                placeholders.put("killer", sp.getName());
                             }
+                        } else if (shooter instanceof Entity mob) {
+                            keyStr = "death.by-mob";
+                            placeholders.put("mob", getLocalizedMobName(mob.getType()));
+                        } else {
+                            keyStr = "death.by-projectile";
+                            placeholders.put("projectile", getLocalizedProjectileName(damager.getType()));
                         }
                     }
                 }
 
                 case ENTITY_ATTACK -> {
-                    EntityDamageEvent damage = player.getLastDamageCause();
-                    if (damage instanceof EntityDamageByEntityEvent entityEvent) {
-                        Entity damager = entityEvent.getDamager();
-                        if (damager instanceof Player dp) {
-                            keyStr = "death.by-player";
-                            placeholders.put("killer", dp.getName());
-                        } else {
-                            keyStr = "death.by-mob";
-                            placeholders.put("mob", getLocalizedMobName(damager.getType()));
-                        }
-                    } else keyStr = "death.by-mob";
+                    if (damager instanceof Player dp) {
+                        keyStr = "death.by-player";
+                        placeholders.put("killer", dp.getName());
+                    } else if (damager != null) {
+                        keyStr = "death.by-mob";
+                        placeholders.put("mob", getLocalizedMobName(damager.getType()));
+                    }
                 }
-
                 default -> keyStr = "death.generic";
             }
         }
 
-        String raw = plugin.lang().get(keyStr);
-        if (raw.isBlank()) raw = keyStr;
-        Component component = MessageUtil.mini(player, raw, placeholders);
-
+        final String finalRaw = plugin.lang().get(keyStr);
         event.deathMessage(null);
-        Bukkit.broadcast(component);
+
+        plugin.scheduler().runTask(() -> {
+            Component component = MessageUtil.mini(player, finalRaw, placeholders);
+            Bukkit.broadcast(component);
+        });
     }
 
     private String getLocalizedMobName(EntityType type) {
-        // Try hostile mobs first
-        String hostilePath = "death.mob-names.hostile." + type.name();
-        String localized = plugin.lang().get(hostilePath);
-        if (!localized.isBlank()) return localized;
-
-        // Then try projectiles
-        String projectilePath = "death.mob-names.projectiles." + type.name();
-        localized = plugin.lang().get(projectilePath);
-        if (!localized.isBlank()) return localized;
-
-        // Fallback to raw enum name if nothing found
-        return type.name();
+        String path = "death.entity-names.mobs." + type.name();
+        return plugin.lang().get(path);
     }
+
+    private String getLocalizedProjectileName(EntityType type) {
+        String path = "death.entity-names.projectiles." + type.name();
+        return plugin.lang().get(path);
+    }
+
+    private record DamageInfo(EntityDamageEvent.DamageCause cause, Entity damager) {}
 }

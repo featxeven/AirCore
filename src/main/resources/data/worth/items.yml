@@ -844,8 +844,6 @@ cherry_leaves: 0.2
 pale_oak_leaves: 0.2
 azalea_leaves: 0.2
 flowering_azalea_leaves: 0.3
-dead_bush: 0.3
-leaf_litter: 0.3
 
 # Plants & Nature
 cactus: 2
@@ -883,6 +881,12 @@ orange_tulip: 0.6
 red_tulip: 0.6
 pink_tulip: 0.6
 sunflower: 0.4
+dead_bush: 0.3
+leaf_litter: 0.3
+lilac: 0.5
+rose_bush: 0.5
+peony: 0.5
+pitcher_plant: 1
 
 # Saplings
 oak_sapling: 0.5

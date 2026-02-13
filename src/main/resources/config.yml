@@ -5,7 +5,8 @@
 # -----------------------------
 # GENERAL
 # -----------------------------
-# Global options that affect the whole plugin.
+# Global options
+notify-updates: true               # Notify admins when there is a new update
 lang: "en_US"                      # Locale file name (lang/messages/en_US.yml must exist)
 console-to-player-feedback: true   # Send feedback to players when console runs commands targeting them
 
