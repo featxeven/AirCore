@@ -2,7 +2,6 @@ package com.ftxeven.aircore.core.economy.command;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.service.ToggleService;
-import com.ftxeven.aircore.core.economy.EconomyManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -19,12 +18,10 @@ import java.util.UUID;
 
 public final class PayCommand implements TabExecutor {
 
-    private final EconomyManager manager;
     private final AirCore plugin;
 
-    public PayCommand(AirCore plugin, EconomyManager manager) {
+    public PayCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -70,7 +67,7 @@ public final class PayCommand implements TabExecutor {
             return true;
         }
 
-        Double parsed = manager.formats().parseAmount(args[1]);
+        Double parsed = plugin.economy().formats().parseAmount(args[1]);
         if (parsed == null || parsed <= 0) {
             MessageUtil.send(player, "errors.invalid-amount", Map.of());
             return true;
@@ -81,27 +78,27 @@ public final class PayCommand implements TabExecutor {
         double maxPay = plugin.config().economyMaxPayAmount();
 
         if (minPay > 0 && amount < minPay) {
-            MessageUtil.send(player, "economy.payments.error-min", Map.of("amount", manager.formats().formatAmount(minPay)));
+            MessageUtil.send(player, "economy.payments.error-min", Map.of("amount", plugin.economy().formats().formatAmount(minPay)));
             return true;
         }
         if (maxPay >= 0 && amount > maxPay) {
-            MessageUtil.send(player, "economy.payments.error-max", Map.of("amount", manager.formats().formatAmount(maxPay)));
+            MessageUtil.send(player, "economy.payments.error-max", Map.of("amount", plugin.economy().formats().formatAmount(maxPay)));
             return true;
         }
 
         UUID senderId = player.getUniqueId();
-        double senderBalance = manager.balances().getBalance(senderId);
+        double senderBalance = plugin.economy().balances().getBalance(senderId);
         if (senderBalance < amount) {
-            MessageUtil.send(player, "economy.payments.error-insufficient", Map.of("amount", manager.formats().formatAmount(amount)));
+            MessageUtil.send(player, "economy.payments.error-insufficient", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             return true;
         }
 
         double maxBalance = plugin.config().economyMaxBalance();
         if (maxBalance >= 0) {
-            double targetBalance = manager.balances().getBalance(targetId);
+            double targetBalance = plugin.economy().balances().getBalance(targetId);
             if (targetBalance + amount > maxBalance) {
                 MessageUtil.send(player, "economy.payments.error-exceed",
-                        Map.of("player", targetName, "amount", manager.formats().formatAmount(maxBalance)));
+                        Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(maxBalance)));
                 return true;
             }
         }
@@ -112,13 +109,13 @@ public final class PayCommand implements TabExecutor {
             return true;
         }
 
-        manager.transactions().withdraw(senderId, amount);
-        manager.transactions().deposit(targetId, amount);
+        plugin.economy().transactions().withdraw(senderId, amount);
+        plugin.economy().transactions().deposit(targetId, amount);
 
-        MessageUtil.send(player, "economy.payments.send", Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
+        MessageUtil.send(player, "economy.payments.send", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
         if (target.isOnline() && target.getPlayer() != null) {
             MessageUtil.send(target.getPlayer(), "economy.payments.receive",
-                    Map.of("player", player.getName(), "amount", manager.formats().formatAmount(amount)));
+                    Map.of("player", player.getName(), "amount", plugin.economy().formats().formatAmount(amount)));
         }
 
         return true;

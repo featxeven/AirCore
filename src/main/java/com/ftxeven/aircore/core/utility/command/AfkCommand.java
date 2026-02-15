@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.utility.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.utility.UtilityManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.TimeUtil;
 import org.bukkit.Bukkit;
@@ -17,11 +16,9 @@ import java.util.Map;
 
 public final class AfkCommand implements TabExecutor {
     private final AirCore plugin;
-    private final UtilityManager manager;
 
-    public AfkCommand(AirCore plugin, UtilityManager manager) {
+    public AfkCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -44,11 +41,11 @@ public final class AfkCommand implements TabExecutor {
             return true;
         }
 
-        if (manager.afk().wasRecentlyCleared(player.getUniqueId())) {
+        if (plugin.utility().afk().wasRecentlyCleared(player.getUniqueId())) {
             return true;
         }
 
-        if (manager.afk().isAfk(player.getUniqueId())) {
+        if (plugin.utility().afk().isAfk(player.getUniqueId())) {
             stopAfk(player);
         } else {
             startAfk(player);
@@ -58,7 +55,7 @@ public final class AfkCommand implements TabExecutor {
     }
 
     private void startAfk(Player player) {
-        manager.afk().setAfk(player.getUniqueId());
+        plugin.utility().afk().setAfk(player.getUniqueId());
         MessageUtil.send(player, "utilities.afk.set", Map.of());
 
         for (Player other : Bukkit.getOnlinePlayers()) {
@@ -70,7 +67,7 @@ public final class AfkCommand implements TabExecutor {
     }
 
     private void stopAfk(Player player) {
-        long elapsed = manager.afk().clearAfk(player.getUniqueId());
+        long elapsed = plugin.utility().afk().clearAfk(player.getUniqueId());
         String timeStr = TimeUtil.formatSeconds(plugin, elapsed);
 
         MessageUtil.send(player, "utilities.afk.stop", Map.of("time", timeStr));

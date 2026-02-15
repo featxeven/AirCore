@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.utility.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.utility.UtilityManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,11 +15,9 @@ import java.util.Map;
 public final class SetSpawnCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final UtilityManager manager;
 
-    public SetSpawnCommand(AirCore plugin, UtilityManager manager) {
+    public SetSpawnCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -46,7 +43,7 @@ public final class SetSpawnCommand implements TabExecutor {
             return true;
         }
 
-        manager.spawn().saveSpawn(player.getLocation());
+        plugin.utility().spawn().saveSpawn(player.getLocation());
         MessageUtil.send(player, "utilities.spawn.set", Map.of());
         return true;
     }

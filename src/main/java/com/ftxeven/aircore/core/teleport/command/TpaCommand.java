@@ -2,7 +2,6 @@ package com.ftxeven.aircore.core.teleport.command;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.service.ToggleService;
-import com.ftxeven.aircore.core.teleport.TeleportManager;
 import com.ftxeven.aircore.core.teleport.service.RequestService;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.TimeUtil;
@@ -19,11 +18,9 @@ import java.util.Map;
 public final class TpaCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final TeleportManager manager;
 
-    public TpaCommand(AirCore plugin, TeleportManager manager) {
+    public TpaCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -81,8 +78,8 @@ public final class TpaCommand implements TabExecutor {
 
         int cooldownSeconds = plugin.config().teleportRequestCooldown();
         if (cooldownSeconds > 0 &&
-                manager.cooldowns().isOnCooldown(player.getUniqueId(), target.getUniqueId(), cooldownSeconds)) {
-            long remaining = manager.cooldowns().getRemaining(player.getUniqueId(), target.getUniqueId(), cooldownSeconds);
+                plugin.teleport().cooldowns().isOnCooldown(player.getUniqueId(), target.getUniqueId(), cooldownSeconds)) {
+            long remaining = plugin.teleport().cooldowns().getRemaining(player.getUniqueId(), target.getUniqueId(), cooldownSeconds);
             MessageUtil.send(player, "teleport.requests.error-cooldown",
                     Map.of("time", TimeUtil.formatSeconds(plugin, remaining)));
             return true;
@@ -93,13 +90,13 @@ public final class TpaCommand implements TabExecutor {
                 ? System.currentTimeMillis() + (expireSeconds * 1000L)
                 : Long.MAX_VALUE;
 
-        manager.requests().addRequest(
+        plugin.teleport().requests().addRequest(
                 player.getUniqueId(), player.getName(),
                 target.getUniqueId(), target.getName(),
                 expiryTime, RequestService.RequestType.TPA
         );
 
-        manager.cooldowns().mark(player.getUniqueId(), target.getUniqueId());
+        plugin.teleport().cooldowns().mark(player.getUniqueId(), target.getUniqueId());
 
         MessageUtil.send(player, "teleport.requests.tpa-to", Map.of("player", target.getName()));
         MessageUtil.send(target, "teleport.requests.tpa-from", Map.of("player", player.getName()));

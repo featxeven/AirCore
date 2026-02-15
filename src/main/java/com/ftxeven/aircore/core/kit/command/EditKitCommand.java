@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.kit.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.kit.KitManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.TimeUtil;
 import org.bukkit.command.Command;
@@ -18,11 +17,9 @@ import java.util.Map;
 public final class EditKitCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final KitManager manager;
 
-    public EditKitCommand(AirCore plugin, KitManager manager) {
+    public EditKitCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -55,7 +52,7 @@ public final class EditKitCommand implements TabExecutor {
         }
 
         String kitName = args[0].toLowerCase();
-        YamlConfiguration kitsConfig = manager.kits().getConfig();
+        YamlConfiguration kitsConfig = plugin.kit().kits().getConfig();
 
         if (!kitsConfig.contains("kits." + kitName)) {
             MessageUtil.send(player, "kits.errors.not-found", Map.of());
@@ -92,7 +89,7 @@ public final class EditKitCommand implements TabExecutor {
         kitsConfig.set("kits." + kitName + ".cooldown", cooldown);
         kitsConfig.set("kits." + kitName + ".items", items);
 
-        manager.kits().saveConfig();
+        plugin.kit().kits().saveConfig();
 
         MessageUtil.send(player, "kits.management.edited", Map.of("name", kitName));
         return true;
@@ -107,7 +104,7 @@ public final class EditKitCommand implements TabExecutor {
 
         if (!player.hasPermission("aircore.command.editkit")) return List.of();
 
-        var section = manager.kits().getConfig().getConfigurationSection("kits");
+        var section = plugin.kit().kits().getConfig().getConfigurationSection("kits");
         if (section == null) return List.of();
 
         String currentInput = args[args.length - 1].toLowerCase();

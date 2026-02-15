@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.teleport.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.teleport.TeleportManager;
 import com.ftxeven.aircore.core.teleport.service.RequestService;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
@@ -19,11 +18,9 @@ import java.util.stream.Stream;
 public final class TpAcceptCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final TeleportManager manager;
 
-    public TpAcceptCommand(AirCore plugin, TeleportManager manager) {
+    public TpAcceptCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -56,7 +53,7 @@ public final class TpAcceptCommand implements TabExecutor {
         RequestService.TeleportRequest req;
 
         if (args.length == 0) {
-            req = manager.requests().getRequest(target.getUniqueId(), null);
+            req = plugin.teleport().requests().getRequest(target.getUniqueId(), null);
             if (req == null) {
                 MessageUtil.send(target, "teleport.errors.no-requests", Map.of());
                 return true;
@@ -65,12 +62,12 @@ public final class TpAcceptCommand implements TabExecutor {
             senderPlayer = Bukkit.getPlayer(req.sender());
             if (senderPlayer == null || req.expiryTime() < System.currentTimeMillis()) {
                 MessageUtil.send(target, "teleport.lifecycle.expired-from", Map.of("player", req.senderName()));
-                manager.requests().popLatest(target.getUniqueId());
-                manager.cooldowns().clear(target.getUniqueId());
+                plugin.teleport().requests().popLatest(target.getUniqueId());
+                plugin.teleport().cooldowns().clear(target.getUniqueId());
                 return true;
             }
-            manager.requests().popLatest(target.getUniqueId());
-            manager.cooldowns().clear(target.getUniqueId());
+            plugin.teleport().requests().popLatest(target.getUniqueId());
+            plugin.teleport().cooldowns().clear(target.getUniqueId());
         } else {
             senderPlayer = Bukkit.getPlayerExact(args[0]);
             if (senderPlayer == null) {
@@ -78,7 +75,7 @@ public final class TpAcceptCommand implements TabExecutor {
                 return true;
             }
 
-            req = manager.requests().getRequest(target.getUniqueId(), senderPlayer.getUniqueId());
+            req = plugin.teleport().requests().getRequest(target.getUniqueId(), senderPlayer.getUniqueId());
             if (req == null) {
                 MessageUtil.send(target, "teleport.errors.no-request-from", Map.of("player", senderPlayer.getName()));
                 return true;
@@ -86,10 +83,10 @@ public final class TpAcceptCommand implements TabExecutor {
 
             if (req.expiryTime() < System.currentTimeMillis()) {
                 MessageUtil.send(target, "teleport.lifecycle.expired-from", Map.of("player", req.senderName()));
-                manager.requests().popRequestFrom(target.getUniqueId(), senderPlayer.getUniqueId());
+                plugin.teleport().requests().popRequestFrom(target.getUniqueId(), senderPlayer.getUniqueId());
                 return true;
             }
-            manager.requests().popRequestFrom(target.getUniqueId(), senderPlayer.getUniqueId());
+            plugin.teleport().requests().popRequestFrom(target.getUniqueId(), senderPlayer.getUniqueId());
         }
 
         processRequest(req, senderPlayer, target);
@@ -102,7 +99,7 @@ public final class TpAcceptCommand implements TabExecutor {
             return;
         }
 
-        Deque<RequestService.TeleportRequest> queue = manager.requests().getAllRequests(target.getUniqueId());
+        Deque<RequestService.TeleportRequest> queue = plugin.teleport().requests().getAllRequests(target.getUniqueId());
         if (queue.isEmpty()) {
             MessageUtil.send(target, "teleport.errors.no-requests", Map.of());
             return;
@@ -116,8 +113,8 @@ public final class TpAcceptCommand implements TabExecutor {
             }
         }
 
-        manager.requests().clearRequestsForTarget(target.getUniqueId());
-        manager.cooldowns().clear(target.getUniqueId());
+        plugin.teleport().requests().clearRequestsForTarget(target.getUniqueId());
+        plugin.teleport().cooldowns().clear(target.getUniqueId());
         MessageUtil.send(target, "teleport.actions.accepted-all", Map.of());
     }
 

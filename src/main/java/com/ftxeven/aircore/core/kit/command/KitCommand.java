@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.kit.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.kit.KitManager;
 import com.ftxeven.aircore.database.player.PlayerKits;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.TimeUtil;
@@ -19,11 +18,9 @@ import java.util.*;
 public final class KitCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final KitManager manager;
 
-    public KitCommand(AirCore plugin, KitManager manager) {
+    public KitCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -53,7 +50,7 @@ public final class KitCommand implements TabExecutor {
         }
 
         String kitName = args[0].toLowerCase();
-        YamlConfiguration kitsConfig = manager.kits().getConfig();
+        YamlConfiguration kitsConfig = plugin.kit().kits().getConfig();
 
         if (!kitsConfig.contains("kits." + kitName)) {
             MessageUtil.send(player, "kits.errors.not-found", Map.of());
@@ -212,7 +209,7 @@ public final class KitCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player) || !player.hasPermission("aircore.command.kit") || args.length != 1) return List.of();
-        var section = manager.kits().getConfig().getConfigurationSection("kits");
+        var section = plugin.kit().kits().getConfig().getConfigurationSection("kits");
         if (section == null) return List.of();
         return section.getKeys(false).stream()
                 .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))

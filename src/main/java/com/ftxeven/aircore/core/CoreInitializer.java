@@ -67,37 +67,38 @@ public final class CoreInitializer {
         reg("chattoggle", new ChatToggleCommand(plugin));
         reg("socialspy", new SocialSpyCommand(plugin));
 
-        reg("eco", new EcoCommand(plugin, plugin.economy()));
-        reg("balance", new BalanceCommand(plugin, plugin.economy()));
-        reg("pay", new PayCommand(plugin, plugin.economy()));
+        reg("eco", new EcoCommand(plugin));
+        reg("balance", new BalanceCommand(plugin));
+        reg("pay", new PayCommand(plugin));
         reg("paytoggle", new PayToggleCommand(plugin));
+        reg("sell", new SellCommand(plugin, plugin.gui()));
 
-        reg("tpa", new TpaCommand(plugin, plugin.teleport()));
-        reg("tpahere", new TpaHereCommand(plugin, plugin.teleport()));
-        reg("tpaccept", new TpAcceptCommand(plugin, plugin.teleport()));
-        reg("tpdeny", new TpDenyCommand(plugin, plugin.teleport()));
+        reg("tpa", new TpaCommand(plugin));
+        reg("tpahere", new TpaHereCommand(plugin));
+        reg("tpaccept", new TpAcceptCommand(plugin));
+        reg("tpdeny", new TpDenyCommand(plugin));
         reg("tptoggle", new TpToggleCommand(plugin));
         reg("tp", new TpCommand(plugin));
         reg("tphere", new TpHereCommand(plugin));
         reg("tppos", new TpPosCommand(plugin));
         reg("tpoffline", new TpOfflineCommand(plugin));
 
-        reg("sethome", new SetHomeCommand(plugin, plugin.home()));
-        reg("delhome", new DelHomeCommand(plugin, plugin.home()));
+        reg("sethome", new SetHomeCommand(plugin));
+        reg("delhome", new DelHomeCommand(plugin));
         reg("home", new HomeCommand(plugin, plugin.gui()));
 
-        reg("createkit", new CreateKitCommand(plugin, plugin.kit()));
-        reg("delkit", new DeleteKitCommand(plugin, plugin.kit()));
-        reg("editkit", new EditKitCommand(plugin, plugin.kit()));
-        reg("kit", new KitCommand(plugin, plugin.kit()));
+        reg("createkit", new CreateKitCommand(plugin));
+        reg("delkit", new DeleteKitCommand(plugin));
+        reg("editkit", new EditKitCommand(plugin));
+        reg("kit", new KitCommand(plugin));
 
         reg("block", new BlockCommand(plugin));
         reg("unblock", new UnblockCommand(plugin));
-        reg("spawn", new SpawnCommand(plugin, plugin.utility()));
-        reg("setspawn", new SetSpawnCommand(plugin, plugin.utility()));
-        reg("warp", new WarpCommand(plugin, plugin.utility()));
-        reg("setwarp", new SetWarpCommand(plugin, plugin.utility()));
-        reg("delwarp", new DelWarpCommand(plugin, plugin.utility()));
+        reg("spawn", new SpawnCommand(plugin));
+        reg("setspawn", new SetSpawnCommand(plugin));
+        reg("warp", new WarpCommand(plugin));
+        reg("setwarp", new SetWarpCommand(plugin));
+        reg("delwarp", new DelWarpCommand(plugin));
         reg("clearinventory", new ClearInventoryCommand(plugin));
         reg("feed", new FeedCommand(plugin));
         reg("heal", new HealCommand(plugin));
@@ -112,7 +113,7 @@ public final class CoreInitializer {
         reg("grindstone", new GrindstoneCommand(plugin));
         reg("gamemode", new GamemodeCommand(plugin));
         reg("kill", new KillCommand(plugin));
-        reg("afk", new AfkCommand(plugin, plugin.utility()));
+        reg("afk", new AfkCommand(plugin));
         reg("god", new GodCommand(plugin));
         reg("speed", new SpeedCommand(plugin));
         reg("fly", new FlyCommand(plugin));
@@ -121,7 +122,6 @@ public final class CoreInitializer {
         reg("invsee", new InvseeCommand(plugin, plugin.gui()));
         reg("give", new GiveCommand(plugin));
         reg("back", new BackCommand(plugin));
-        reg("sell", new SellCommand(plugin, plugin.gui()));
 
         reg("aircore", new CoreCommand(plugin));
 

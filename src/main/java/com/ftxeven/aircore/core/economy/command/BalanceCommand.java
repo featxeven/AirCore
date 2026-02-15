@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.economy.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.economy.EconomyManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -19,11 +18,9 @@ import java.util.UUID;
 public final class BalanceCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final EconomyManager manager;
 
-    public BalanceCommand(AirCore plugin, EconomyManager manager) {
+    public BalanceCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -70,8 +67,8 @@ public final class BalanceCommand implements TabExecutor {
         OfflinePlayer resolved = resolve(sender, targetName);
         if (resolved == null) return;
 
-        double balance = manager.balances().getBalance(resolved.getUniqueId());
-        String formatted = manager.formats().formatAmount(balance);
+        double balance = plugin.economy().balances().getBalance(resolved.getUniqueId());
+        String formatted = plugin.economy().formats().formatAmount(balance);
         String finalName = resolved.getName() != null ? resolved.getName() : targetName;
 
         if (sender instanceof Player p) {

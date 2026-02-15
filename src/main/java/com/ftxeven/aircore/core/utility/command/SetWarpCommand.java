@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.utility.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.utility.UtilityManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,10 +15,8 @@ import java.util.Map;
 public final class SetWarpCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final UtilityManager manager;
 
-    public SetWarpCommand(AirCore plugin, UtilityManager manager) {
-        this.manager = manager;
+    public SetWarpCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
@@ -54,12 +51,12 @@ public final class SetWarpCommand implements TabExecutor {
 
         String warpName = args[0].toLowerCase();
 
-        if (manager.warps().getConfig().contains("warps." + warpName)) {
+        if (plugin.utility().warps().getConfig().contains("warps." + warpName)) {
             MessageUtil.send(player, "utilities.warp.already-exists", Map.of("name", warpName));
             return true;
         }
 
-        manager.warps().saveWarp(warpName, player.getLocation());
+        plugin.utility().warps().saveWarp(warpName, player.getLocation());
         MessageUtil.send(player, "utilities.warp.created", Map.of("name", warpName));
         return true;
     }

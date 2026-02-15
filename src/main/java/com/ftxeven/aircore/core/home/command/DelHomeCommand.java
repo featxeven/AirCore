@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.home.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.home.HomeManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -20,11 +19,9 @@ import java.util.stream.Stream;
 public final class DelHomeCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final HomeManager manager;
 
-    public DelHomeCommand(AirCore plugin, HomeManager manager) {
+    public DelHomeCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -92,11 +89,11 @@ public final class DelHomeCommand implements TabExecutor {
         UUID uuid = target.getUniqueId();
         String nameLower = homeName.toLowerCase();
 
-        var homes = manager.homes().getHomes(uuid);
+        var homes = plugin.home().homes().getHomes(uuid);
         if (homes.isEmpty()) {
             var loaded = plugin.database().homes().load(uuid);
-            manager.homes().loadFromDatabase(uuid, loaded);
-            homes = manager.homes().getHomes(uuid);
+            plugin.home().homes().loadFromDatabase(uuid, loaded);
+            homes = plugin.home().homes().getHomes(uuid);
         }
 
         if (!homes.containsKey(nameLower)) {
@@ -113,7 +110,7 @@ public final class DelHomeCommand implements TabExecutor {
             return;
         }
 
-        manager.homes().deleteHome(uuid, nameLower);
+        plugin.home().homes().deleteHome(uuid, nameLower);
 
         if (sender instanceof Player p) {
             if (uuid.equals(p.getUniqueId())) {
@@ -151,7 +148,7 @@ public final class DelHomeCommand implements TabExecutor {
         }
 
         if (args.length == 1) {
-            Stream<String> homes = manager.homes().getHomes(player.getUniqueId()).keySet().stream();
+            Stream<String> homes = plugin.home().homes().getHomes(player.getUniqueId()).keySet().stream();
             if (player.hasPermission("aircore.command.delhome.others")) {
                 homes = Stream.concat(homes, Stream.of("@p"));
             }
@@ -172,7 +169,7 @@ public final class DelHomeCommand implements TabExecutor {
     private List<String> getHomeCompletions(String targetName, String input) {
         UUID id = plugin.getNameCache().get(targetName.toLowerCase(Locale.ROOT));
         if (id == null) return List.of();
-        return manager.homes().getHomes(id).keySet().stream().filter(n -> n.toLowerCase().startsWith(input)).toList();
+        return plugin.home().homes().getHomes(id).keySet().stream().filter(n -> n.toLowerCase().startsWith(input)).toList();
     }
 
     private OfflinePlayer resolve(CommandSender sender, String name) {

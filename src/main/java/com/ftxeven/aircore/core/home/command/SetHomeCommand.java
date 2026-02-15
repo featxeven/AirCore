@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.home.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.home.HomeManager;
 import com.ftxeven.aircore.core.home.HomeService;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.command.Command;
@@ -16,11 +15,9 @@ import java.util.Map;
 public final class SetHomeCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final HomeManager manager;
 
-    public SetHomeCommand(AirCore plugin, HomeManager manager) {
+    public SetHomeCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -51,7 +48,7 @@ public final class SetHomeCommand implements TabExecutor {
 
         String nameArg = args.length > 0 ? args[0].toLowerCase() : "";
 
-        HomeService.Result result = manager.homes().setHome(player, nameArg);
+        HomeService.Result result = plugin.home().homes().setHome(player, nameArg);
 
         switch (result.status()) {
             case SUCCESS -> MessageUtil.send(player, "homes.management.created",
@@ -63,7 +60,7 @@ public final class SetHomeCommand implements TabExecutor {
             case ALREADY_EXISTS -> MessageUtil.send(player, "homes.management.already-exists",
                     Map.of("name", result.homeName()));
             case LIMIT_REACHED -> MessageUtil.send(player, "homes.validation.limit-reached",
-                    Map.of("limit", String.valueOf(manager.homes().getLimit(player.getUniqueId()))));
+                    Map.of("limit", String.valueOf(plugin.home().homes().getLimit(player.getUniqueId()))));
             default -> {}
         }
 

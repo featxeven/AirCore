@@ -1,7 +1,6 @@
 package com.ftxeven.aircore.core.kit.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.kit.KitManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.TimeUtil;
 import org.bukkit.command.Command;
@@ -16,11 +15,9 @@ import java.util.Map;
 public final class CreateKitCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final KitManager manager;
 
-    public CreateKitCommand(AirCore plugin, KitManager manager) {
+    public CreateKitCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     @Override
@@ -54,7 +51,7 @@ public final class CreateKitCommand implements TabExecutor {
 
         String kitName = args[0].toLowerCase();
 
-        var kitsConfig = manager.kits().getConfig();
+        var kitsConfig = plugin.kit().kits().getConfig();
         if (kitsConfig.contains("kits." + kitName)) {
             MessageUtil.send(player, "kits.management.already-exists", Map.of("name", kitName));
             return true;
@@ -81,7 +78,7 @@ public final class CreateKitCommand implements TabExecutor {
 
         if (cooldown == null) cooldown = 0L;
 
-        boolean success = manager.kits().createKit(player, kitName, oneTime, cooldown);
+        boolean success = plugin.kit().kits().createKit(player, kitName, oneTime, cooldown);
         if (success) {
             MessageUtil.send(player, "kits.management.created", Map.of("name", kitName));
         } else {

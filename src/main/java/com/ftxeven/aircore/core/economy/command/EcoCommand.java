@@ -17,11 +17,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class EcoCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final EconomyManager manager;
 
-    public EcoCommand(AirCore plugin, EconomyManager manager) {
+    public EcoCommand(AirCore plugin) {
         this.plugin = plugin;
-        this.manager = manager;
     }
 
     private enum Scope {SINGLE, ONLINE, ALL}
@@ -101,7 +99,7 @@ public final class EcoCommand implements TabExecutor {
                 MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("eco", sub, label)));
                 return true;
             }
-            Double parsed = manager.formats().parseAmount(args[2]);
+            Double parsed = plugin.economy().formats().parseAmount(args[2]);
             if (parsed == null) {
                 MessageUtil.send(player, "errors.invalid-amount", Map.of());
                 return true;
@@ -169,7 +167,7 @@ public final class EcoCommand implements TabExecutor {
                 console.sendMessage("Usage: /" + label + " " + sub + " <player|@o|@a> <amount>");
                 return;
             }
-            Double parsed = manager.formats().parseAmount(args[2]);
+            Double parsed = plugin.economy().formats().parseAmount(args[2]);
             if (parsed == null) {
                 console.sendMessage("Invalid amount.");
                 return;
@@ -191,27 +189,27 @@ public final class EcoCommand implements TabExecutor {
 
     private void handleGive(Player sender, Scope scope, OfflinePlayer target, String targetArg, double amount) {
         if (scope == Scope.SINGLE) {
-            EconomyManager.Result res = manager.transactions().deposit(target.getUniqueId(), amount);
+            EconomyManager.Result res = plugin.economy().transactions().deposit(target.getUniqueId(), amount);
             String targetName = target.getName() != null ? target.getName() : targetArg;
             if (res.type() == EconomyManager.ResultType.MAX_LIMIT) {
                 sendToSender(sender, "economy.give.error-exceed",
                         "Gave would exceed max limit for " + targetName,
-                        Map.of("player", consoleName(sender), "amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
+                        Map.of("player", consoleName(sender), "amount", plugin.economy().formats().formatAmount(plugin.config().economyMaxBalance())));
                 return;
             }
 
             if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
-                handleResult(sender, target, res, "economy.give.by", Map.of("amount", manager.formats().formatAmount(amount)));
+                handleResult(sender, target, res, "economy.give.by", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             }
 
             if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
-                MessageUtil.send(sender, "economy.give.player", Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
+                MessageUtil.send(sender, "economy.give.player", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
             } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                MessageUtil.send(sender, "economy.give.self", Map.of("amount", manager.formats().formatAmount(amount)));
+                MessageUtil.send(sender, "economy.give.self", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             } else if (sender == null) {
                 sendToSender(null, "economy.give.player",
-                        "Gave " + manager.formats().formatAmount(amount) + " to " + targetName,
-                        Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
+                        "Gave " + plugin.economy().formats().formatAmount(amount) + " to " + targetName,
+                        Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
             }
             return;
         }
@@ -223,7 +221,7 @@ public final class EcoCommand implements TabExecutor {
             }
             double max = plugin.config().economyMaxBalance();
             if (max >= 0 && amount > max) {
-                sendToSender(sender, "economy.error-max", "Amount exceeds max.", Map.of("amount", manager.formats().formatAmount(max)));
+                sendToSender(sender, "economy.error-max", "Amount exceeds max.", Map.of("amount", plugin.economy().formats().formatAmount(max)));
                 return;
             }
 
@@ -231,18 +229,18 @@ public final class EcoCommand implements TabExecutor {
                 boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
                 String actor = consoleName(sender);
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    double current = manager.balances().getBalance(p.getUniqueId());
+                    double current = plugin.economy().balances().getBalance(p.getUniqueId());
                     double allowed = (max >= 0) ? Math.max(0, max - current) : amount;
                     double given = Math.min(amount, allowed);
                     if (given <= 0) continue;
 
-                    manager.transactions().deposit(p.getUniqueId(), given);
+                    plugin.economy().transactions().deposit(p.getUniqueId(), given);
 
                     if (shouldNotify && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
-                        notifyPlayer(p.getUniqueId(), "economy.give.by", Map.of("player", actor, "amount", manager.formats().formatAmount(given)));
+                        notifyPlayer(p.getUniqueId(), "economy.give.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(given)));
                     }
                 }
-                sendToSender(sender, "economy.give.online", "Gave to all online players.", Map.of("amount", manager.formats().formatAmount(amount)));
+                sendToSender(sender, "economy.give.online", "Gave to all online players.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             });
             return;
         }
@@ -254,7 +252,7 @@ public final class EcoCommand implements TabExecutor {
             }
             double max = plugin.config().economyMaxBalance();
             if (max >= 0 && amount > max) {
-                sendToSender(sender, "economy.error-max", "Amount exceeds max.", Map.of("amount", manager.formats().formatAmount(max)));
+                sendToSender(sender, "economy.error-max", "Amount exceeds max.", Map.of("amount", plugin.economy().formats().formatAmount(max)));
                 return;
             }
 
@@ -263,18 +261,18 @@ public final class EcoCommand implements TabExecutor {
                 String actor = consoleName(sender);
                 for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
                     if (!p.hasPlayedBefore()) continue;
-                    double current = manager.balances().getBalance(p.getUniqueId());
+                    double current = plugin.economy().balances().getBalance(p.getUniqueId());
                     double allowed = (max >= 0) ? Math.max(0, max - current) : amount;
                     double given = Math.min(amount, allowed);
                     if (given <= 0) continue;
 
-                    manager.transactions().deposit(p.getUniqueId(), given);
+                    plugin.economy().transactions().deposit(p.getUniqueId(), given);
 
                     if (shouldNotify && p.isOnline() && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
-                        notifyPlayer(p.getUniqueId(), "economy.give.by", Map.of("player", actor, "amount", manager.formats().formatAmount(given)));
+                        notifyPlayer(p.getUniqueId(), "economy.give.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(given)));
                     }
                 }
-                sendToSender(sender, "economy.give.all", "Gave to all players.", Map.of("amount", manager.formats().formatAmount(amount)));
+                sendToSender(sender, "economy.give.all", "Gave to all players.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             });
         }
     }
@@ -289,7 +287,7 @@ public final class EcoCommand implements TabExecutor {
         double max = plugin.config().economyMaxBalance();
 
         if (scope == Scope.SINGLE) {
-            double current = manager.balances().getBalance(target.getUniqueId());
+            double current = plugin.economy().balances().getBalance(target.getUniqueId());
             double allowed = (min != -1) ? current - min : amount;
             String targetName = target.getName() != null ? target.getName() : targetArg;
 
@@ -298,34 +296,34 @@ public final class EcoCommand implements TabExecutor {
                 return;
             }
 
-            EconomyManager.Result res = manager.transactions().withdraw(target.getUniqueId(), amount);
+            EconomyManager.Result res = plugin.economy().transactions().withdraw(target.getUniqueId(), amount);
             if (res.type() == EconomyManager.ResultType.SUCCESS) {
-                double actualTaken = manager.formats().round(current - res.balance());
+                double actualTaken = plugin.economy().formats().round(current - res.balance());
                 if (target.isOnline() && (sender != null || plugin.config().consoleToPlayerFeedback())) {
                     String actor = consoleName(sender);
                     if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
-                        notifyPlayer(target.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", manager.formats().formatAmount(actualTaken)));
+                        notifyPlayer(target.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                     }
                 }
 
                 if (sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
-                    MessageUtil.send(sender, "economy.take.player", Map.of("player", targetName, "amount", manager.formats().formatAmount(actualTaken)));
+                    MessageUtil.send(sender, "economy.take.player", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                 } else if (sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                    MessageUtil.send(sender, "economy.take.self", Map.of("amount", manager.formats().formatAmount(actualTaken)));
+                    MessageUtil.send(sender, "economy.take.self", Map.of("amount", plugin.economy().formats().formatAmount(actualTaken)));
                 } else if (sender == null) {
                     sendToSender(null, "economy.take.player",
-                            "Took " + manager.formats().formatAmount(actualTaken) + " from " + targetName,
-                            Map.of("player", targetName, "amount", manager.formats().formatAmount(actualTaken)));
+                            "Took " + plugin.economy().formats().formatAmount(actualTaken) + " from " + targetName,
+                            Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                 }
             } else {
-                handleResult(sender, target, res, "economy.take.by", Map.of("amount", manager.formats().formatAmount(amount)));
+                handleResult(sender, target, res, "economy.take.by", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             }
             return;
         }
 
         if (scope == Scope.ONLINE) {
             if (max >= 0 && amount > max) {
-                sendToSender(sender, "economy.take.error-max-amount", "Amount exceeds max.", Map.of("amount", manager.formats().formatAmount(max)));
+                sendToSender(sender, "economy.take.error-max-amount", "Amount exceeds max.", Map.of("amount", plugin.economy().formats().formatAmount(max)));
                 return;
             }
 
@@ -333,25 +331,25 @@ public final class EcoCommand implements TabExecutor {
                 boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
                 String actor = consoleName(sender);
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    double current = manager.balances().getBalance(p.getUniqueId());
+                    double current = plugin.economy().balances().getBalance(p.getUniqueId());
                     double allowed = (min != -1) ? current - min : amount;
                     double taken = Math.min(amount, allowed);
                     if (taken <= 0) continue;
 
-                    EconomyManager.Result res = manager.transactions().withdraw(p.getUniqueId(), taken);
+                    EconomyManager.Result res = plugin.economy().transactions().withdraw(p.getUniqueId(), taken);
                     if (res.type() == EconomyManager.ResultType.SUCCESS && shouldNotify && (sender == null || !Objects.equals(p, sender))) {
-                        double actualTaken = manager.formats().round(current - res.balance());
-                        notifyPlayer(p.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", manager.formats().formatAmount(actualTaken)));
+                        double actualTaken = plugin.economy().formats().round(current - res.balance());
+                        notifyPlayer(p.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                     }
                 }
-                sendToSender(sender, "economy.take.online", "Took from all online players.", Map.of("amount", manager.formats().formatAmount(amount)));
+                sendToSender(sender, "economy.take.online", "Took from all online players.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             });
             return;
         }
 
         if (scope == Scope.ALL) {
             if (max >= 0 && amount > max) {
-                sendToSender(sender, "economy.take.error-max-amount", "Amount exceeds max.", Map.of("amount", manager.formats().formatAmount(max)));
+                sendToSender(sender, "economy.take.error-max-amount", "Amount exceeds max.", Map.of("amount", plugin.economy().formats().formatAmount(max)));
                 return;
             }
 
@@ -360,18 +358,18 @@ public final class EcoCommand implements TabExecutor {
                 String actor = consoleName(sender);
                 for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
                     if (!p.hasPlayedBefore()) continue;
-                    double current = manager.balances().getBalance(p.getUniqueId());
+                    double current = plugin.economy().balances().getBalance(p.getUniqueId());
                     double allowed = (min != -1) ? current - min : amount;
                     double taken = Math.min(amount, allowed);
                     if (taken <= 0) continue;
 
-                    EconomyManager.Result res = manager.transactions().withdraw(p.getUniqueId(), taken);
+                    EconomyManager.Result res = plugin.economy().transactions().withdraw(p.getUniqueId(), taken);
                     if (res.type() == EconomyManager.ResultType.SUCCESS && p.isOnline() && shouldNotify && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
-                        double actualTaken = manager.formats().round(current - res.balance());
-                        notifyPlayer(p.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", manager.formats().formatAmount(actualTaken)));
+                        double actualTaken = plugin.economy().formats().round(current - res.balance());
+                        notifyPlayer(p.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                     }
                 }
-                sendToSender(sender, "economy.take.all", "Took from all players.", Map.of("amount", manager.formats().formatAmount(amount)));
+                sendToSender(sender, "economy.take.all", "Took from all players.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             });
         }
     }
@@ -382,27 +380,27 @@ public final class EcoCommand implements TabExecutor {
             double max = plugin.config().economyMaxBalance();
 
             if (min != -1 && amount < min) {
-                sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(min)));
+                sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", plugin.economy().formats().formatAmount(min)));
                 return;
             }
             if (max >= 0 && amount > max) {
-                sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(max)));
+                sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", plugin.economy().formats().formatAmount(max)));
                 return;
             }
 
-            EconomyManager.Result res = manager.transactions().setBalance(target.getUniqueId(), amount);
+            EconomyManager.Result res = plugin.economy().transactions().setBalance(target.getUniqueId(), amount);
             if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
-                handleResult(sender, target, res, "economy.set.by", Map.of("amount", manager.formats().formatAmount(amount)));
+                handleResult(sender, target, res, "economy.set.by", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             }
 
             if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
                 String targetName = target.getName() != null ? target.getName() : targetArg;
-                MessageUtil.send(sender, "economy.set.player", Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
+                MessageUtil.send(sender, "economy.set.player", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
             } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                MessageUtil.send(sender, "economy.set.self", Map.of("amount", manager.formats().formatAmount(amount)));
+                MessageUtil.send(sender, "economy.set.self", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender == null) {
                 String targetName = target.getName() != null ? target.getName() : targetArg;
-                sendToSender(null, "economy.set.player", "Set " + targetName + "'s balance to " + manager.formats().formatAmount(amount), Map.of("player", targetName, "amount", manager.formats().formatAmount(amount)));
+                sendToSender(null, "economy.set.player", "Set " + targetName + "'s balance to " + plugin.economy().formats().formatAmount(amount), Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
             }
             return;
         }
@@ -416,9 +414,9 @@ public final class EcoCommand implements TabExecutor {
 
             if (scope == Scope.ONLINE) {
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    EconomyManager.Result res = manager.transactions().setBalance(p.getUniqueId(), amount);
+                    EconomyManager.Result res = plugin.economy().transactions().setBalance(p.getUniqueId(), amount);
                     if (res.type() == EconomyManager.ResultType.SUCCESS && shouldNotify && !Objects.equals(p, sender)) {
-                        notifyPlayer(p.getUniqueId(), "economy.set.by", Map.of("player", actor, "amount", manager.formats().formatAmount(amount)));
+                        notifyPlayer(p.getUniqueId(), "economy.set.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(amount)));
                     }
                     if (res.type() == EconomyManager.ResultType.INVALID) anyInvalid.set(true);
                     else if (res.type() == EconomyManager.ResultType.MIN_LIMIT) anyMin.set(true);
@@ -427,9 +425,9 @@ public final class EcoCommand implements TabExecutor {
             } else {
                 for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
                     if (!p.hasPlayedBefore()) continue;
-                    EconomyManager.Result res = manager.transactions().setBalance(p.getUniqueId(), amount);
+                    EconomyManager.Result res = plugin.economy().transactions().setBalance(p.getUniqueId(), amount);
                     if (res.type() == EconomyManager.ResultType.SUCCESS && p.isOnline() && shouldNotify && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
-                        notifyPlayer(p.getUniqueId(), "economy.set.by", Map.of("player", actor, "amount", manager.formats().formatAmount(amount)));
+                        notifyPlayer(p.getUniqueId(), "economy.set.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(amount)));
                     }
                     if (res.type() == EconomyManager.ResultType.INVALID) anyInvalid.set(true);
                     else if (res.type() == EconomyManager.ResultType.MIN_LIMIT) anyMin.set(true);
@@ -438,15 +436,15 @@ public final class EcoCommand implements TabExecutor {
             }
 
             if (anyInvalid.get()) sendToSender(sender, "errors.invalid-amount", "Invalid amount.", Map.of());
-            else if (anyMin.get()) sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMinBalance())));
-            else if (anyMax.get()) sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
-            else sendToSender(sender, scope == Scope.ONLINE ? "economy.set.online" : "economy.set.all", "Set balances.", Map.of("amount", manager.formats().formatAmount(amount)));
+            else if (anyMin.get()) sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", plugin.economy().formats().formatAmount(plugin.config().economyMinBalance())));
+            else if (anyMax.get()) sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", plugin.economy().formats().formatAmount(plugin.config().economyMaxBalance())));
+            else sendToSender(sender, scope == Scope.ONLINE ? "economy.set.online" : "economy.set.all", "Set balances.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
         });
     }
 
     private void handleReset(Player sender, Scope scope, OfflinePlayer target, String targetArg) {
         if (scope == Scope.SINGLE) {
-            manager.transactions().resetBalance(target.getUniqueId());
+            plugin.economy().transactions().resetBalance(target.getUniqueId());
             if (target.isOnline() && (sender != null || plugin.config().consoleToPlayerFeedback())) {
                 String actor = consoleName(sender);
                 if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
@@ -470,7 +468,7 @@ public final class EcoCommand implements TabExecutor {
             String actor = consoleName(sender);
             if (scope == Scope.ONLINE) {
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    manager.transactions().resetBalance(p.getUniqueId());
+                    plugin.economy().transactions().resetBalance(p.getUniqueId());
                     if (shouldNotify && (sender == null || !Objects.equals(p, sender))) {
                         notifyPlayer(p.getUniqueId(), "economy.reset.by", Map.of("player", actor));
                     }
@@ -479,7 +477,7 @@ public final class EcoCommand implements TabExecutor {
             } else {
                 for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
                     if (!p.hasPlayedBefore()) continue;
-                    manager.transactions().resetBalance(p.getUniqueId());
+                    plugin.economy().transactions().resetBalance(p.getUniqueId());
                     if (p.isOnline() && shouldNotify && (sender == null || !p.getUniqueId().equals(sender.getUniqueId()))) {
                         notifyPlayer(p.getUniqueId(), "economy.reset.by", Map.of("player", actor));
                     }
@@ -509,8 +507,8 @@ public final class EcoCommand implements TabExecutor {
                     MessageUtil.send(target.getPlayer(), notifyKey, merged);
                 }
             }
-            case MAX_LIMIT -> sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMaxBalance())));
-            case MIN_LIMIT -> sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", manager.formats().formatAmount(plugin.config().economyMinBalance())));
+            case MAX_LIMIT -> sendToSender(sender, "economy.error-max", "Hit max limit.", Map.of("amount", plugin.economy().formats().formatAmount(plugin.config().economyMaxBalance())));
+            case MIN_LIMIT -> sendToSender(sender, "economy.error-min", "Hit min limit.", Map.of("amount", plugin.economy().formats().formatAmount(plugin.config().economyMinBalance())));
             case INVALID -> sendToSender(sender, "errors.invalid-amount", "Invalid amount.", Map.of());
             default -> {}
         }
