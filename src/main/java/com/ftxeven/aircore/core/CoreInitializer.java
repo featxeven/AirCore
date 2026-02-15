@@ -84,7 +84,7 @@ public final class CoreInitializer {
 
         reg("sethome", new SetHomeCommand(plugin, plugin.home()));
         reg("delhome", new DelHomeCommand(plugin, plugin.home()));
-        reg("home", new HomeCommand(plugin, plugin.home()));
+        reg("home", new HomeCommand(plugin, plugin.gui()));
 
         reg("createkit", new CreateKitCommand(plugin, plugin.kit()));
         reg("delkit", new DeleteKitCommand(plugin, plugin.kit()));

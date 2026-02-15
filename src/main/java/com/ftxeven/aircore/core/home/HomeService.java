@@ -140,11 +140,11 @@ public final class HomeService {
     public Map<String, Location> getHomes(UUID playerId) {
         return playerHomes.computeIfAbsent(playerId, id -> {
             Map<String, Location> loaded = plugin.database().homes().load(id);
-            return new HashMap<>(loaded);
+            return new LinkedHashMap<>(loaded);
         });
     }
 
     public void loadFromDatabase(UUID uuid, Map<String, Location> homes) {
-        playerHomes.put(uuid, new HashMap<>(homes));
+        playerHomes.put(uuid, new LinkedHashMap<>(homes));
     }
 }

@@ -1,9 +1,5 @@
-# - true  = Inventory closes after sell confirmation
-# - false = Sell GUI reopens after sell confirmation
-close-on-sell: true
-
 # GUI title and size
-title: "Confirm for $%total%"
+title: "<gradient:#00ffcc:#0066ff>Confirm Sale</gradient> <gray>»</gray> <green>$%total%"
 rows: 3
 
 # GUI buttons
@@ -12,15 +8,34 @@ rows: 3
 buttons:
   confirm:
     slots: [11]
-    material: GREEN_STAINED_GLASS_PANE
-    display-name: "<green>Confirm</green>"
+    material: LIME_STAINED_GLASS_PANE
+    glow: true
+    display-name: "<#5efce8><bold>CONFIRM SALE</bold></#5efce8>"
     lore:
-      - "<gray>Total worth: $%total%</gray>"
+      - "<gray>Total Worth: <white>$%total%</white></gray>"
+      - ""
+      - " <#736efe>»</#736efe> <#5efce8>Click</#5efce8> <gray>to sell and exit</gray>"
+      - " <#736efe>»</#736efe> <#5efce8>Shift-Click</#5efce8> <gray>to sell and return</gray>"
+    actions:
+      - "[sound] entity.player.levelup 1.0 1.2"
+      - "[close]"
+    shift-actions:
+      - "[sound] entity.player.levelup 1.0 1.2"
+      - "[player] sell"
 
   cancel:
     slots: [15]
     material: RED_STAINED_GLASS_PANE
-    display-name: "<red>Cancel</red>"
+    display-name: "<#ff5f6d><bold>CANCEL</bold></#ff5f6d>"
+    lore:
+      - "<gray>Click to return to the</gray>"
+      - "<gray>selling interface.</gray>"
+    actions:
+      - "[sound] ui.button.click 1.0 0.8"
 
 # Custom items
-items: []
+items:
+  filler:
+    slots: [0-26]
+    material: GRAY_STAINED_GLASS_PANE
+    hide-tooltip: true

@@ -48,11 +48,13 @@ public final class ViewerListener implements Listener {
     }
 
     private boolean isValidDragSlot(int rawSlot, ItemStack dragging, GuiDefinition def) {
+        if (def == null || def.items() == null) return false;
+
         if (InventorySlotMapper.findItem(def, rawSlot) == null) return false;
         if (!InventorySlotMapper.isDynamicSlot(def, rawSlot)) return false;
 
         var armorItem = def.items().get("player-armor");
-        if (armorItem != null && armorItem.slots().contains(rawSlot)) {
+        if (armorItem != null && armorItem.slots() != null && armorItem.slots().contains(rawSlot)) {
             return invseeManager.isValidArmorForSlot(dragging, rawSlot);
         }
         return true;

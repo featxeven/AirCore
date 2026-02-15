@@ -314,8 +314,8 @@ command-usages:
     aliases: [tpoff]
 
   home:
-    usage: "/%label% <homename>"
-    usage-others: "/%label% @p <player> <homename>"
+    usage: "/%label% [homename]"
+    usage-others: "/%label% @p <player> [homename]"
     aliases: [homes]
   sethome:
     usage: "/%label% <homename>"

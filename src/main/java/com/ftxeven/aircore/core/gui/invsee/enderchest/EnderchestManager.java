@@ -22,13 +22,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class EnderchestManager implements GuiManager.CustomGuiManager {
 
     private final AirCore plugin;
     private final ItemAction itemAction;
     private final MiniMessage mm = MiniMessage.miniMessage();
-    private final Set<UUID> pendingUpdates = new HashSet<>();
+    private final Set<UUID> pendingUpdates = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final TargetListener targetListener;
     private final ViewerListener viewerListener;
     private GuiDefinition definition;
@@ -56,17 +57,38 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         Set<String> dynamicGroups = Set.of("player-enderchest");
 
         for (String key : dynamicGroups) {
-            items.put(key, new GuiDefinition.GuiItem(key, GuiDefinition.parseSlots(cfg.getStringList(key)),
-                    Material.AIR, null, Collections.emptyList(), false, null, Collections.emptyList(),
-                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                    null, null, null, Collections.emptyMap(), Collections.emptyList(), null, null, null));
+            items.put(key, new GuiDefinition.GuiItem(
+                    key,
+                    GuiDefinition.parseSlots(cfg.getStringList(key)),
+                    Material.AIR,
+                    null,
+                    Collections.emptyList(),
+                    false,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    null,
+                    null,
+                    null,
+                    Collections.emptyMap(),
+                    Collections.emptyList(),
+                    null,
+                    null,
+                    null,
+                    0.0,
+                    null
+            ));
         }
 
         ConfigurationSection itemsSec = cfg.getConfigurationSection("items");
         if (itemsSec != null) {
             for (String key : itemsSec.getKeys(false)) {
                 ConfigurationSection sec = itemsSec.getConfigurationSection(key);
-                if (sec != null) items.put(key, GuiDefinition.GuiItem.fromSection(key, sec, mm));
+                if (sec != null) items.put(key, GuiDefinition.GuiItem.fromSection(key, sec));
             }
         }
         this.definition = new GuiDefinition(cfg.getString("title", "Enderchest"), cfg.getInt("rows", 3), items, cfg);
@@ -162,9 +184,21 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
 
     private void handleAction(Player viewer, EnderchestHolder ih, GuiDefinition.GuiItem item, ClickType click) {
         if (item == null) return;
+
+        if (plugin.gui().cooldowns().isOnCooldown(viewer, item)) {
+            plugin.gui().cooldowns().sendCooldownMessage(viewer, item);
+            return;
+        }
+
+        plugin.gui().cooldowns().applyCooldown(viewer, item);
+
         List<String> actions = item.getActionsForClick(click);
         if (actions != null && !actions.isEmpty()) {
-            itemAction.executeAll(actions, viewer, Map.of("player", viewer.getName(), "target", ih.targetName()));
+            Map<String, String> ph = Map.of(
+                    "player", viewer.getName(),
+                    "target", ih.targetName() != null ? ih.targetName() : viewer.getName()
+            );
+            itemAction.executeAll(actions, viewer, ph);
         }
     }
 
@@ -192,14 +226,17 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
     void applyEnderchestToTarget(UUID targetUUID, ItemStack[] contents) {
         Player target = Bukkit.getPlayer(targetUUID);
         if (target == null || !target.isOnline()) {
-            plugin.database().inventories().saveEnderchest(targetUUID, contents);
+            plugin.scheduler().runAsync(() -> plugin.database().inventories().saveEnderchest(targetUUID, contents));
             return;
         }
-        var ec = target.getEnderChest();
-        if (!Arrays.equals(ec.getContents(), contents)) {
-            ec.setContents(contents);
-            target.updateInventory();
-        }
+
+        plugin.scheduler().runEntityTask(target, () -> {
+            var ec = target.getEnderChest();
+            if (!Arrays.equals(ec.getContents(), contents)) {
+                ec.setContents(contents);
+                target.updateInventory();
+            }
+        });
     }
 
     private void distributeToSlots(GuiDefinition def, Inventory top, ItemStack moving, Inventory sourceInv, int sourceSlot) {
@@ -222,7 +259,32 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         }
     }
 
-    public void unregisterListeners() { HandlerList.unregisterAll(targetListener); HandlerList.unregisterAll(viewerListener); }
+    @Override
+    public void refresh(Inventory inv, Player viewer, Map<String, String> placeholders) {
+        if (!(inv.getHolder() instanceof EnderchestHolder holder)) return;
+
+        Player target = Bukkit.getPlayer(holder.targetUUID());
+        ItemStack[] contents;
+
+        if (target != null && target.isOnline()) {
+            contents = target.getEnderChest().getContents();
+        } else {
+            PlayerInventories.InventoryBundle bundle = plugin.database().inventories().loadAllInventory(holder.targetUUID());
+            contents = (bundle != null) ? bundle.enderChest() : new ItemStack[27];
+        }
+
+        EnderchestSlotMapper.fill(inv, definition, contents);
+
+        if (inv.getSize() != 27) {
+            EnderchestSlotMapper.fillCustom(inv, definition, viewer, placeholders, this);
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        HandlerList.unregisterAll(targetListener);
+        HandlerList.unregisterAll(viewerListener);
+    }
     @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof EnderchestHolder; }
     public boolean isDynamicGroup(String key) { return "player-enderchest".equals(key); }
     public GuiDefinition definition() { return definition; }

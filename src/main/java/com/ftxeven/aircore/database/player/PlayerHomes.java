@@ -19,14 +19,14 @@ public final class PlayerHomes {
     }
 
     public Map<String, Location> load(UUID uuid) {
-        Map<String, Location> homes = new HashMap<>();
-        String sql = "SELECT name, world, x, y, z, yaw, pitch FROM player_homes WHERE uuid = ?";
+        Map<String, Location> homes = new LinkedHashMap<>();
+        String sql = "SELECT name, world, x, y, z, yaw, pitch FROM player_homes WHERE uuid = ? ORDER BY created_at ASC";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     World world = Bukkit.getWorld(rs.getString("world"));
-                    if (world == null) continue; // skip invalid worlds
+                    if (world == null) continue;
                     Location loc = new Location(
                             world,
                             rs.getDouble("x"),
@@ -44,6 +44,22 @@ public final class PlayerHomes {
         return homes;
     }
 
+    public Map<String, Long> loadTimestamps(UUID uuid) {
+        Map<String, Long> timestamps = new HashMap<>();
+        String sql = "SELECT name, created_at FROM player_homes WHERE uuid = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    timestamps.put(rs.getString("name"), rs.getLong("created_at"));
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to load timestamps for " + uuid + ": " + e.getMessage());
+        }
+        return timestamps;
+    }
+
     public void save(UUID uuid, String name, Location loc) {
         String sql = """
             INSERT INTO player_homes (uuid, name, world, x, y, z, yaw, pitch, created_at)
@@ -54,8 +70,7 @@ public final class PlayerHomes {
                 y = excluded.y,
                 z = excluded.z,
                 yaw = excluded.yaw,
-                pitch = excluded.pitch,
-                created_at = excluded.created_at;
+                pitch = excluded.pitch;
             """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());

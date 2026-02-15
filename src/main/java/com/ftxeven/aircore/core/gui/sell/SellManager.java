@@ -69,16 +69,34 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         this.cachedSellSlots = sellSlotList.stream().mapToInt(Integer::intValue).toArray();
 
         items.put("sell-slots", new GuiDefinition.GuiItem(
-                "sell-slots", sellSlotList, Material.AIR, null, Collections.emptyList(),
-                false, null, Collections.emptyList(), Collections.emptyList(),
-                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                null, null, null, Collections.emptyMap(), Collections.emptyList(),
-                null, null, null
+                "sell-slots",
+                sellSlotList,
+                Material.AIR,
+                null,
+                Collections.emptyList(),
+                false,
+                null,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                null,
+                null,
+                null,
+                Collections.emptyMap(),
+                Collections.emptyList(),
+                null,
+                null,
+                null,
+                0.0,
+                null
         ));
 
         ConfigurationSection confirmSec = cfg.getConfigurationSection("buttons.confirm");
         if (confirmSec != null) {
-            GuiDefinition.GuiItem confirmItem = GuiDefinition.GuiItem.fromSection("confirm", confirmSec, mm);
+            GuiDefinition.GuiItem confirmItem = GuiDefinition.GuiItem.fromSection("confirm", confirmSec);
             this.cachedConfirmItem = confirmItem;
             this.cachedConfirmSlots = confirmItem.slots().stream().mapToInt(Integer::intValue).toArray();
             items.put("confirm", confirmItem);
@@ -86,7 +104,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
 
         ConfigurationSection confirmAllSec = cfg.getConfigurationSection("buttons.confirm-all");
         if (confirmAllSec != null) {
-            items.put("confirm-all", GuiDefinition.GuiItem.fromSection("confirm-all", confirmAllSec, mm));
+            items.put("confirm-all", GuiDefinition.GuiItem.fromSection("confirm-all", confirmAllSec));
         }
 
         ConfigurationSection itemsSec = cfg.getConfigurationSection("items");
@@ -95,7 +113,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
                 if ("confirm".equalsIgnoreCase(key) || "sell-slots".equalsIgnoreCase(key)) continue;
                 ConfigurationSection itemSec = itemsSec.getConfigurationSection(key);
                 if (itemSec == null) continue;
-                items.put(key, GuiDefinition.GuiItem.fromSection(key, itemSec, mm));
+                items.put(key, GuiDefinition.GuiItem.fromSection(key, itemSec));
             }
         }
         this.definition = new GuiDefinition(title, rows, items, cfg);
@@ -161,7 +179,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
 
             if (customItem.key().equals("test") || !(inConfirm || inConfirmAll) || !isButtonActive) {
                 event.setCancelled(true);
-                executeItemActions(customItem, viewer, event.getClick(), Collections.emptyMap());
+                handleAction(customItem, viewer, event.getClick(), Collections.emptyMap());
                 return;
             }
         }
@@ -173,8 +191,13 @@ public final class SellManager implements GuiManager.CustomGuiManager {
             GuiDefinition.GuiItem buttonItem = definition.items().get(key);
 
             if (buttonItem != null) {
+                if (plugin.gui().cooldowns().isOnCooldown(viewer, buttonItem)) {
+                    plugin.gui().cooldowns().sendCooldownMessage(viewer, buttonItem);
+                    return;
+                }
+
                 String formatted = plugin.economy().formats().formatAmount(result.total());
-                executeItemActions(buttonItem, viewer, event.getClick(), Map.of("amount", formatted));
+                handleAction(buttonItem, viewer, event.getClick(), Map.of("amount", formatted));
             }
 
             boolean applyConfirm = definition.config().getBoolean("buttons." + key + ".apply-confirm", false);
@@ -192,7 +215,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
             if (SellSlotMapper.isCustomFillerAt(definition, slot, current) && cursor.getType().isAir()) {
                 event.setCancelled(true);
                 GuiDefinition.GuiItem filler = findCustomItemAt(slot);
-                if (filler != null) executeItemActions(filler, viewer, event.getClick(), Collections.emptyMap());
+                if (filler != null) handleAction(filler, viewer, event.getClick(), Collections.emptyMap());
                 return;
             }
 
@@ -247,7 +270,16 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         for (int i = 0; i < 36; i++) viewer.getInventory().setItem(i, null);
     }
 
-    public void executeItemActions(GuiDefinition.GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
+    public void handleAction(GuiDefinition.GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
+        if (item == null) return;
+
+        if (plugin.gui().cooldowns().isOnCooldown(viewer, item)) {
+            plugin.gui().cooldowns().sendCooldownMessage(viewer, item);
+            return;
+        }
+
+        plugin.gui().cooldowns().applyCooldown(viewer, item);
+
         List<String> actions = item.getActionsForClick(click);
         if (actions != null && !actions.isEmpty()) {
             Map<String, String> ph = new HashMap<>(extraPh);
@@ -334,10 +366,25 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         listener.returnItemsToPlayer(player, inv, sellSlots);
     }
 
-    public void unregisterListeners() {
+    @Override
+    public void cleanup() {
         HandlerList.unregisterAll(this.listener);
+
         if (confirmManager != null) {
-            HandlerList.unregisterAll(this.confirmManager);
+            confirmManager.cleanup();
+        }
+    }
+
+    @Override
+    public void refresh(Inventory inv, Player viewer, Map<String, String> placeholders) {
+        if (inv.getHolder() instanceof SellHolder) {
+            refreshConfirmButton(inv, viewer);
+        } else if (inv.getHolder() instanceof ConfirmManager.ConfirmHolder holder) {
+            String totalFormatted = plugin.economy().formats().formatAmount(holder.result().total());
+            Map<String, String> confirmPh = new HashMap<>(placeholders);
+            confirmPh.put("total", totalFormatted);
+
+            SellSlotMapper.fillConfirm(inv, confirmManager.getDefinition(), viewer, confirmPh);
         }
     }
 

@@ -14,12 +14,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class TargetListener implements Listener {
     private final AirCore plugin;
     private final EnderchestManager manager;
-    private final Map<UUID, List<Player>> viewers = new HashMap<>();
-    private final Set<UUID> pendingRefreshes = new HashSet<>();
+    private final Map<UUID, List<Player>> viewers = new ConcurrentHashMap<>();
+    private final Set<UUID> pendingRefreshes = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public TargetListener(AirCore plugin, EnderchestManager manager) {
         this.plugin = plugin;
@@ -27,7 +29,7 @@ public final class TargetListener implements Listener {
     }
 
     public void registerViewer(UUID target, Player viewer) {
-        viewers.computeIfAbsent(target, k -> new ArrayList<>()).add(viewer);
+        viewers.computeIfAbsent(target, k -> new CopyOnWriteArrayList<>()).add(viewer);
     }
 
     public void unregisterViewer(UUID target, Player viewer) {
@@ -44,7 +46,9 @@ public final class TargetListener implements Listener {
 
         plugin.scheduler().runEntityTaskDelayed(target, () -> {
             try {
-                refreshViewers(target.getUniqueId(), target.getEnderChest().getContents());
+                if (target.isOnline()) {
+                    refreshViewers(target.getUniqueId(), target.getEnderChest().getContents());
+                }
             } finally {
                 pendingRefreshes.remove(target.getUniqueId());
             }
@@ -56,13 +60,15 @@ public final class TargetListener implements Listener {
         if (list == null || list.isEmpty()) return;
 
         for (Player viewer : list) {
-            Inventory inv = viewer.getOpenInventory().getTopInventory();
-            if (inv.getHolder() instanceof EnderchestManager.EnderchestHolder) {
-                EnderchestSlotMapper.fill(inv, manager.definition(), contents);
-                if (inv.getSize() != 27) {
-                    manager.refreshFillers(inv, viewer);
+            plugin.scheduler().runEntityTask(viewer, () -> {
+                Inventory inv = viewer.getOpenInventory().getTopInventory();
+                if (inv.getHolder() instanceof EnderchestManager.EnderchestHolder) {
+                    EnderchestSlotMapper.fill(inv, manager.definition(), contents);
+                    if (inv.getSize() != 27) {
+                        manager.refreshFillers(inv, viewer);
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -95,7 +101,7 @@ public final class TargetListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTargetDrag(InventoryDragEvent e) {
-        scheduleRefresh((Player) e.getWhoClicked());
+        if (e.getWhoClicked() instanceof Player p) scheduleRefresh(p);
     }
 
     @EventHandler

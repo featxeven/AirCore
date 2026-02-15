@@ -1,51 +1,58 @@
 # GUI title and size
-title: "Viewing %target%'s Inventory"
+title: "<gradient:#00ffcc:#0066ff><bold>Viewing Inventory:</bold></gradient> %target%"
 rows: 6
 
 # Dynamic slot groups
-# These define where the target's inventory contents will be mirrored.
+# These define where the target's inventory contents will be mirrored
 player-hotbar: [45-53]
 player-inventory: [18-44]
-
+player-offhand: [7]
 # Armor slots (order: boots, leggings, chestplate, helmet)
 player-armor: [4, 3, 2, 1]
 
-# Off-hand slot
-player-offhand: [7]
-
 # Custom filler items (shown when slots are empty)
 items:
-  fill-helmet:
+  empty-helmet:
     slots: [1]
-    material: BLACK_STAINED_GLASS_PANE
-    display-name: "<gray>Helmet</gray>"
+    material: BARRIER
+    display-name: "<#4facfe><bold>HELMET SLOT</bold></#4facfe>"
     lore:
-      - "<dark_gray>Empty slot</dark_gray>"
+      - "<dark_gray>Status: <gray>Empty</gray></dark_gray>"
 
-  fill-chestplate:
+  empty-chestplate:
     slots: [2]
-    material: BLACK_STAINED_GLASS_PANE
-    display-name: "<gray>Chestplate</gray>"
+    material: BARRIER
+    display-name: "<#4facfe><bold>CHESTPLATE SLOT</bold></#4facfe>"
     lore:
-      - "<dark_gray>Empty slot</dark_gray>"
+      - "<dark_gray>Status: <gray>Empty</gray></dark_gray>"
 
-  fill-leggings:
+  empty-leggings:
     slots: [3]
-    material: BLACK_STAINED_GLASS_PANE
-    display-name: "<gray>Leggings</gray>"
+    material: BARRIER
+    display-name: "<#4facfe><bold>LEGGINGS SLOT</bold></#4facfe>"
     lore:
-      - "<dark_gray>Empty slot</dark_gray>"
+      - "<dark_gray>Status: <gray>Empty</gray></dark_gray>"
 
-  fill-boots:
+  empty-boots:
     slots: [4]
-    material: BLACK_STAINED_GLASS_PANE
-    display-name: "<gray>Boots</gray>"
+    material: BARRIER
+    display-name: "<#4facfe><bold>BOOTS SLOT</bold></#4facfe>"
     lore:
-      - "<dark_gray>Empty slot</dark_gray>"
+      - "<dark_gray>Status: <gray>Empty</gray></dark_gray>"
 
-  fill-offhand:
+  empty-offhand:
     slots: [7]
-    material: BLACK_STAINED_GLASS_PANE
-    display-name: "<gray>Off-hand</gray>"
+    material: BARRIER
+    display-name: "<#fccb90><bold>OFF-HAND SLOT</bold></#fccb90>"
     lore:
-      - "<dark_gray>Empty slot</dark_gray>"
+      - "<dark_gray>Status: <gray>Empty</gray></dark_gray>"
+
+  separator:
+    slots: [9-17]
+    material: GRAY_STAINED_GLASS_PANE
+    hide-tooltip: true
+
+  filler:
+    slots: [0, 5, 6, 8]
+    material: GRAY_STAINED_GLASS_PANE
+    hide-tooltip: true

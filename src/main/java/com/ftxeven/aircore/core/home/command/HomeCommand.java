@@ -1,7 +1,8 @@
 package com.ftxeven.aircore.core.home.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.home.HomeManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.homes.HomeManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -18,11 +19,11 @@ import java.util.stream.Stream;
 public final class HomeCommand implements TabExecutor {
 
     private final AirCore plugin;
-    private final HomeManager manager;
+    private final GuiManager guiManager;
 
-    public HomeCommand(AirCore plugin, HomeManager manager) {
+    public HomeCommand(AirCore plugin, GuiManager guiManager) {
         this.plugin = plugin;
-        this.manager = manager;
+        this.guiManager = guiManager;
     }
 
     @Override
@@ -39,6 +40,14 @@ public final class HomeCommand implements TabExecutor {
         if (!player.hasPermission("aircore.command.home")) {
             MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.home"));
             return true;
+        }
+
+        if (args.length == 0) {
+            var mgr = guiManager.getManager("homes");
+            if (mgr instanceof HomeManager guiHome && guiHome.isEnabled()) {
+                guiManager.openGui("homes", player, Map.of("page", "1", "player", player.getName()));
+                return true;
+            }
         }
 
         boolean hasOthers = player.hasPermission("aircore.command.home.others");
@@ -74,12 +83,12 @@ public final class HomeCommand implements TabExecutor {
             }
         }
 
-        var homes = manager.homes().getHomes(player.getUniqueId());
+        var homes = plugin.home().homes().getHomes(player.getUniqueId());
         if (homes.isEmpty()) {
             plugin.scheduler().runAsync(() -> {
                 var loaded = plugin.database().homes().load(player.getUniqueId());
-                manager.homes().loadFromDatabase(player.getUniqueId(), loaded);
-                var reloadedHomes = manager.homes().getHomes(player.getUniqueId());
+                plugin.home().homes().loadFromDatabase(player.getUniqueId(), loaded);
+                var reloadedHomes = plugin.home().homes().getHomes(player.getUniqueId());
 
                 plugin.scheduler().runEntityTask(player, () -> processSelfTeleport(player, reloadedHomes, args, label));
             });
@@ -116,11 +125,11 @@ public final class HomeCommand implements TabExecutor {
         String nameLower = homeName.toLowerCase();
 
         plugin.scheduler().runAsync(() -> {
-            var homes = manager.homes().getHomes(uuid);
+            var homes = plugin.home().homes().getHomes(uuid);
             if (homes.isEmpty()) {
                 var loaded = plugin.database().homes().load(uuid);
-                manager.homes().loadFromDatabase(uuid, loaded);
-                homes = manager.homes().getHomes(uuid);
+                plugin.home().homes().loadFromDatabase(uuid, loaded);
+                homes = plugin.home().homes().getHomes(uuid);
             }
 
             final Map<String, Location> finalHomes = homes;
@@ -157,7 +166,7 @@ public final class HomeCommand implements TabExecutor {
         String input = args[args.length - 1].toLowerCase();
 
         if (args.length == 1) {
-            Stream<String> homes = manager.homes().getHomes(player.getUniqueId()).keySet().stream();
+            Stream<String> homes = plugin.home().homes().getHomes(player.getUniqueId()).keySet().stream();
             if (player.hasPermission("aircore.command.home.others")) {
                 homes = Stream.concat(homes, Stream.of("@p"));
             }
@@ -178,7 +187,7 @@ public final class HomeCommand implements TabExecutor {
     private List<String> getHomeCompletions(String targetName, String input) {
         UUID id = plugin.getNameCache().get(targetName.toLowerCase(Locale.ROOT));
         if (id == null) return Collections.emptyList();
-        return manager.homes().getHomes(id).keySet().stream().filter(n -> n.toLowerCase().startsWith(input)).toList();
+        return plugin.home().homes().getHomes(id).keySet().stream().filter(n -> n.toLowerCase().startsWith(input)).toList();
     }
 
     private OfflinePlayer resolve(Player sender, String name) {

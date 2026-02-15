@@ -53,7 +53,10 @@ public final class SellListener implements Listener {
         if (!(e.getInventory().getHolder() instanceof SellManager.SellHolder)) return;
 
         Player player = (Player) e.getPlayer();
-        if (manager.isTransitioning(player.getUniqueId())) return;
+
+        if (manager.isTransitioning(player.getUniqueId())) {
+            return;
+        }
 
         Inventory inv = e.getInventory();
         var sellSlots = manager.definition().items().get("sell-slots").slots();

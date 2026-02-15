@@ -15,12 +15,14 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class TargetListener implements Listener {
     private final AirCore plugin;
     private final InventoryManager inventoryManager;
-    private final Map<UUID, List<Player>> viewers = new HashMap<>();
-    private final Set<UUID> pendingRefreshes = new HashSet<>();
+    private final Map<UUID, List<Player>> viewers = new ConcurrentHashMap<>();
+    private final Set<UUID> pendingRefreshes = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     public TargetListener(AirCore plugin, InventoryManager inventoryManager) {
         this.plugin = plugin;
@@ -28,7 +30,7 @@ public final class TargetListener implements Listener {
     }
 
     public void registerViewer(UUID target, Player viewer) {
-        viewers.computeIfAbsent(target, k -> new ArrayList<>()).add(viewer);
+        viewers.computeIfAbsent(target, k -> new CopyOnWriteArrayList<>()).add(viewer);
     }
 
     public void unregisterViewer(UUID target, Player viewer) {
@@ -68,20 +70,22 @@ public final class TargetListener implements Listener {
         if (list == null || list.isEmpty()) return;
 
         for (Player viewer : list) {
-            if (viewer.getOpenInventory().getTopInventory().getHolder() instanceof InventoryManager.InvseeHolder holder) {
-                if (!holder.targetUUID().equals(targetUUID)) continue;
+            plugin.scheduler().runEntityTask(viewer, () -> {
+                if (viewer.getOpenInventory().getTopInventory().getHolder() instanceof InventoryManager.InvseeHolder holder) {
+                    if (!holder.targetUUID().equals(targetUUID)) return;
 
-                Inventory top = viewer.getOpenInventory().getTopInventory();
-                top.clear();
-                InventorySlotMapper.fill(top, inventoryManager.definition(), bundle);
-                InventorySlotMapper.fillCustom(
-                        top,
-                        inventoryManager.definition(),
-                        viewer,
-                        Map.of("player", viewer.getName(), "target", holder.targetName()),
-                        inventoryManager
-                );
-            }
+                    Inventory top = viewer.getOpenInventory().getTopInventory();
+                    top.clear();
+                    InventorySlotMapper.fill(top, inventoryManager.definition(), bundle);
+                    InventorySlotMapper.fillCustom(
+                            top,
+                            inventoryManager.definition(),
+                            viewer,
+                            Map.of("player", viewer.getName(), "target", holder.targetName()),
+                            inventoryManager
+                    );
+                }
+            });
         }
     }
 

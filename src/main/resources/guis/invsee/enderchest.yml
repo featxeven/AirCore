@@ -1,11 +1,12 @@
 # GUI title and size
-title: "Viewing %target%'s Enderchest"
+title: "<gradient:#00ffcc:#0066ff><bold>Viewing Ender Chest:</bold></gradient> <white>%target%"
 rows: 3
 
-title-own: "Ender Chest"  # When opening own enderchest with /enderchest
+# When opening own enderchest with /enderchest
+title-own: "Ender Chest"
 
 # Dynamic slot groups
-# These define where the target's enderchest contents will be mirrored.
+# These define where the target's enderchest contents will be mirrored
 player-enderchest: [0-26]
 
 # Custom items

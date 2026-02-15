@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class InventoryManager implements GuiManager.CustomGuiManager {
 
@@ -30,7 +31,7 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
     private final AirCore plugin;
     private final ItemAction itemAction;
     private final MiniMessage mm = MiniMessage.miniMessage();
-    private final Set<UUID> pendingUpdates = new HashSet<>();
+    private final Set<UUID> pendingUpdates = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final TargetListener targetListener;
     private final ViewerListener viewerListener;
     private GuiDefinition definition;
@@ -54,17 +55,38 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         Map<String, GuiDefinition.GuiItem> items = new HashMap<>();
 
         for (String key : DYNAMIC_GROUPS) {
-            items.put(key, new GuiDefinition.GuiItem(key, GuiDefinition.parseSlots(cfg.getStringList(key)),
-                    Material.AIR, null, Collections.emptyList(), false, null, Collections.emptyList(),
-                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                    null, null, null, Collections.emptyMap(), Collections.emptyList(), null, null, null));
+            items.put(key, new GuiDefinition.GuiItem(
+                    key,
+                    GuiDefinition.parseSlots(cfg.getStringList(key)),
+                    Material.AIR,
+                    null,
+                    Collections.emptyList(),
+                    false,
+                    null,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    null,
+                    null,
+                    null,
+                    Collections.emptyMap(),
+                    Collections.emptyList(),
+                    null,
+                    null,
+                    null,
+                    0.0,
+                    null
+            ));
         }
 
         ConfigurationSection itemsSec = cfg.getConfigurationSection("items");
         if (itemsSec != null) {
             for (String key : itemsSec.getKeys(false)) {
                 ConfigurationSection sec = itemsSec.getConfigurationSection(key);
-                if (sec != null) items.put(key, GuiDefinition.GuiItem.fromSection(key, sec, mm));
+                if (sec != null) items.put(key, GuiDefinition.GuiItem.fromSection(key, sec));
             }
         }
 
@@ -128,21 +150,32 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
             return;
         }
 
-        if (!hasModifyPerm || (dynamic && isFiller && cursor.getType().isAir())) {
+        if (!hasModifyPerm || (dynamic && isFiller && cursor.getType().isAir() && event.getClick() != ClickType.NUMBER_KEY)) {
             event.setCancelled(true);
             handleAction(viewer, holder, isFiller ? InventorySlotMapper.findCustomItemAt(definition, slot) : item, event.getClick());
             return;
         }
 
-        if (event.getClick() == ClickType.NUMBER_KEY) {
+        if (event.getClick() == ClickType.NUMBER_KEY && clicked == top) {
             ItemStack hotbar = viewer.getInventory().getItem(event.getHotbarButton());
-            if (isArmorSlot(slot) && hotbar != null && !isValidArmorForSlot(hotbar, slot)) {
+
+            if (isArmorSlot(slot)) {
+                if (hotbar != null && !hotbar.getType().isAir() && !isValidArmorForSlot(hotbar, slot)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            if (!dynamic) {
                 event.setCancelled(true);
                 return;
             }
+
             event.setCancelled(true);
             top.setItem(slot, hotbar == null ? null : hotbar.clone());
+
             viewer.getInventory().setItem(event.getHotbarButton(), isFiller ? null : current);
+
             syncAndRefresh(top, viewer);
             return;
         }
@@ -170,9 +203,20 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
 
     private void handleAction(Player viewer, InvseeHolder ih, GuiDefinition.GuiItem item, ClickType click) {
         if (item == null) return;
+
+        if (plugin.gui().cooldowns().isOnCooldown(viewer, item)) {
+            plugin.gui().cooldowns().sendCooldownMessage(viewer, item);
+            return;
+        }
+
+        plugin.gui().cooldowns().applyCooldown(viewer, item);
+
         List<String> actions = item.getActionsForClick(click);
         if (actions != null && !actions.isEmpty()) {
-            itemAction.executeAll(actions, viewer, Map.of("player", viewer.getName(), "target", ih.targetName()));
+            itemAction.executeAll(actions, viewer, Map.of(
+                    "player", viewer.getName(),
+                    "target", ih.targetName() != null ? ih.targetName() : "Unknown"
+            ));
         }
     }
 
@@ -233,15 +277,20 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
     void applyBundleToTarget(UUID targetUUID, PlayerInventories.InventoryBundle bundle) {
         Player target = Bukkit.getPlayer(targetUUID);
         if (target == null || !target.isOnline()) {
-            plugin.database().inventories().saveInventory(targetUUID, bundle.contents(), bundle.armor(), bundle.offhand());
+            plugin.scheduler().runAsync(() ->
+                    plugin.database().inventories().saveInventory(targetUUID, bundle.contents(), bundle.armor(), bundle.offhand())
+            );
             return;
         }
-        var inv = target.getInventory();
-        boolean changed = false;
-        if (!Arrays.equals(inv.getContents(), bundle.contents())) { inv.setContents(bundle.contents()); changed = true; }
-        if (!Arrays.equals(inv.getArmorContents(), bundle.armor())) { inv.setArmorContents(bundle.armor()); changed = true; }
-        if (!Objects.equals(inv.getItemInOffHand(), bundle.offhand())) { inv.setItemInOffHand(bundle.offhand()); changed = true; }
-        if (changed) target.updateInventory();
+
+        plugin.scheduler().runEntityTask(target, () -> {
+            var inv = target.getInventory();
+            boolean changed = false;
+            if (!Arrays.equals(inv.getContents(), bundle.contents())) { inv.setContents(bundle.contents()); changed = true; }
+            if (!Arrays.equals(inv.getArmorContents(), bundle.armor())) { inv.setArmorContents(bundle.armor()); changed = true; }
+            if (!Objects.equals(inv.getItemInOffHand(), bundle.offhand())) { inv.setItemInOffHand(bundle.offhand()); changed = true; }
+            if (changed) target.updateInventory();
+        });
     }
 
     private boolean isArmorSlot(int slot) {
@@ -260,7 +309,36 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         return false;
     }
 
-    public void unregisterListeners() { HandlerList.unregisterAll(targetListener); HandlerList.unregisterAll(viewerListener); }
+    @Override
+    public void refresh(Inventory inv, Player viewer, Map<String, String> placeholders) {
+        if (!(inv.getHolder() instanceof InvseeHolder holder)) return;
+
+        Player target = Bukkit.getPlayer(holder.targetUUID());
+        PlayerInventories.InventoryBundle bundle;
+
+        if (target != null && target.isOnline()) {
+            bundle = new PlayerInventories.InventoryBundle(
+                    target.getInventory().getContents(),
+                    target.getInventory().getArmorContents(),
+                    target.getInventory().getItemInOffHand(),
+                    target.getEnderChest().getContents()
+            );
+        } else {
+            bundle = plugin.database().inventories().loadAllInventory(holder.targetUUID());
+        }
+
+        if (bundle == null) bundle = emptyBundle();
+
+        InventorySlotMapper.fill(inv, definition, bundle);
+
+        InventorySlotMapper.fillCustom(inv, definition, viewer, placeholders, this);
+    }
+
+    @Override
+    public void cleanup() {
+        HandlerList.unregisterAll(targetListener);
+        HandlerList.unregisterAll(viewerListener);
+    }
     @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof InvseeHolder; }
     public boolean isDynamicGroup(String key) { return DYNAMIC_GROUPS.contains(key); }
     public GuiDefinition definition() { return definition; }

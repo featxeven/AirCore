@@ -3,12 +3,9 @@ package com.ftxeven.aircore.config;
 import com.ftxeven.aircore.AirCore;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class ConfigManager {
-
     private final AirCore plugin;
     private FileConfiguration config;
 
@@ -23,312 +20,137 @@ public final class ConfigManager {
         this.config = plugin.getConfig();
     }
 
-    // General settings
-    public boolean notifyUpdates() { return config.getBoolean("notify-updates", true); }
-    public String getLocale() { return config.getString("lang", "en_US"); }
-    public boolean consoleToPlayerFeedback() {
-        return config.getBoolean("console-to-player-feedback", true);
-    }
-    public List<String> disabledCommands() {
-        return config.getStringList("disabled-commands");
-    }
-    public boolean errorOnExcessArgs() { return config.getBoolean("error-on-excess-args", true); }
+    private String s(String p, String d) { return config.getString(p, d); }
+    private boolean b(String p, boolean d) { return config.getBoolean(p, d); }
+    private int i(String p, int d) { return config.getInt(p, d); }
+    private double d(String p, double d) { return config.getDouble(p, d); }
+    private List<String> sl(String p) { return config.getStringList(p); }
 
-    // Time format settings
-    public String timeFormatMode() {
-        return config.getString("time-format.mode", "DETAILED").toUpperCase();
-    }
-    public int timeFormatGranularity() {
-        return config.getInt("time-format.granularity", 4);
+    private String getGroupedValue(String path, String group) {
+        String specific = path + "." + group;
+        return config.contains(specific) ? config.getString(specific) : config.getString(path + "._DEFAULT_", "");
     }
 
-    // Permission groups
-    public List<String> permissionGroups(String groupName) {
-        String path = "permission-groups." + groupName;
-        return config.getStringList(path);
-    }
+    // General & Chat
+    public boolean notifyUpdates() { return b("notify-updates", true); }
+    public String getLocale() { return s("lang", "en_US"); }
+    public boolean consoleToPlayerFeedback() { return b("console-to-player-feedback", true); }
+    public List<String> disabledCommands() { return sl("disabled-commands"); }
+    public boolean errorOnExcessArgs() { return b("error-on-excess-args", true); }
+    public String timeFormatMode() { return s("time-format.mode", "DETAILED").toUpperCase(); }
+    public int timeFormatGranularity() { return i("time-format.granularity", 4); }
 
-    // Command usages
-    public String getUsage(String command, String label) {
-        String path = "command-usages." + command + ".usage";
+    public double chatCooldown() { return d("chat.chat-cooldown", 0.0); }
+    public int pmReplyExpireSeconds() { return i("chat.reply-expire-after", 30); }
+    public boolean pmApplyChatCooldown() { return b("chat.apply-chat-cooldown", true); }
+    public boolean pmApplyUrlFormatting() { return b("chat.apply-url-formatting", true); }
+    public boolean pmApplyDisplayTags() { return b("chat.apply-display-tags", true); }
+    public boolean pmAllowSelfMessage() { return b("chat.allow-self-message", false); }
+
+    // Commands & Permissions
+    public List<String> permissionGroups(String group) { return sl("permission-groups." + group); }
+
+    public String getUsage(String cmd, String label) { return getUsage(cmd, null, label); }
+    public String getUsage(String cmd, String variant, String label) {
+        String path = "command-usages." + cmd + (variant == null ? ".usage" : ".usage-" + variant);
         String usage = config.getString(path);
-        if (usage == null) {
-            throw new IllegalArgumentException("No usage defined for command: " + command);
-        }
-        return usage.replace("%label%", label);
-    }
-    public String getUsage(String command, String variant, String label) {
-        String path = "command-usages." + command + ".usage-" + variant;
-        String usage = config.getString(path);
-        if (usage == null) {
-            throw new IllegalArgumentException("No usage defined for command: " + command + " (" + variant + ")");
-        }
+        if (usage == null) throw new IllegalArgumentException("No usage: " + cmd + (variant == null ? "" : " " + variant));
         return usage.replace("%label%", label);
     }
 
-    // Chat settings
-    public double chatCooldown() { return config.getDouble("chat.chat-cooldown", 0.0); }
-    public int pmReplyExpireSeconds() {
-        return config.getInt("chat.reply-expire-after", 30);
-    }
-    public boolean pmApplyChatCooldown() {
-        return config.getBoolean("chat.apply-chat-cooldown", true);
-    }
-    public boolean pmApplyUrlFormatting() {
-        return config.getBoolean("chat.apply-url-formatting", true);
-    }
-    public boolean pmApplyDisplayTags() {
-        return config.getBoolean("chat.apply-display-tags", true);
-    }
-    public boolean pmAllowSelfMessage() { return config.getBoolean("chat.allow-self-message", false); }
-
-    // Group formatting
-    public boolean groupFormatEnabled() {
-        return config.getBoolean("chat.group-format.enabled", false);
-    }
+    // Group Formatting
+    public boolean groupFormatEnabled() { return b("chat.group-format.enabled", false); }
     public String getGroupFormat(String group) {
-        final String defaultVal = config.getString(
-                "chat.group-format.formats._DEFAULT_",
-                "<gray>%player%</gray> <dark_gray>></dark_gray> <white>%message%</white>"
-        );
+        String def = s("chat.group-format.formats._DEFAULT_", "<gray>%player%</gray> > <white>%message%</white>");
+        ConfigurationSection sec = config.getConfigurationSection("chat.group-format.formats");
+        if (sec == null || group == null || group.isBlank()) return def;
 
-        ConfigurationSection formats = config.getConfigurationSection("chat.group-format.formats");
-        if (formats == null) {
-            return defaultVal;
-        }
-
-        if (group == null || group.isBlank()) {
-            return formats.getString("_DEFAULT_", defaultVal);
-        }
-
-        for (String key : formats.getKeys(false)) {
-            if (key.equalsIgnoreCase(group)) {
-                String fmt = formats.getString(key);
-                if (fmt != null && !fmt.isBlank()) {
-                    return fmt;
-                }
-                break;
-            }
-        }
-
-        return formats.getString("_DEFAULT_", defaultVal);
+        return sec.getKeys(false).stream()
+                .filter(k -> k.equalsIgnoreCase(group))
+                .findFirst()
+                .map(sec::getString)
+                .filter(f -> !f.isBlank())
+                .orElse(sec.getString("_DEFAULT_", def));
     }
 
     // Mentions
-    public boolean mentionsEnabled() {
-        return config.getBoolean("chat.chat-mentions.enabled", true);
-    }
-    public String mentionFormat() {
-        return config.getString("chat.chat-mentions.format", "");
-    }
-    public boolean mentionCaseSensitive() {
-        return config.getBoolean("chat.chat-mentions.case-sensitive", true);
-    }
-    public boolean mentionAllowSelf() { return config.getBoolean("chat.chat-mentions.allow-self", false); }
+    public boolean mentionsEnabled() { return b("chat.chat-mentions.enabled", true); }
+    public String mentionFormat() { return s("chat.chat-mentions.format", ""); }
+    public boolean mentionCaseSensitive() { return b("chat.chat-mentions.case-sensitive", true); }
+    public boolean mentionAllowSelf() { return b("chat.chat-mentions.allow-self", false); }
+    public String mentionSoundName() { return s("chat.chat-mentions.sound.name", ""); }
+    public float mentionSoundVolume() { return (float) d("chat.chat-mentions.sound.volume", 1.0); }
+    public float mentionSoundPitch() { return (float) d("chat.chat-mentions.sound.pitch", 1.0); }
+    public String mentionTitleText() { return s("chat.chat-mentions.title.text", ""); }
+    public int mentionTitleFadeIn() { return i("chat.chat-mentions.title.fade-in", 10); }
+    public int mentionTitleStay() { return i("chat.chat-mentions.title.stay", 40); }
+    public int mentionTitleFadeOut() { return i("chat.chat-mentions.title.fade-out", 10); }
+    public String mentionSubtitleText() { return s("chat.chat-mentions.subtitle.text", ""); }
+    public String mentionActionbarText() { return s("chat.chat-mentions.actionbar.text", ""); }
 
-    // Mentions - Sound
-    public String mentionSoundName() { return config.getString("chat.chat-mentions.sound.name", ""); }
-    public float mentionSoundVolume() { return (float) config.getDouble("chat.chat-mentions.sound.volume", 1.0); }
-    public float mentionSoundPitch() { return (float) config.getDouble("chat.chat-mentions.sound.pitch", 1.0); }
+    // Economy & Teleport
+    public ConfigurationSection displayTagsSection() { return config.getConfigurationSection("chat.display-tags"); }
+    public boolean displayTagEnabled(String id) { return b("chat.display-tags." + id + ".enabled", true); }
+    public boolean urlFormattingEnabled() { return b("chat.url-formatting.enabled", true); }
+    public String urlFormatTemplate() { return s("chat.url-formatting.format", "<dark_aqua><click:open_url:'%link%'><hover:show_text:'<gray>Click to open link:</gray> <dark_aqua>%link%</dark_aqua>'>%link%</hover></click></dark_aqua>"); }
 
-    // Mentions - Title
-    public String mentionTitleText() { return config.getString("chat.chat-mentions.title.text", ""); }
-    public int mentionTitleFadeIn() { return config.getInt("chat.chat-mentions.title.fade-in", 10); }
-    public int mentionTitleStay() { return config.getInt("chat.chat-mentions.title.stay", 40); }
-    public int mentionTitleFadeOut() { return config.getInt("chat.chat-mentions.title.fade-out", 10); }
-
-    // Mentions - Subtitle
-    public String mentionSubtitleText() { return config.getString("chat.chat-mentions.subtitle.text", ""); }
-
-    // Mentions - Actionbar
-    public String mentionActionbarText() {
-        return config.getString("chat.chat-mentions.actionbar.text", "");
-    }
-
-    // Display tags
-    public ConfigurationSection displayTagsSection() {
-        return config.getConfigurationSection("chat.display-tags");
-    }
-
-    public boolean displayTagEnabled(String tagId) {
-        return config.getBoolean("chat.display-tags." + tagId + ".enabled", true);
-    }
-
-    // URL formatting
-    public boolean urlFormattingEnabled() {
-        return config.getBoolean("chat.url-formatting.enabled", true);
-    }
-    public String urlFormatTemplate() {
-        return config.getString(
-                "chat.url-formatting.format",
-                "<dark_aqua><click:open_url:'%link%'><hover:show_text:'<gray>Click to open link:</gray> <dark_aqua>%link%</dark_aqua>'>%link%</hover></click></dark_aqua>"
-        );
-    }
-
-    // Economy settings
-    public boolean economyAllowDecimals() {
-        return config.getBoolean("economy.allow-decimals", true);
-    }
-    public double economyDefaultBalance() {
-        return config.getDouble("economy.default-balance", 0.0);
-    }
-    public double economyMinBalance() {
-        return config.getDouble("economy.min-balance", -1.0);
-    }
-    public double economyMaxBalance() {
-        return config.getDouble("economy.max-balance", -1.0);
-    }
-    public String economyNumberFormat() {
-        return config.getString("economy.number-format", "FORMATTED");
-    }
+    public boolean economyAllowDecimals() { return b("economy.allow-decimals", true); }
+    public double economyDefaultBalance() { return d("economy.default-balance", 0.0); }
+    public double economyMinBalance() { return d("economy.min-balance", -1.0); }
+    public double economyMaxBalance() { return d("economy.max-balance", -1.0); }
+    public String economyNumberFormat() { return s("economy.number-format", "FORMATTED"); }
     public List<String> economyFormatShortSuffixes() {
-        List<String> list = config.getStringList("economy.format-short-suffix");
+        List<String> list = sl("economy.format-short-suffix");
         return list.isEmpty() ? List.of("", "k", "M", "B", "T", "Q") : list;
     }
-    public boolean economyAllowFormatShortInCommand() {
-        return config.getBoolean("economy.allow-format-short-in-command", false);
-    }
-    public double economyMinPayAmount() {
-        return config.getDouble("economy.min-pay-amount", 0);
-    }
-    public double economyMaxPayAmount() {
-        return config.getDouble("economy.max-pay-amount", -1);
-    }
+    public boolean economyAllowFormatShortInCommand() { return b("economy.allow-format-short-in-command", false); }
+    public double economyMinPayAmount() { return d("economy.min-pay-amount", 0); }
+    public double economyMaxPayAmount() { return d("economy.max-pay-amount", -1); }
 
-    // Teleport settings
-    public boolean teleportToCenter() {
-        return config.getBoolean("teleport.teleport-to-center", false);
-    }
-    public int teleportCountdownDuration() {
-        return config.getInt("teleport.teleport-countdown.duration", 0);
-    }
-    public boolean teleportCountdownRepeat() {
-        return config.getBoolean("teleport.teleport-countdown.repeat-message", false);
-    }
-    public boolean cancelTeleportOnMove() {
-        return config.getBoolean("teleport.cancel-teleport-when.move", true);
-    }
-    public boolean cancelTeleportOnDamage() {
-        return config.getBoolean("teleport.cancel-teleport-when.damage", true);
-    }
-    public boolean cancelTeleportOnCommand() {
-        return config.getBoolean("teleport.cancel-teleport-when.command", false);
-    }
-    public boolean cancelTeleportOnInteract() {
-        return config.getBoolean("teleport.cancel-teleport-when.interact", false);
-    }
-    public int teleportImmunitySeconds() {
-        return config.getInt("teleport.apply-immunity-after-teleport", 3);
-    }
-    public int teleportRequestCooldown() {
-        return config.getInt("teleport.teleport-request-cooldown", 5);
-    }
-    public int teleportRequestExpireTime() {
-        return config.getInt("teleport.teleport-request-expire-time", 60);
-    }
-    public boolean retainRequestStateOnLogout() {
-        return config.getBoolean("teleport.retain-request-state-on-logout", true);
-    }
-    public boolean teleportToSpawnOnFirstJoin() {
-        return config.getBoolean("teleport.teleport-to-spawn-on-first-join", true);
-    }
-    public boolean teleportToSpawnOnJoin() {
-        return config.getBoolean("teleport.teleport-to-spawn-on-join", false);
-    }
-    public boolean teleportToSpawnOnDeath() {
-        return config.getBoolean("teleport.teleport-to-spawn-on-death", false);
-    }
+    public boolean teleportToCenter() { return b("teleport.teleport-to-center", false); }
+    public int teleportCountdownDuration() { return i("teleport.teleport-countdown.duration", 0); }
+    public boolean teleportCountdownRepeat() { return b("teleport.teleport-countdown.repeat-message", false); }
+    public boolean cancelTeleportOnMove() { return b("teleport.cancel-teleport-when.move", true); }
+    public boolean cancelTeleportOnDamage() { return b("teleport.cancel-teleport-when.damage", true); }
+    public boolean cancelTeleportOnCommand() { return b("teleport.cancel-teleport-when.command", false); }
+    public boolean cancelTeleportOnInteract() { return b("teleport.cancel-teleport-when.interact", false); }
+    public int teleportImmunitySeconds() { return i("teleport.apply-immunity-after-teleport", 3); }
+    public int teleportRequestCooldown() { return i("teleport.teleport-request-cooldown", 5); }
+    public int teleportRequestExpireTime() { return i("teleport.teleport-request-expire-time", 60); }
+    public boolean retainRequestStateOnLogout() { return b("teleport.retain-request-state-on-logout", true); }
+    public boolean teleportToSpawnOnFirstJoin() { return b("teleport.teleport-to-spawn-on-first-join", true); }
+    public boolean teleportToSpawnOnJoin() { return b("teleport.teleport-to-spawn-on-join", false); }
+    public boolean teleportToSpawnOnDeath() { return b("teleport.teleport-to-spawn-on-death", false); }
 
-    // Homes settings
-    public int homesMaxHomes() {
-        return config.getInt("homes.max-homes", 3);
-    }
-    public List<String> homesDisabledWorlds() {
-        return config.getStringList("homes.disabled-worlds");
-    }
-    public boolean homesAllowNames() {
-        return config.getBoolean("homes.allow-home-names", true);
-    }
-    public String homesNameValidationRegex() {
-        return config.getString("homes.name-validation-regex", "^[A-Za-z0-9]+$");
-    }
-    public int homesMaxNameLength() {
-        return config.getInt("homes.max-home-name-length", 16);
-    }
+    // Homes & Kits
+    public int homesMaxHomes() { return i("homes.max-homes", 3); }
+    public List<String> homesDisabledWorlds() { return sl("homes.disabled-worlds"); }
+    public boolean homesAllowNames() { return b("homes.allow-home-names", true); }
+    public String homesNameValidationRegex() { return s("homes.name-validation-regex", "^[A-Za-z0-9]+$"); }
+    public int homesMaxNameLength() { return i("homes.max-home-name-length", 16); }
+    public String kitsFirstJoinKit() { return s("kits.first-join-kit", ""); }
+    public boolean kitsAutoEquip() { return b("kits.auto-equip", false); }
+    public boolean kitsDropItemsWhenFull() { return b("kits.drop-items-when-full", false); }
 
-    // Kits settings
-    public String kitsFirstJoinKit() {
-        return config.getString("kits.first-join-kit", "");
-    }
-    public boolean kitsAutoEquip() {
-        return config.getBoolean("kits.auto-equip", false);
-    }
-    public boolean kitsDropItemsWhenFull() {
-        return config.getBoolean("kits.drop-items-when-full", false);
-    }
+    // Join/Leave & Death
+    public String motdFirstJoin() { return s("player-join-leave.motd-first-join", null); }
+    public String motdJoin(String g) { return getGroupedValue("player-join-leave.motd-join", g); }
+    public String broadcastFirstJoin() { return s("player-join-leave.broadcast-first-join", null); }
+    public String broadcastJoinFormat(String g) { return getGroupedValue("player-join-leave.broadcast-join", g); }
+    public String broadcastLeaveFormat(String g) { return getGroupedValue("player-join-leave.broadcast-leave", g); }
+    public boolean deathMessagesEnabled() { return b("death-messages.enabled", true); }
+    public List<String> deathMessagesDisabledWorlds() { return sl("death-messages.disabled-worlds"); }
 
-    // Misc section
-
-    // Player messages
-    public String motdFirstJoin() {
-        return config.getString("player-join-leave.motd-first-join");
-    }
-    public String motdJoin(String group) {
-        String path = "player-join-leave.motd-join." + group;
-        if (config.contains(path)) {
-            return config.getString(path, "");
-        }
-        return config.getString("player-join-leave.motd-join._DEFAULT_", "");
-    }
-
-    // Broadcast messages
-    public String broadcastFirstJoin() {
-        return config.getString("player-join-leave.broadcast-first-join");
-    }
-    public String broadcastJoinFormat(String group) {
-        String path = "player-join-leave.broadcast-join." + group;
-        if (config.contains(path)) {
-            return config.getString(path, "");
-        }
-        return config.getString("player-join-leave.broadcast-join._DEFAULT_", "");
-    }
-    public String broadcastLeaveFormat(String group) {
-        String path = "player-join-leave.broadcast-leave." + group;
-        if (config.contains(path)) {
-            return config.getString(path, "");
-        }
-        return config.getString("player-join-leave.broadcast-leave._DEFAULT_", "");
-    }
-
-    // Death messages
-    public boolean deathMessagesEnabled() {
-        return config.getBoolean("death-messages.enabled", true);
-    }
-    public List<String> deathMessagesDisabledWorlds() {
-        return config.getStringList("death-messages.disabled-worlds");
-    }
-
-    // Gameplay limits and cooldowns
-    public int blocksMaxBlocks() {
-        return config.getInt("max-blocks", 20);
-    }
-    public int commandCooldown(String commandKey) {
-        List<Map<?, ?>> list = config.getMapList("command-cooldowns");
-        for (Map<?, ?> entry : list) {
+    // Gameplay Limits
+    public int blocksMaxBlocks() { return i("max-blocks", 20); }
+    public int commandCooldown(String cmd) {
+        for (Map<?, ?> entry : config.getMapList("command-cooldowns")) {
             for (Map.Entry<?, ?> e : entry.entrySet()) {
-                String rawKey = e.getKey().toString().toLowerCase();
-                boolean isStrict = rawKey.startsWith("*");
-                String key = isStrict ? rawKey.substring(1) : rawKey;
-
-                // If strict, require exact match
-                if (isStrict && key.equalsIgnoreCase(commandKey)) {
+                String raw = e.getKey().toString().toLowerCase();
+                boolean strict = raw.startsWith("*");
+                String key = strict ? raw.substring(1) : raw;
+                if ((strict && key.equalsIgnoreCase(cmd)) || (!strict && cmd.startsWith(key)))
                     return Integer.parseInt(e.getValue().toString());
-                }
-
-                // If not strict, allow prefix match
-                if (!isStrict && commandKey.startsWith(key)) {
-                    return Integer.parseInt(e.getValue().toString());
-                }
             }
         }
         return 0;
