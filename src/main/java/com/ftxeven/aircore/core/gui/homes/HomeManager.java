@@ -22,18 +22,19 @@ import java.io.File;
 import java.util.*;
 
 public final class HomeManager implements GuiManager.CustomGuiManager {
-
     private final AirCore plugin;
     private final ItemAction itemAction;
     private final MiniMessage mm = MiniMessage.miniMessage();
     private GuiDefinition definition;
     private int[] homeSlots;
     private boolean enabled;
+    private final HomeConfirmManager confirmManager;
 
     public HomeManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
         loadDefinition();
+        this.confirmManager = new HomeConfirmManager(plugin, this);
     }
 
     public boolean isEnabled() { return enabled; }
@@ -125,7 +126,7 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
 
         boolean showList = sortSec.getBoolean("show-list", true);
         String selectedFmt = sortSec.getString("format.selected", "⏵ %name%");
-        String unselectedFmt = sortSec.getString("format.unselected", "  %name%");
+        String unselectedFmt = sortSec.getString("format.unselected", " %name%");
 
         if (!showList) {
             String name = types.getString(current);
@@ -154,7 +155,7 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
             if (homeSlots[i] == slot) {
                 int actualIndex = ((holder.page() - 1) * homeSlots.length) + i;
                 if (actualIndex < holder.homes().size()) {
-                    handleHomeClick(holder.homes().get(actualIndex).getKey(), viewer, event.getClick());
+                    handleHomeClick(holder.homes().get(actualIndex).getKey(), viewer, event.getClick(), holder.page());
                     return;
                 }
             }
@@ -195,12 +196,65 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         return gi != null && gi.slots().contains(slot);
     }
 
-    private void handleHomeClick(String name, Player viewer, ClickType click) {
-        ConfigurationSection homeItemSec = definition.config().getConfigurationSection("home-item");
-        if (homeItemSec != null) {
-            GuiDefinition.GuiItem template = GuiDefinition.GuiItem.fromSection("home-item", homeItemSec);
-            handleAction(template, viewer, click, Map.of("name", name));
+    private void handleHomeClick(String name, Player viewer, ClickType click, int page) {
+        ConfigurationSection homeSec = definition.config().getConfigurationSection("home-item");
+        if (homeSec == null) return;
+
+        ConfigurationSection applyConfirm = homeSec.getConfigurationSection("apply-confirm");
+
+        if (applyConfirm != null) {
+            List<String> potentialKeys = getPotentialClickKeys(click);
+
+            for (String key : potentialKeys) {
+                for (String typeKey : applyConfirm.getKeys(false)) {
+                    ConfigurationSection typeSec = applyConfirm.getConfigurationSection(typeKey);
+                    if (typeSec == null || !typeSec.getBoolean("enabled", false)) continue;
+
+                    if (typeSec.contains(key)) {
+                        confirmManager.open(viewer, name, typeKey, String.valueOf(page));
+
+                        List<String> uiActions = typeSec.getStringList(key);
+                        if (!uiActions.isEmpty()) {
+                            executeRawActions(uiActions, viewer, Map.of("name", name));
+                        }
+
+                        return;
+                    }
+                }
+            }
         }
+
+        GuiDefinition.GuiItem template = GuiDefinition.GuiItem.fromSection("home-item", homeSec);
+        handleAction(template, viewer, click, Map.of("name", name));
+    }
+
+    public void executeRawActions(List<String> actions, Player player, Map<String, String> ph) {
+        if (actions == null || actions.isEmpty()) return;
+
+        Map<String, String> fullPh = new HashMap<>(ph);
+        fullPh.put("player", player.getName());
+
+        itemAction.executeAll(actions, player, fullPh);
+    }
+
+    private List<String> getPotentialClickKeys(ClickType click) {
+        List<String> keys = new ArrayList<>();
+
+        switch (click) {
+            case SHIFT_LEFT -> {
+                keys.add("shift-left-actions");
+                keys.add("shift-actions");
+            }
+            case SHIFT_RIGHT -> {
+                keys.add("shift-right-actions");
+                keys.add("shift-actions");
+            }
+            case LEFT -> keys.add("left-actions");
+            case RIGHT -> keys.add("right-actions");
+        }
+
+        keys.add("actions");
+        return keys;
     }
 
     private void handleGenericItem(int slot, Player viewer, ClickType click) {
@@ -217,7 +271,7 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         if (item != null) handleAction(item, viewer, click, ph);
     }
 
-    private void handleAction(GuiDefinition.GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
+    public void handleAction(GuiDefinition.GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
         if (item == null) return;
         if (plugin.gui().cooldowns().isOnCooldown(viewer, item)) {
             plugin.gui().cooldowns().sendCooldownMessage(viewer, item);
@@ -262,7 +316,13 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         HomeSlotMapper.fillHomeInventory(inv, definition, viewer, holder.page(), holder.maxPages(), holder.homes(), homeSlots, ph, homeLimit);
     }
 
-    @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof HomeHolder; }
+    @Override
+    public void cleanup() {
+        confirmManager.cleanup();
+    }
+
+    @Override
+    public boolean owns(Inventory inv) { return inv.getHolder() instanceof HomeHolder; }
 
     public static class HomeHolder implements InventoryHolder {
         private final int page, maxPages;
@@ -278,7 +338,9 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
             this.currentSort = initialSort;
             this.timestamps = ts;
         }
-        @Override public @NotNull Inventory getInventory() { return inventory; }
+
+        @Override
+        public @NotNull Inventory getInventory() { return inventory; }
         public void setInventory(Inventory inventory) { this.inventory = inventory; }
         public int page() { return page; }
         public int maxPages() { return maxPages; }
@@ -286,5 +348,6 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         public String getCurrentSort() { return currentSort; }
         public void setCurrentSort(String currentSort) { this.currentSort = currentSort; }
         public Map<String, Long> getTimestamps() { return timestamps; }
+
     }
 }

@@ -27,16 +27,23 @@ home-item:
     - " <#736efe>»</#736efe> <gray>Coords:</gray> <white>%x%, %y%, %z%</white>"
     - " <#736efe>»</#736efe> <gray>Created at:</gray> <white>%time% %date%</white>"
     - ""
-    - "<#5efce8>Left-Click</#5efce8> <gray>to teleport</gray>"
+    - "<#5efce8>Click</#5efce8> <gray>to teleport</gray>"
     - "<#ff5f6d>Shift-Click</#ff5f6d> <gray>to delete</gray>"
   actions:
     - "[sound] entity.enderman.teleport 1 1.2"
     - "[player] home %name%"
     - "[close]"
-  shift-actions:
-    - "[sound] block.note_block.bass 2 0.5"
-    - "[player] delhome %name%"
-    - "[player] home"
+  apply-confirm:
+    # If false, it will use action type from above
+    # If true, it will override action type from above and go to the confirmation gui
+    teleport:
+      enabled: false
+      actions:
+        - "[sound] ui.button.click 1 2"
+    delete:
+      enabled: true
+      shift-actions:
+        - "[sound] ui.button.click 1 2"
 
 # Slot Available Item (based on home limit permission)
 slot-available:

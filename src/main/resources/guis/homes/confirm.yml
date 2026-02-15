@@ -1,0 +1,75 @@
+teleport:
+  # GUI title and size for teleport gui
+  title: "<gradient:#00ffcc:#0066ff>Confirm Teleport</gradient>"
+  rows: 3
+
+  buttons:
+    confirm:
+      slots: [11]
+      material: LIME_STAINED_GLASS_PANE
+      glow: true
+      display-name: "<#5efce8><bold>CONFIRM TELEPORT</bold></#5efce8>"
+      lore:
+        - "<gray>Click to teleport to:</gray>"
+        - " <#736efe>»</#736efe> <white>%name%</white>"
+        - ""
+        - "<#5efce8>▶ Click to proceed</#5efce8>"
+      actions:
+        - "[sound] entity.player.levelup 1.0 1.2"
+        - "[player] home %name%"
+        - "[close]"
+
+    cancel:
+      slots: [15]
+      material: RED_STAINED_GLASS_PANE
+      display-name: "<red><bold>CANCEL</bold><red>"
+      lore:
+        - "<gray>Click to return to the</gray>"
+        - "<gray>home interface.</gray>"
+      actions:
+        - "[sound] ui.button.click 1.0 0.8"
+
+  items:
+    filler:
+      slots: [0-26]
+      material: GRAY_STAINED_GLASS_PANE
+      hide-tooltip: true
+
+delete:
+  # GUI title and size for delete gui
+  title: "<gradient:#00ffcc:#0066ff>Confirm Deletion</gradient>"
+  rows: 3
+
+  buttons:
+    confirm:
+      slots: [11]
+      material: LIME_STAINED_GLASS_PANE
+      glow: true
+      display-name: "<#5efce8><bold>CONFIRM DELETION</bold></#5efce8>"
+      lore:
+        - "<gray>You are about to delete:</gray>"
+        - " <#736efe>»</#736efe> <white>%name%</white>"
+        - ""
+        - "<red><bold>WARNING:</bold></red> <gray>This action</gray>"
+        - "<gray>cannot be undone.</gray>"
+        - ""
+        - "<#ff5f6d>▶ Click to delete</#ff5f6d>"
+      actions:
+        - "[sound] entity.player.levelup 1.0 1.2"
+        - "[player] delhome %name%"
+
+    cancel:
+      slots: [15]
+      material: RED_STAINED_GLASS_PANE
+      display-name: "<red><bold>CANCEL</bold><red>"
+      lore:
+        - "<gray>Click to return to the</gray>"
+        - "<gray>home interface.</gray>"
+      actions:
+        - "[sound] ui.button.click 1.0 0.8"
+
+  items:
+    filler:
+      slots: [0-26]
+      material: GRAY_STAINED_GLASS_PANE
+      hide-tooltip: true
