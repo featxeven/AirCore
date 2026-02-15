@@ -757,6 +757,7 @@ bell: 8
 
 # Soil & Ground
 dirt: 0.3
+dirt_path: 0.3
 coarse_dirt: 0.3
 grass_block: 0.5
 podzol: 0.5

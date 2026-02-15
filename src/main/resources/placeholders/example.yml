@@ -9,7 +9,7 @@
 
 # The 'fallback' field is optional
 # - If provided: The placeholder will return this text when conditions are not met
-# - If omitted: The placeholder will not parse (remain as %...%) if requirements are not met
+# - If omitted: The placeholder will not parse (remain as %...%) if conditions are not met
 
 # Supported operators:
 # ==  : Equals (Case-sensitive)

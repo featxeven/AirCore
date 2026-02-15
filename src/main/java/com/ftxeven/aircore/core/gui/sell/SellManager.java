@@ -44,9 +44,9 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     public SellManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
+        this.confirmManager = new ConfirmManager(plugin, this);
         loadDefinition();
 
-        this.confirmManager = new ConfirmManager(plugin, this);
         this.listener = new SellListener(plugin, this);
         Bukkit.getPluginManager().registerEvents(this.listener, plugin);
     }
@@ -380,9 +380,12 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         if (inv.getHolder() instanceof SellHolder) {
             refreshConfirmButton(inv, viewer);
         } else if (inv.getHolder() instanceof ConfirmManager.ConfirmHolder holder) {
-            String totalFormatted = plugin.economy().formats().formatAmount(holder.result().total());
+            double total = holder.result().total();
+            String totalFormatted = plugin.economy().formats().formatAmount(total);
+
             Map<String, String> confirmPh = new HashMap<>(placeholders);
             confirmPh.put("total", totalFormatted);
+            confirmPh.put("player", viewer.getName());
 
             SellSlotMapper.fillConfirm(inv, confirmManager.getDefinition(), viewer, confirmPh);
         }

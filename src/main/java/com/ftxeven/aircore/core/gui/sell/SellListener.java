@@ -5,6 +5,7 @@ import com.ftxeven.aircore.core.economy.EconomyManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.*;
@@ -39,10 +40,16 @@ public final class SellListener implements Listener {
         }, 1L);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player viewer)) return;
+
         Inventory top = event.getView().getTopInventory();
+
+        if (top.getHolder() instanceof ConfirmManager.ConfirmHolder) {
+            return;
+        }
+
         if (top.getHolder() instanceof SellManager.SellHolder) {
             debounceRefresh(viewer, top);
         }

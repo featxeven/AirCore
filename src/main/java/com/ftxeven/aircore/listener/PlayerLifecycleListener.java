@@ -1,6 +1,7 @@
 package com.ftxeven.aircore.listener;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.database.player.PlayerInventories;
 import com.ftxeven.aircore.service.ToggleService;
 import com.ftxeven.aircore.util.MessageUtil;
 import net.kyori.adventure.text.Component;
@@ -18,16 +19,14 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-
-import static org.bukkit.Bukkit.getServer;
 
 public final class PlayerLifecycleListener implements Listener {
 
     private final AirCore plugin;
-    private final Set<UUID> justDied = new HashSet<>();
+    private final Set<UUID> justDied = Collections.synchronizedSet(new HashSet<>());
     private final Set<UUID> dirtyPlayers = Collections.synchronizedSet(new HashSet<>());
-    private static final int BATCH_SIZE = 50;
     private static final long AUTOSAVE_INTERVAL_TICKS = 2400L;
 
     public PlayerLifecycleListener(AirCore plugin) {
@@ -37,43 +36,20 @@ public final class PlayerLifecycleListener implements Listener {
 
     private void startInventoryAutoSave() {
         plugin.scheduler().runAsyncTimer(() -> {
-            Collection<? extends Player> allPlayers = Bukkit.getOnlinePlayers();
-            if (allPlayers.isEmpty()) {
-                return;
-            }
+            Collection<? extends Player> players = Bukkit.getOnlinePlayers();
+            if (players.isEmpty()) return;
 
-            for (Player player : allPlayers) {
-                dirtyPlayers.add(player.getUniqueId());
-            }
+            Map<UUID, PlayerInventories.InventorySnapshot> snapshots = new ConcurrentHashMap<>();
 
-            List<Player> playersToSave = new ArrayList<>(dirtyPlayers.size());
-            for (UUID uuid : dirtyPlayers) {
-                Player player = Bukkit.getPlayer(uuid);
-                if (player != null && player.isOnline()) {
-                    playersToSave.add(player);
-                }
-            }
+            for (Player player : players) {
+                plugin.scheduler().runEntityTask(player, () -> {
+                    snapshots.put(player.getUniqueId(), plugin.database().inventories().createSnapshot(player));
 
-            if (playersToSave.isEmpty()) {
-                dirtyPlayers.clear();
-                return;
-            }
-
-            for (int i = 0; i < playersToSave.size(); i += BATCH_SIZE) {
-                int endIndex = Math.min(i + BATCH_SIZE, playersToSave.size());
-                List<Player> batch = playersToSave.subList(i, endIndex);
-
-                try {
-                    plugin.database().inventories().saveAllSync(batch);
-
-                    for (Player player : batch) {
-                        dirtyPlayers.remove(player.getUniqueId());
+                    if (snapshots.size() == players.size()) {
+                        plugin.scheduler().runAsync(() -> plugin.database().inventories().saveAllSync(snapshots));
                     }
-                } catch (Exception e) {
-                    plugin.getLogger().severe("Failed to auto-save inventory batch: " + e.getMessage());
-                }
+                });
             }
-
         }, AUTOSAVE_INTERVAL_TICKS, AUTOSAVE_INTERVAL_TICKS);
     }
 
@@ -89,6 +65,14 @@ public final class PlayerLifecycleListener implements Listener {
         plugin.scheduler().runAsync(() -> {
             boolean hasJoinedBefore = plugin.database().records().hasJoinedBefore(uuid);
             plugin.core().commandCooldowns().load(uuid);
+
+            int joinIndex;
+            if (!hasJoinedBefore) {
+                joinIndex = plugin.database().records().createPlayerRecord(uuid, player.getName());
+            } else {
+                Integer idx = plugin.database().records().getJoinIndex(uuid);
+                joinIndex = idx != null ? idx : 0;
+            }
 
             boolean chat = plugin.database().records().getToggle(uuid, ToggleService.Toggle.CHAT.getColumn());
             boolean mentions = plugin.database().records().getToggle(uuid, ToggleService.Toggle.MENTIONS.getColumn());
@@ -132,6 +116,7 @@ public final class PlayerLifecycleListener implements Listener {
 
                 block.forEach(target -> plugin.core().blocks().block(uuid, target));
                 plugin.economy().balances().setBalanceLocal(uuid, balance);
+
                 plugin.home().homes().loadFromDatabase(uuid, homes);
 
                 if (bundle != null) {
@@ -146,7 +131,7 @@ public final class PlayerLifecycleListener implements Listener {
                     teleportToSpawn(player);
                 }
 
-                handleMotdAndBroadcastOnJoin(player, uuid, hasJoinedBefore);
+                handleMotdAndBroadcastOnJoin(player, hasJoinedBefore, joinIndex);
                 handleUpdateNotification(player);
             });
         });
@@ -181,29 +166,27 @@ public final class PlayerLifecycleListener implements Listener {
             plugin.core().teleports().cancelCountdown(player, false);
         }
 
-        try {
-            plugin.database().records().setLocation(uuid, player.getLocation());
-            plugin.database().inventories().saveAllSync(Collections.singleton(player));
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to save player data for " + player.getName() + ": " + e.getMessage());
-        }
+        Location quitLoc = player.getLocation();
+        PlayerInventories.InventorySnapshot snapshot = plugin.database().inventories().createSnapshot(player);
 
-        try {
-            plugin.economy().balances().unloadBalance(uuid);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to unload balance for " + player.getName() + ": " + e.getMessage());
-        }
-
-        if (!plugin.config().retainRequestStateOnLogout()) {
+        plugin.scheduler().runAsync(() -> {
             try {
+                plugin.database().records().setLocation(uuid, quitLoc);
+
+                plugin.database().inventories().saveAllSync(Map.of(uuid, snapshot));
+
+                plugin.economy().balances().unloadBalance(uuid);
+                plugin.home().homes().unload(uuid);
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to save player data on quit for " + player.getName() + ": " + e.getMessage());
+            }
+        });
+
+        try {
+            if (!plugin.config().retainRequestStateOnLogout()) {
                 plugin.teleport().requests().clearRequests(uuid);
                 plugin.teleport().cooldowns().clear(uuid);
-            } catch (Exception e) {
-                plugin.getLogger().warning("Failed to clear teleport requests for " + player.getName() + ": " + e.getMessage());
             }
-        }
-
-        try {
             plugin.core().commandCooldowns().clear(uuid);
             plugin.utility().afk().clearAfk(uuid);
             plugin.core().permissionGroups().clearAttachment(player);
@@ -305,14 +288,9 @@ public final class PlayerLifecycleListener implements Listener {
         }, 1L);
     }
 
-    private void handleMotdAndBroadcastOnJoin(Player player, UUID uuid, boolean hasJoinedBefore) {
-        int joinIndex;
+    private void handleMotdAndBroadcastOnJoin(Player player, boolean hasJoinedBefore, int joinIndex) {
         if (!hasJoinedBefore) {
-            joinIndex = plugin.database().records().createPlayerRecord(uuid, player.getName());
             plugin.kit().kits().grantFirstJoinKit(player);
-        } else {
-            Integer idx = plugin.database().records().getJoinIndex(uuid);
-            joinIndex = idx != null ? idx : 0;
         }
 
         Map<String, String> placeholders = new HashMap<>();
@@ -356,11 +334,11 @@ public final class PlayerLifecycleListener implements Listener {
     }
 
     private void fetchLuckPermsGroup(Player player, Consumer<String> callback) {
-        if (getServer().getPluginManager().isPluginEnabled("LuckPerms")) {
+        if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
             var api = LuckPermsProvider.get();
             api.getUserManager().loadUser(player.getUniqueId()).thenAccept(user -> {
                 String group = user != null ? user.getPrimaryGroup() : null;
-                plugin.scheduler().runTask(() -> callback.accept(group));
+                plugin.scheduler().runEntityTask(player, () -> callback.accept(group));
             });
         } else {
             callback.accept(null);

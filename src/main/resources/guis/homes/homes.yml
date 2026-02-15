@@ -101,14 +101,14 @@ buttons:
     # False for single line, true for the vertical list
     show-list: true
 
-    # Formatting for the %sort_list% placeholder
+    # Formatting for the %sort% placeholder
     format:
       selected: "<#5efce8>⏵ %name%</#5efce8>"
       unselected: "<dark_gray>  %name%</dark_gray>"
 
     # To remove a sort, just delete its entry from this list.
     types:
-      # You and change the order priority by just changing the order here
+      # The order defined here will determine the order they appear in the cycle
       latest: "Latest Created"
       oldest: "Oldest Created"
       alphabetical: "Name (A-Z)"

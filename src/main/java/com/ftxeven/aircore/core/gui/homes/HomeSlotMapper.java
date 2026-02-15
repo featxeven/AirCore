@@ -74,7 +74,7 @@ public final class HomeSlotMapper {
                 itemPh.put("name", home.getKey());
                 itemPh.put("time", TIME_FORMAT.format(instant));
                 itemPh.put("date", DATE_FORMAT.format(instant));
-                itemPh.put("world", loc.getWorld() != null ? loc.getWorld().getName() : "Unknown");
+                itemPh.put("world", loc.getWorld() != null ? loc.getWorld().getName() : "-");
                 itemPh.put("x", String.valueOf(loc.getBlockX()));
                 itemPh.put("y", String.valueOf(loc.getBlockY()));
                 itemPh.put("z", String.valueOf(loc.getBlockZ()));

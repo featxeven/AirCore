@@ -9,6 +9,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -16,7 +17,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -69,83 +69,64 @@ public final class ConfirmManager implements Listener {
                 .replace("%total%", totalFormatted)
                 .replace("%player%", player.getName());
 
-        Inventory inv = Bukkit.createInventory(new ConfirmHolder(sellInventory, result, isAll),
-                definition.rows() * 9, mm.deserialize("<!italic>" + title));
+        ConfirmHolder holder = new ConfirmHolder(definition, sellInventory, result, isAll, placeholders);
+        Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize("<!italic>" + title));
+        holder.setInventory(inv);
 
         SellSlotMapper.fillConfirm(inv, definition, player, placeholders);
         sellManager.markTransitioning(player.getUniqueId());
         player.openInventory(inv);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof ConfirmHolder holder)) return;
+        if (!(event.getInventory().getHolder() instanceof ConfirmHolder holder)) return;
 
-        event.setCancelled(true);
-
-        if (event.getClickedInventory() != event.getView().getTopInventory()) return;
+        if (event.getClickedInventory() == event.getView().getTopInventory()) {
+            event.setCancelled(true);
+        } else {
+            if (event.isShiftClick()) event.setCancelled(true);
+            return;
+        }
 
         int slot = event.getSlot();
-        ItemStack clickedStack = event.getCurrentItem();
-        if (clickedStack == null || clickedStack.getType().isAir()) return;
-
         Player player = (Player) event.getWhoClicked();
-        String totalFormatted = plugin.economy().formats().formatAmount(holder.result().total());
-        Map<String, String> placeholders = Map.of("total", totalFormatted);
+        GuiDefinition def = holder.definition();
+        Map<String, String> placeholders = holder.placeholders();
 
-        if (isKeyAtSlot(slot, "confirm")) {
-            GuiDefinition.GuiItem item = definition.items().get("confirm");
-            if (item != null) {
-                if (plugin.gui().cooldowns().isOnCooldown(player, item)) {
-                    plugin.gui().cooldowns().sendCooldownMessage(player, item);
-                    return;
-                }
-                sellManager.processSale(player, holder.sellInventory, holder.result, holder.isAll);
-                executeKeyActions("confirm", player, event.getClick(), placeholders);
-            }
+        if (isKeyAtSlot(def, slot, "confirm")) {
+            handleButtonAction(player, def.items().get("confirm"), () -> sellManager.processSale(player, holder.sellInventory(), holder.result(), holder.isAll()), placeholders, event.getClick());
             return;
         }
 
-        if (isKeyAtSlot(slot, "cancel")) {
-            GuiDefinition.GuiItem item = definition.items().get("cancel");
-            if (item != null) {
-                if (plugin.gui().cooldowns().isOnCooldown(player, item)) {
-                    plugin.gui().cooldowns().sendCooldownMessage(player, item);
-                    return;
-                }
+        if (isKeyAtSlot(def, slot, "cancel")) {
+            handleButtonAction(player, def.items().get("cancel"), () -> {
                 sellManager.markTransitioning(player.getUniqueId());
-                player.openInventory(holder.sellInventory);
-                executeKeyActions("cancel", player, event.getClick(), placeholders);
-            }
+                player.openInventory(holder.sellInventory());
+            }, placeholders, event.getClick());
             return;
         }
 
-        handleGenericItem(slot, clickedStack, player, event.getClick(), placeholders);
-    }
-
-    private void handleGenericItem(int slot, ItemStack clicked, Player viewer, org.bukkit.event.inventory.ClickType click, Map<String, String> ph) {
-        GuiDefinition.GuiItem def = findDefinitionAt(slot, clicked);
-        if (def != null) {
-            sellManager.handleAction(def, viewer, click, ph);
-        }
-    }
-
-    private GuiDefinition.GuiItem findDefinitionAt(int slot, ItemStack clicked) {
-        for (GuiDefinition.GuiItem item : definition.items().values()) {
-            if (item.slots().contains(slot) && clicked.getType() == item.material()) {
-                return item;
+        for (GuiDefinition.GuiItem item : def.items().values()) {
+            if (item.slots().contains(slot)) {
+                sellManager.handleAction(item, player, event.getClick(), placeholders);
+                break;
             }
         }
-        return null;
     }
 
-    private void executeKeyActions(String key, Player player, org.bukkit.event.inventory.ClickType click, Map<String, String> ph) {
-        GuiDefinition.GuiItem item = definition.items().get(key);
-        if (item != null) sellManager.handleAction(item, player, click, ph);
+    private void handleButtonAction(Player player, GuiDefinition.GuiItem item, Runnable logic, Map<String, String> ph, org.bukkit.event.inventory.ClickType click) {
+        if (item == null) return;
+        if (plugin.gui().cooldowns().isOnCooldown(player, item)) {
+            plugin.gui().cooldowns().sendCooldownMessage(player, item);
+            return;
+        }
+        logic.run();
+        sellManager.handleAction(item, player, click, ph);
     }
 
-    private boolean isKeyAtSlot(int slot, String key) {
-        GuiDefinition.GuiItem gi = definition.items().get(key);
+    private boolean isKeyAtSlot(GuiDefinition def, int slot, String key) {
+        GuiDefinition.GuiItem gi = def.items().get(key);
         return gi != null && gi.slots().contains(slot);
     }
 
@@ -159,12 +140,7 @@ public final class ConfirmManager implements Listener {
         if (!(event.getInventory().getHolder() instanceof ConfirmHolder holder)) return;
         Player player = (Player) event.getPlayer();
 
-        if (plugin.gui().isReloading()) {
-            sellManager.returnItems(player, holder.sellInventory());
-            return;
-        }
-
-        if (!sellManager.isTransitioning(player.getUniqueId())) {
+        if (plugin.gui().isReloading() || !sellManager.isTransitioning(player.getUniqueId())) {
             sellManager.returnItems(player, holder.sellInventory());
         }
     }
@@ -175,7 +151,29 @@ public final class ConfirmManager implements Listener {
 
     public void cleanup() { HandlerList.unregisterAll(this); }
 
-    public record ConfirmHolder(Inventory sellInventory, SellSlotMapper.WorthResult result, boolean isAll) implements InventoryHolder {
-        @Override public @NotNull Inventory getInventory() { return Bukkit.createInventory(null, 9); }
+    public static final class ConfirmHolder implements InventoryHolder {
+        private final GuiDefinition definition;
+        private final Inventory sellInventory;
+        private final SellSlotMapper.WorthResult result;
+        private final boolean isAll;
+        private final Map<String, String> placeholders;
+        private Inventory inventory;
+
+        public ConfirmHolder(GuiDefinition definition, Inventory sellInventory, SellSlotMapper.WorthResult result, boolean isAll, Map<String, String> placeholders) {
+            this.definition = definition;
+            this.sellInventory = sellInventory;
+            this.result = result;
+            this.isAll = isAll;
+            this.placeholders = placeholders;
+        }
+
+        @Override public @NotNull Inventory getInventory() { return inventory; }
+        public void setInventory(Inventory inventory) { this.inventory = inventory; }
+
+        public GuiDefinition definition() { return definition; }
+        public Inventory sellInventory() { return sellInventory; }
+        public SellSlotMapper.WorthResult result() { return result; }
+        public boolean isAll() { return isAll; }
+        public Map<String, String> placeholders() { return placeholders; }
     }
 }

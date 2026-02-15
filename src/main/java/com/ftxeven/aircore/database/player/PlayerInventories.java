@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
 import java.sql.*;
-import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 public final class PlayerInventories {
@@ -23,14 +23,17 @@ public final class PlayerInventories {
         this.connection = connection;
     }
 
+    public record InventorySnapshot(byte[] contents, byte[] armor, byte[] offhand, byte[] enderchest) {}
+
     private byte[] serializeItems(ItemStack[] items) {
+        if (items == null) return new byte[0];
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              DataOutputStream out = new DataOutputStream(baos)) {
 
             out.writeInt(items.length);
             for (ItemStack item : items) {
                 if (item == null || item.getType().isAir()) {
-                    out.writeInt(0); // mark empty slot
+                    out.writeInt(0);
                 } else {
                     byte[] data = item.serializeAsBytes();
                     out.writeInt(data.length);
@@ -59,7 +62,7 @@ public final class PlayerInventories {
                     in.readFully(data);
                     items[i] = ItemStack.deserializeBytes(data);
                 } else {
-                    items[i] = null; // empty slot
+                    items[i] = null;
                 }
             }
         } catch (Exception e) {
@@ -68,7 +71,9 @@ public final class PlayerInventories {
         return items;
     }
 
-    public void saveAllSync(Collection<? extends Player> players) {
+    public void saveAllSync(Map<UUID, InventorySnapshot> snapshots) {
+        if (snapshots.isEmpty()) return;
+
         String sql = """
             INSERT INTO player_inventories (uuid, contents, armor, offhand, enderchest)
             VALUES (?, ?, ?, ?, ?)
@@ -79,31 +84,42 @@ public final class PlayerInventories {
                 enderchest = excluded.enderchest;
         """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            boolean prevAuto = connection.getAutoCommit();
-            connection.setAutoCommit(false);
-
-            for (Player player : players) {
-                UUID uuid = player.getUniqueId();
-                ps.setString(1, uuid.toString());
-                ps.setBytes(2, serializeItems(player.getInventory().getContents()));
-                ps.setBytes(3, serializeItems(player.getInventory().getArmorContents()));
-                ps.setBytes(4, serializeItems(new ItemStack[]{player.getInventory().getItemInOffHand()}));
-                ps.setBytes(5, serializeItems(player.getEnderChest().getContents()));
-                ps.addBatch();
-            }
-
-            ps.executeBatch();
-            connection.commit();
-            connection.setAutoCommit(prevAuto);
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Failed to batch-save inventories: " + e.getMessage());
+        synchronized (connection) {
             try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                plugin.getLogger().warning("Rollback failed: " + rollbackEx.getMessage());
+                boolean prevAuto = connection.getAutoCommit();
+                connection.setAutoCommit(false);
+
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    for (var entry : snapshots.entrySet()) {
+                        InventorySnapshot s = entry.getValue();
+                        ps.setString(1, entry.getKey().toString());
+                        ps.setBytes(2, s.contents());
+                        ps.setBytes(3, s.armor());
+                        ps.setBytes(4, s.offhand());
+                        ps.setBytes(5, s.enderchest());
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                    connection.commit();
+                } catch (SQLException e) {
+                    connection.rollback();
+                    throw e;
+                } finally {
+                    connection.setAutoCommit(prevAuto);
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().warning("Failed to batch-save inventories: " + e.getMessage());
             }
         }
+    }
+
+    public InventorySnapshot createSnapshot(Player player) {
+        return new InventorySnapshot(
+                serializeItems(player.getInventory().getContents()),
+                serializeItems(player.getInventory().getArmorContents()),
+                serializeItems(new ItemStack[]{player.getInventory().getItemInOffHand()}),
+                serializeItems(player.getEnderChest().getContents())
+        );
     }
 
     public void saveInventory(UUID uuid, ItemStack[] contents, ItemStack[] armor, ItemStack offhand) {

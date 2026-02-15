@@ -28,13 +28,13 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
     private GuiDefinition definition;
     private int[] homeSlots;
     private boolean enabled;
-    private final HomeConfirmManager confirmManager;
+    private final ConfirmManager confirmManager;
 
     public HomeManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
         loadDefinition();
-        this.confirmManager = new HomeConfirmManager(plugin, this);
+        this.confirmManager = new ConfirmManager(plugin, this);
     }
 
     public boolean isEnabled() { return enabled; }
@@ -167,7 +167,9 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
             if (holder.page() < holder.maxPages() || alwaysShow) {
                 executeKeyActions("next-page", viewer, event.getClick(), Collections.emptyMap());
                 if (holder.page() < holder.maxPages()) {
-                    plugin.gui().openGui("homes", viewer, Map.of("page", String.valueOf(holder.page() + 1)));
+                    plugin.scheduler().runEntityTask(viewer, () ->
+                            plugin.gui().openGui("homes", viewer, Map.of("page", String.valueOf(holder.page() + 1)))
+                    );
                 }
                 return;
             }

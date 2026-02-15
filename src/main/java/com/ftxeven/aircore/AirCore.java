@@ -10,10 +10,12 @@ import com.ftxeven.aircore.core.kit.KitManager;
 import com.ftxeven.aircore.core.teleport.TeleportManager;
 import com.ftxeven.aircore.core.utility.UtilityManager;
 import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.database.player.PlayerInventories;
 import com.ftxeven.aircore.util.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.InputStream;
@@ -72,7 +74,21 @@ public final class AirCore extends JavaPlugin {
     @Override
     public void onDisable() {
         if (databaseManager != null) {
-            database().inventories().saveAllSync(Bukkit.getOnlinePlayers());
+            Map<UUID, PlayerInventories.InventorySnapshot> shutdownSnapshots = new HashMap<>();
+
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                try {
+                    shutdownSnapshots.put(player.getUniqueId(), database().inventories().createSnapshot(player));
+                } catch (Exception e) {
+                    getLogger().severe("Failed to snapshot " + player.getName() + " during shutdown!");
+                }
+            }
+
+            if (!shutdownSnapshots.isEmpty()) {
+                getLogger().info("Saving " + shutdownSnapshots.size() + " player inventories...");
+                database().inventories().saveAllSync(shutdownSnapshots);
+            }
+
             databaseManager.close();
         }
         getLogger().info("Plugin disabled @ featxeven");

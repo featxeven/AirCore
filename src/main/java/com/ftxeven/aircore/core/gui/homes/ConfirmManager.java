@@ -18,9 +18,13 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public final class HomeConfirmManager implements Listener {
+public final class ConfirmManager implements Listener {
 
     private final AirCore plugin;
     private final HomeManager homeManager;
@@ -28,7 +32,7 @@ public final class HomeConfirmManager implements Listener {
     private GuiDefinition teleportDef;
     private GuiDefinition deleteDef;
 
-    public HomeConfirmManager(AirCore plugin, HomeManager homeManager) {
+    public ConfirmManager(AirCore plugin, HomeManager homeManager) {
         this.plugin = plugin;
         this.homeManager = homeManager;
         loadDefinition();
@@ -78,10 +82,10 @@ public final class HomeConfirmManager implements Listener {
             ph.put("y", String.valueOf(loc.getBlockY()));
             ph.put("z", String.valueOf(loc.getBlockZ()));
 
-            java.time.LocalDateTime dt = java.time.LocalDateTime.ofInstant(
-                    java.time.Instant.ofEpochMilli(timestamp), java.time.ZoneId.systemDefault());
-            ph.put("time", dt.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss")));
-            ph.put("date", dt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            LocalDateTime dt = LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
+            ph.put("time", dt.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            ph.put("date", dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
 
         String title = PlaceholderUtil.apply(player, def.title(), ph);
@@ -129,7 +133,7 @@ public final class HomeConfirmManager implements Listener {
                     .anyMatch(a -> a.toLowerCase().contains("[close]"));
 
             if (!hasClose) {
-                plugin.gui().openGui("homes", player, Map.of("page", holder.getPrevPage()));
+                plugin.scheduler().runEntityTask(player, () -> plugin.gui().openGui("homes", player, Map.of("page", holder.getPrevPage())));
             }
             return;
         }

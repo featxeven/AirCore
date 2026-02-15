@@ -5,9 +5,7 @@ import com.ftxeven.aircore.database.player.*;
 
 import java.io.File;
 import java.sql.*;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public final class DatabaseManager {
 
@@ -181,19 +179,14 @@ public final class DatabaseManager {
     }
 
     public void executeAsync(String sql, SQLConsumer<PreparedStatement> binder) {
-        Thread task = new Thread(() -> {
+        plugin.scheduler().runAsync(() -> {
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 binder.accept(ps);
                 ps.executeUpdate();
             } catch (SQLException e) {
                 plugin.getLogger().warning("SQL failed: " + e.getMessage());
-            } finally {
-                asyncTasks.remove(Thread.currentThread());
             }
-        }, "AirCore-DBTask");
-
-        asyncTasks.add(task);
-        plugin.scheduler().runAsync(task);
+        });
     }
 
     public PlayerRecords records() { return playerRecords; }
