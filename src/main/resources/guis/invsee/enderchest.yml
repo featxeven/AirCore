@@ -1,0 +1,17 @@
+# GUI title and size
+title: "<gradient:#00ffcc:#0066ff><bold>Viewing Ender Chest:</bold></gradient> <white>%target%"
+rows: 5
+
+# When opening own enderchest with /enderchest
+title-own: "Ender Chest"
+
+# Dynamic slot groups
+# These define where the target's enderchest contents will be mirrored
+enderchest-slots: [9-35]
+
+# Custom items
+items:
+  filler:
+    slots: [0-8, 36-44]
+    material: GRAY_STAINED_GLASS_PANE
+    hide-tooltip: true

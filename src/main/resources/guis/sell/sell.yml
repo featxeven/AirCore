@@ -1,0 +1,78 @@
+# - true = /sell opens the GUI
+# - false = /sell directly sells the item in hand
+enabled: true
+
+# - true = items are sold automatically when closing the GUI
+# - false = players must click the confirm button to complete the sale
+sell-on-inventory-close: false
+
+# - true = log successful sales to console
+# - false = no console logs
+sell-logs-on-console: true
+
+# - true = confirm buttons are always shown
+# - false = confirm buttons only appear when at least one item can be sold
+always-show-buttons: false
+
+# GUI title and size
+title: "<gradient:#00ffcc:#0066ff>Sell Interface</gradient> <gray>»</gray> <white>Place Items"
+rows: 5
+
+# Item slots
+# These slots define where players can put items they want to sell
+sell-slots: [0-35]
+
+# Custom items
+buttons:
+  confirm:
+    slots: [38]
+    material: HOPPER_MINECART
+    glow: true
+    display-name: "<#5efce8><bold>CONFIRM SALE</bold></#5efce8>"
+    lore:
+      - "<gray>Selling items in current menu.</gray>"
+      - ""
+      - " <#736efe>»</#736efe> <gray>Current Worth:</gray> <green>$%worth%</green>"
+      - ""
+      - "<#5efce8>Click to proceed to confirmation</#5efce8>"
+    actions:
+      - "[sound] ui.button.click 1.0 1.2"
+    apply-confirm: true
+
+  confirm-all:
+    slots: [42]
+    material: CHEST_MINECART
+    glow: true
+    display-name: "<#5efce8><bold>SELL ENTIRE INVENTORY</bold></#5efce8>"
+    lore:
+      - "<gray>Selling everything (both inventories).</gray>"
+      - ""
+      - " <#736efe>»</#736efe> <gray>Total Worth:</gray> <green>$%worth-all%</green>"
+      - ""
+      - "<#5efce8>Click to proceed to confirmation</#5efce8>"
+    actions:
+      - "[sound] ui.button.click 1.0 1.2"
+    apply-confirm: true
+
+# Custom items
+items:
+  filler:
+    slots: [36-37, 39-41, 43-44]
+    material: GRAY_STAINED_GLASS_PANE
+    hide-tooltip: true
+
+  empty:
+    slots: [38]
+    material: BARRIER
+    display-name: "<#ff5f6d><bold>CANNOT SELL</bold></#ff5f6d>"
+    lore:
+      - "<gray>The sell interface is currently</gray>"
+      - "<gray>empty. Add items to begin.</gray>"
+
+  empty-all:
+    slots: [42]
+    material: BARRIER
+    display-name: "<#ff5f6d><bold>INVENTORY EMPTY</bold></#ff5f6d>"
+    lore:
+      - "<gray>You do not have any items</gray>"
+      - "<gray>in your inventory to sell.</gray>"
