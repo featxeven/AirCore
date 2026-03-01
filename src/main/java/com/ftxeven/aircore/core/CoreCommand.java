@@ -85,7 +85,6 @@ public final class CoreCommand implements TabExecutor {
                 plugin.gui().reload();
                 plugin.chat().reload();
                 plugin.economy().reload();
-                plugin.home().reload();
                 plugin.kit().reload();
                 plugin.teleport().reload();
                 plugin.utility().reload();

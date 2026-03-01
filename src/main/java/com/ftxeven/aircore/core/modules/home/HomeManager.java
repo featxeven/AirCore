@@ -18,11 +18,6 @@ public final class HomeManager {
         preloadOnlinePlayers();
     }
 
-    public void reload() {
-        constructServices();
-        preloadOnlinePlayers();
-    }
-
     private void constructServices() {
         this.homeService = new HomeService(plugin);
     }

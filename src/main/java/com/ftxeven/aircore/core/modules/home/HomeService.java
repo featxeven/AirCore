@@ -135,7 +135,8 @@ public final class HomeService {
     }
 
     public void loadFromDatabase(UUID uuid, Map<String, Location> loadedHomes) {
-        playerHomes.put(uuid, Collections.synchronizedMap(new LinkedHashMap<>(loadedHomes)));
+        Map<String, Location> existing = getHomes(uuid);
+        existing.putAll(loadedHomes);
     }
 
     public void unload(UUID uuid) {
