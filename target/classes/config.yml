@@ -413,3 +413,13 @@ command-usages:
   back:
     usage: "/%label%"
     aliases: []
+  announcement:
+    usage: "/%label% <option> <key>"
+    usage-trigger: "/%label% trigger <key> [args]"
+    usage-enable: "/%label% enable <key>"
+    usage-disable: "/%label% disable <key>"
+    aliases: [announcements]
+  announcetoggle:
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+    aliases: []

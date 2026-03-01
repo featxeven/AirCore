@@ -74,6 +74,10 @@ public final class CoreCommand implements TabExecutor {
                 plugin.lang().reload();
                 notifyReload(sender, "messages");
             }
+            case "announcements" -> {
+                plugin.announcements().reload();
+                notifyReload(sender, "announcements");
+            }
             case "all" -> {
                 plugin.config().reload();
                 plugin.lang().reload();
@@ -86,6 +90,7 @@ public final class CoreCommand implements TabExecutor {
                 plugin.teleport().reload();
                 plugin.utility().reload();
                 plugin.placeholders().reload();
+                plugin.announcements().reload();
                 notifyReload(sender, "all");
             }
             default -> {
@@ -133,7 +138,7 @@ public final class CoreCommand implements TabExecutor {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("reload")) {
-            return Stream.of("all", "placeholders", "config", "guis", "messages")
+            return Stream.of("all", "placeholders", "config", "guis", "messages", "announcements")
                     .filter(s -> s.startsWith(args[1].toLowerCase()))
                     .toList();
         }

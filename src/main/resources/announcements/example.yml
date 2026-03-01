@@ -1,0 +1,125 @@
+# -----------------------------
+# AirCore Custom Announcements
+# -----------------------------
+
+# You can create your own .yml files and sub-folders within the /announcements/ directory
+# Example: /announcements/groups/vip.yml
+
+# GLOBAL ANNOUNCEMENT OPTIONS (Defined per announcement)
+# interval:      Frequency in SECONDS. (0 = Manual trigger via command only).
+# ignore-toggle: If true, players who used /announcetoggle will still see this.
+# pick-random:   If true, the system selects only ONE non-forced component to show.
+# conditions:    List of PAPI requirements. If any fail, the message is skipped.
+
+# COMPONENT-SPECIFIC OPTIONS (Defined inside components)
+# forced:        If true, this component ALWAYS runs, bypassing 'pick-random'.
+#                Useful for playing a sound even if the chat message is randomized.
+
+# Supported operators:
+# ==  : Equals (Case-sensitive)
+# !=  : Not Equals (Case-sensitive)
+# =~  : Equals (Case-insensitive)
+# !~  : Not Equals (Case-insensitive)
+# |-  : Starts with
+# -|  : Ends with
+# <>  : Contains
+# ><  : Does not contain
+# >   : Greater than (Numeric)
+# <   : Less than (Numeric)
+# >=  : Greater than or equal (Numeric)
+# <=  : Less than or equal (Numeric)
+
+announcements:
+  # /announcements trigger someone_purchased [args]
+  someone_purchased:
+    interval: 0 # Manual trigger only
+    ignore-toggle: true # Ignores /announcetoggle even if disabled.
+    enabled: true
+
+    # Components use %args% which is defined by the command argument [args]
+    components:
+      chat:
+        - ""
+        - "<blue><bold>STORE PURCHASE</bold></blue>"
+        - "<gray>Thank you <white>%args%</white> for supporting the server!</gray>"
+        - "<yellow>They just purchased the <gold>VIP Rank</gold></yellow>"
+        - ""
+      title:
+        main: "<blue><bold>THANK YOU!</bold></blue>"
+        sub: "<white>%args% <gray>just bought a rank!</gray>"
+        fadeIn: 10
+        stay: 100
+        fadeOut: 20
+      sound:
+        key: "ui.toast.challenge_complete"
+        volume: 1.0
+        pitch: 1.0
+
+  welcome_bundle:
+    interval: 300
+    conditions:
+      - "%luckperms_primary_group_name% == default"
+      - "%statistic_seconds_since_last_death% < 3600"
+    enabled: true
+    components:
+      chat:
+        - ""
+        - "<center><gradient:#5e42f3:#8073ff><bold>ANNOUNCEMENT</bold></gradient></center>"
+        - "<center><gray>Check out our new <gold>/store</gold> for exclusive ranks!</gray></center>"
+        - ""
+      actionbar:
+        text: "<white>Current Event: <green>Double XP Weekly!</green>"
+      title:
+        main: "<gold><bold>LEVEL UP!</bold></gold>"
+        sub: "<gray>You've unlocked new perks at the spawn.</gray>"
+        fadeIn: 10
+        stay: 70
+        fadeOut: 20
+      bossbar:
+        text: "<#fbff00>Server Maintenance in 10 minutes..."
+        duration: 200 # 10 seconds (200 ticks)
+        color: YELLOW
+        overlay: NOTCHED_10
+        progress: 1.0
+        countdown: true
+      sound:
+        key: "block.note_block.pling"
+        volume: 1.0
+        pitch: 1.5
+
+  vip_reminder:
+    interval: 600
+    conditions:
+      - "%luckperms_primary_group_name% == vip"
+    pick-random: true
+    enabled: true
+    components:
+      # Option 1: Chat reminder
+      chat:
+        - "<aqua>[VIP]</aqua> Don't forget to use <white>/feed</white>!"
+      # Option 2: Actionbar reminder
+      actionbar:
+        text: "<aqua>[VIP]</aqua> Don't forget you have access to <white>/fly</white>!"
+      # Always runs regardless of pick-random
+      sound:
+        forced: true
+        key: "block.note_block.pling"
+        volume: 0.5
+        pitch: 2.0
+
+  status_update:
+    interval: 120
+    ignore-toggle: true
+    conditions:
+      - "%server_tps% < 16"
+    enabled: true
+    components:
+      chat:
+        - "<red><b>[!]</b> The server is currently under heavy load.</red>"
+      bossbar:
+        text: "<red>Performance Alert: Server TPS is %server_tps%!</red>"
+        duration: 1200 # 60 seconds
+        color: RED
+        overlay: PROGRESS
+        progress: 1.0
+        countdown: true

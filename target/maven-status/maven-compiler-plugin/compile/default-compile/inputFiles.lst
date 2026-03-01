@@ -43,6 +43,7 @@ D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\gui\homes\ConfirmTarge
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\RepairCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\gui\invsee\inventory\InventorySlotMapper.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\chat\command\MsgCommand.java
+D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\AnnounceToggleCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\config\LangManager.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\chat\command\MentionToggleCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\teleport\command\TpaHereCommand.java
@@ -113,6 +114,7 @@ D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\chat\command\MsgToggle
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\UtilityManager.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\chat\command\SocialSpyCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\gui\sell\SellSlotMapper.java
+D:\AirCore\src\main\java\com\ftxeven\aircore\config\AnnouncementManager.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\util\TitleUtil.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\EnderchestCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\teleport\command\TpToggleCommand.java
@@ -122,11 +124,13 @@ D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\BackCo
 D:\AirCore\src\main\java\com\ftxeven\aircore\database\dao\PlayerCooldowns.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\home\HomeService.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\economy\command\BalanceCommand.java
+D:\AirCore\src\main\java\com\ftxeven\aircore\core\service\AnnouncementService.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\teleport\service\CooldownService.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\teleport\command\TpOfflineCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\teleport\command\TpDenyCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\config\ConfigManager.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\chat\service\DisplayTagsService.java
+D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\AnnouncementCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\UnblockCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\utility\command\DelWarpCommand.java
 D:\AirCore\src\main\java\com\ftxeven\aircore\core\modules\chat\ChatManager.java

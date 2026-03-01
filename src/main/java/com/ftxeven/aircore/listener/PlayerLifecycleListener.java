@@ -6,6 +6,7 @@ import com.ftxeven.aircore.core.modules.gui.invsee.inventory.InventoryManager;
 import com.ftxeven.aircore.core.modules.gui.invsee.inventory.InventorySlotMapper;
 import com.ftxeven.aircore.database.dao.PlayerInventories;
 import com.ftxeven.aircore.core.service.ToggleService;
+import com.ftxeven.aircore.util.BossbarUtil;
 import com.ftxeven.aircore.util.MessageUtil;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
@@ -168,6 +169,8 @@ public final class PlayerLifecycleListener implements Listener {
         UUID uuid = player.getUniqueId();
         event.quitMessage(null);
         justDied.remove(uuid);
+
+        BossbarUtil.hideAll(player);
 
         if (plugin.core().teleports().hasCountdown(player)) {
             plugin.core().teleports().cancelCountdown(player, false);

@@ -5,6 +5,8 @@ import com.ftxeven.aircore.database.dao.*;
 
 import java.io.File;
 import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class DatabaseManager {
 
@@ -40,6 +42,7 @@ public final class DatabaseManager {
         }
 
         createTables();
+        ensureColumns();
 
         this.playerRecords = new PlayerRecords(plugin, connection);
         this.playerBlocks = new PlayerBlocks(plugin, connection);
@@ -77,68 +80,33 @@ public final class DatabaseManager {
                 );
             """);
 
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS player_inventories (
-                    uuid TEXT PRIMARY KEY,
-                    contents BLOB,
-                    armor BLOB,
-                    offhand BLOB,
-                    enderchest BLOB
-                );
-            """);
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_inventories (uuid TEXT PRIMARY KEY, contents BLOB, armor BLOB, offhand BLOB, enderchest BLOB);");
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_cooldowns (uuid TEXT NOT NULL, command TEXT NOT NULL, expiry INTEGER NOT NULL, PRIMARY KEY (uuid, command));");
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_blocks (uuid TEXT NOT NULL, blocked_uuid TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (uuid, blocked_uuid));");
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_homes (uuid TEXT NOT NULL, name TEXT NOT NULL, world TEXT NOT NULL, x REAL NOT NULL, y REAL NOT NULL, z REAL NOT NULL, yaw REAL NOT NULL, pitch REAL NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (uuid, name));");
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_kits (uuid TEXT NOT NULL, kit TEXT NOT NULL, last_claim INTEGER NOT NULL DEFAULT 0, one_time_claimed INTEGER NOT NULL DEFAULT 0, last_cooldown INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (uuid, kit));");
+        }
+    }
 
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS player_cooldowns (
-                    uuid TEXT NOT NULL,
-                    command TEXT NOT NULL,
-                    expiry INTEGER NOT NULL,
-                    PRIMARY KEY (uuid, command)
-                );
-            """);
+    private void ensureColumns() throws SQLException {
+        Set<String> columns = new HashSet<>();
+        try (ResultSet rs = connection.getMetaData().getColumns(null, null, "player_records", null)) {
+            while (rs.next()) {
+                columns.add(rs.getString("COLUMN_NAME").toLowerCase());
+            }
+        }
 
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS player_blocks (
-                    uuid TEXT NOT NULL,
-                    blocked_uuid TEXT NOT NULL,
-                    created_at INTEGER NOT NULL,
-                    PRIMARY KEY (uuid, blocked_uuid)
-                );
-            """);
-
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS player_homes (
-                    uuid TEXT NOT NULL,
-                    name TEXT NOT NULL,
-                    world TEXT NOT NULL,
-                    x REAL NOT NULL,
-                    y REAL NOT NULL,
-                    z REAL NOT NULL,
-                    yaw REAL NOT NULL,
-                    pitch REAL NOT NULL,
-                    created_at INTEGER NOT NULL,
-                    PRIMARY KEY (uuid, name)
-                );
-            """);
-
-            stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS player_kits (
-                    uuid TEXT NOT NULL,
-                    kit TEXT NOT NULL,
-                    last_claim INTEGER NOT NULL DEFAULT 0,
-                    one_time_claimed INTEGER NOT NULL DEFAULT 0,
-                    last_cooldown INTEGER NOT NULL DEFAULT 0,
-                    PRIMARY KEY (uuid, kit)
-                );
-            """);
+        if (!columns.contains("announcements_enabled")) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN announcements_enabled INTEGER NOT NULL DEFAULT 1;");
+            }
         }
     }
 
     public void close() {
         if (connection != null) {
             try {
-                if (!connection.isClosed()) {
-                    connection.close();
-                }
+                if (!connection.isClosed()) connection.close();
             } catch (SQLException e) {
                 plugin.getLogger().warning("Failed to close database connection: " + e.getMessage());
             } finally {
@@ -147,34 +115,24 @@ public final class DatabaseManager {
         }
     }
 
-    @FunctionalInterface
-    public interface SQLConsumer<T> {
-        void accept(T t) throws SQLException;
-    }
-
     public synchronized void executeAsync(String sql, SQLConsumer<PreparedStatement> binder) {
         plugin.scheduler().runAsync(() -> {
             if (isClosed()) return;
-
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 binder.accept(ps);
                 ps.executeUpdate();
             } catch (SQLException e) {
-                if (!isClosed()) {
-                    plugin.getLogger().warning("SQL failed: " + e.getMessage());
-                }
+                if (!isClosed()) plugin.getLogger().warning("SQL failed: " + e.getMessage());
             }
         });
     }
 
     public boolean isClosed() {
-        try {
-            return connection == null || connection.isClosed();
-        } catch (SQLException e) {
-            return true;
-        }
+        try { return connection == null || connection.isClosed(); }
+        catch (SQLException e) { return true; }
     }
 
+    @FunctionalInterface public interface SQLConsumer<T> { void accept(T t) throws SQLException; }
     public PlayerRecords records() { return playerRecords; }
     public PlayerBlocks blocks() { return playerBlocks; }
     public PlayerHomes homes() { return playerHomes; }

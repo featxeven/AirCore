@@ -3,7 +3,6 @@ package com.ftxeven.aircore.core.modules.chat.service;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -63,11 +62,10 @@ public final class DisplayTagsService {
         if (item.getType().isAir()) return null;
 
         ItemMeta meta = item.getItemMeta();
-
         final Component finalItemName;
+
         if (meta != null && meta.hasDisplayName()) {
-            Component name = meta.displayName();
-            finalItemName = (name != null) ? name.decoration(TextDecoration.ITALIC, true) : Component.empty();
+            finalItemName = meta.displayName();
         } else {
             finalItemName = Component.translatable(item.getType().translationKey());
         }

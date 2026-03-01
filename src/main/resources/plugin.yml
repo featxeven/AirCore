@@ -241,6 +241,14 @@ commands:
     description: Teleport to the last death location.
     usage: /back
     permission: aircore.command.back
+  announcement:
+    description: Manage and trigger custom announcements.
+    usage: /announcements <reload|trigger|toggle>
+    permission: aircore.command.announcement
+  announcetoggle:
+    description: Toggles whether you see periodic announcements.
+    usage: /announcetoggle
+    permission: aircore.command.announcetoggle
 
 permissions:
   aircore.command.admin: {description: "Admin command.", default: op}
@@ -404,3 +412,6 @@ permissions:
   aircore.bypass.home.worlds: {description: "Homes everywhere.", default: op}
   aircore.bypass.kit.cooldown: {description: "No kit CD.", default: op}
   aircore.bypass.kit.onetime: {description: "Unlimited 1-time kits.", default: op}
+  aircore.command.announcement: { description: "Use /announcements.", default: op }
+  aircore.command.announcetoggle: { description: "Use /announcetoggle.", default: op }
+  aircore.command.announcetoggle.others: { description: "Toggle others' announcements.", default: op }

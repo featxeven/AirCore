@@ -122,6 +122,8 @@ public final class CoreInitializer {
         reg("invsee", new InvseeCommand(plugin, plugin.gui()));
         reg("give", new GiveCommand(plugin));
         reg("back", new BackCommand(plugin));
+        reg("announcement", new AnnouncementCommand(plugin));
+        reg("announcetoggle", new AnnounceToggleCommand(plugin));
 
         reg("aircore", new CoreCommand(plugin));
 

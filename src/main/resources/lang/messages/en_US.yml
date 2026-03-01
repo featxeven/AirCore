@@ -8,23 +8,24 @@
 #
 # Supported Inline Tags (usable inside any message):
 #   <sound:NAME:VOLUME:PITCH>
-#       - Plays a sound to the player
+#       - Plays a sound to the player.
 #
 #   <title:'TEXT':fadeIn:stay:fadeOut>
-#       - Shows a title with timing values (in ticks)
+#       - Shows a title with timing values (in ticks).
 #
 #   <subtitle:'TEXT'>
-#       - Shows a subtitle (uses the last title timings)
+#       - Shows a subtitle (uses the last title timings).
 #
 #   <actionbar:'TEXT'>
-#       - Shows text in the action bar
+#       - Shows text in the action bar.
 #
-#   <bossbar:'TEXT':duration:color:progress:countdown>
-#       TEXT      = message displayed in the boss bar
-#       duration  = how long to display (ticks, 20 ticks = 1 second)
-#       color     = boss bar color (e.g., RED, BLUE, GREEN)
-#       progress  = initial progress (0.0–1.0, used in static mode)
-#       countdown = true/false: true animates progress toward 0, false keeps it static
+#   <bossbar:'TEXT':duration:color:overlay:progress:countdown>
+#       TEXT      = The message displayed in the boss bar.
+#       duration  = How long to display (ticks, 20 ticks = 1 second).
+#       color     = Bar color (RED, BLUE, GREEN, YELLOW, PURPLE, WHITE, PINK).
+#       overlay   = Appearance (PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20).
+#       progress  = Initial fill (0.0 to 1.0).
+#       countdown = If true, the bar animates from the 'progress' value down to 0 over the duration.
 
 # -----------------------------
 # GENERAL
@@ -47,6 +48,7 @@ general:
     messages: "Messages"
     guis: "GUIs"
     placeholders: "Placeholders"
+    announcements: "Announcements"
 
 # -----------------------------
 # CHAT & MESSAGING
@@ -412,6 +414,22 @@ utilities:
     error-cannot: "%prefix% <red>You cannot block <yellow>%player%</yellow>.</red>"
     error-self: "%prefix% <red>You cannot block yourself.</red>"
     error-blocked-by: "%prefix% <red>You cannot interact with <yellow>%player%</yellow> because they blocked you.</red>"
+
+  announcement:
+    not-found: "%prefix% <red>Announcement <yellow>%name%</yellow> was not found.</red>"
+    triggered: "%prefix% <green>Announcement <yellow>%name%</yellow> has been manually triggered.</green>"
+    enabled: "%prefix% <green>Announcement <yellow>%name%</yellow> is now enabled and scheduled.</green>"
+    already-enabled: "%prefix% <green>Announcement <yellow>%name%</yellow> is is already enabled.</green>"
+    disabled: "%prefix% <red>Announcement <yellow>%name%</yellow> has been disabled.</red>"
+    already-disabled: "%prefix% <red>Announcement <yellow>%name%</yellow> is already disabled.</red>"
+
+    toggles:
+      enabled: "%prefix% <green>You will now see automated announcements.</green>"
+      disabled: "%prefix% <red>You have muted automated announcements.</red>"
+      enabled-for: "%prefix% <green>Announcements enabled for <yellow>%player%</yellow>.</green>"
+      disabled-for: "%prefix% <red>Announcements disabled for <yellow>%player%</yellow>.</red>"
+      enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled announcements for you.</green>"
+      disabled-by: "%prefix% <red><yellow>%player%</yellow> disabled announcements for you.</red>"
 
   errors:
     invsee-self: "%prefix% <red>You can only view other players' inventory.</red>"

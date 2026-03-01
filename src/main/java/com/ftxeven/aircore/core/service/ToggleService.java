@@ -23,7 +23,8 @@ public final class ToggleService {
         PAY("pay_enabled", true),
         TELEPORT("teleport_enabled", true),
         GOD("god_enabled", false),
-        FLY("fly_enabled", false);
+        FLY("fly_enabled", false),
+        ANNOUNCEMENTS("announcements_enabled", true);
 
         private final String column;
         private final boolean defaultValue;

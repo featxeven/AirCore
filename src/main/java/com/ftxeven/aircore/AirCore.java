@@ -26,6 +26,7 @@ import java.util.*;
 public final class AirCore extends JavaPlugin {
     private ConfigManager configManager;
     private LangManager langManager;
+    private AnnouncementManager announcementManager;
     private ChatManager chatManager;
     private EconomyManager economyManager;
     private TeleportManager teleportManager;
@@ -71,6 +72,12 @@ public final class AirCore extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (announcementManager != null) {
+            announcementManager.shutdown();
+        }
+
+        BossbarUtil.hideAll();
+
         if (schedulerUtil != null) {
             schedulerUtil.cancelAll();
         }
@@ -100,6 +107,7 @@ public final class AirCore extends JavaPlugin {
     private void initManagers() {
         this.placeholderManager = new PlaceholderManager(this);
         this.coreManager = new CoreManager(this, scheduler());
+        this.announcementManager = new AnnouncementManager(this);
         this.chatManager = new ChatManager(this);
         this.economyManager = new EconomyManager(this);
         this.teleportManager = new TeleportManager(this);
@@ -160,6 +168,7 @@ public final class AirCore extends JavaPlugin {
 
     public ConfigManager config() { return configManager; }
     public LangManager lang() { return langManager; }
+    public AnnouncementManager announcements() { return announcementManager; }
     public ChatManager chat() { return chatManager; }
     public EconomyManager economy() { return economyManager; }
     public TeleportManager teleport() { return teleportManager; }

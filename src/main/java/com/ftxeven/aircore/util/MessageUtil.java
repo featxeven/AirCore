@@ -121,7 +121,7 @@ public final class MessageUtil {
                             BossBar.Color color = args.hasNext() ?
                                     BossBar.Color.valueOf(args.pop().value().toUpperCase()) : BossBar.Color.WHITE;
 
-                            BossbarUtil.send(plugin, player, text, placeholders, time, color, BossBar.Overlay.PROGRESS, 1.0f, false);
+                            BossbarUtil.send(player, text,  placeholders,  time, color,  "PROGRESS",  1.0f, false);
                             return Tag.inserting(Component.empty());
                         })
                         .build()
