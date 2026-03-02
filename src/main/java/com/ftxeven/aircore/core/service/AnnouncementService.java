@@ -10,10 +10,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class AnnouncementService {
     private final AirCore plugin;
-    private final Random random = new Random();
 
     public AnnouncementService(AirCore plugin) {
         this.plugin = plugin;
@@ -23,45 +23,72 @@ public final class AnnouncementService {
         plugin.scheduler().cancelAll();
     }
 
-    public void scheduleAnnouncement(ConfigurationSection sec, int interval) {
-        plugin.scheduler().runAsyncTimer(() -> broadcast(sec, null), interval * 20L, interval * 20L);
+    public void scheduleAnnouncement(ConfigurationSection sec, int repeatInterval) {
+        plugin.scheduler().runDelayed(() -> broadcast(sec, null), repeatInterval * 20L);
     }
 
     public void broadcast(ConfigurationSection sec, String args) {
-        ConfigurationSection componentsSec = sec.getConfigurationSection("components");
-        if (componentsSec == null) return;
+        if (sec == null || !sec.getBoolean("enabled", true)) return;
 
-        List<String> conditions = sec.getStringList("conditions");
+        ConfigurationSection sequenceSec = sec.getConfigurationSection("sequence");
+        if (sequenceSec == null) return;
+
+        List<String> stepKeys = new ArrayList<>(sequenceSec.getKeys(false));
+        int stepInterval = sec.getInt("interval", 0);
         boolean ignoreToggle = sec.getBoolean("ignore-toggle", false);
         boolean pickRandom = sec.getBoolean("pick-random", false);
         Map<String, String> context = args != null ? Map.of("args", args) : Collections.emptyMap();
 
+        if (pickRandom && !stepKeys.isEmpty()) {
+            String selected = stepKeys.get(ThreadLocalRandom.current().nextInt(stepKeys.size()));
+            broadcastStep(sequenceSec.getConfigurationSection(selected), ignoreToggle, context);
+            scheduleNextLoop(sec);
+        } else {
+            executeStep(sequenceSec, stepKeys, 0, stepInterval, ignoreToggle, context);
+        }
+    }
+
+    private void executeStep(ConfigurationSection sequence, List<String> keys, int index, int interval, boolean ignoreToggle, Map<String, String> context) {
+        if (index >= keys.size()) {
+            scheduleNextLoop(sequence.getParent());
+            return;
+        }
+
+        broadcastStep(sequence.getConfigurationSection(keys.get(index)), ignoreToggle, context);
+
+        if (index + 1 < keys.size()) {
+            plugin.scheduler().runDelayed(
+                    () -> executeStep(sequence, keys, index + 1, interval, ignoreToggle, context),
+                    Math.max(1, (long) interval * 20L)
+            );
+        } else {
+            scheduleNextLoop(sequence.getParent());
+        }
+    }
+
+    private void scheduleNextLoop(ConfigurationSection rootSec) {
+        if (rootSec == null || !rootSec.getBoolean("enabled", true)) return;
+        int repeatInterval = rootSec.getInt("interval", 0);
+        if (repeatInterval > 0) {
+            plugin.scheduler().runDelayed(() -> broadcast(rootSec, null), repeatInterval * 20L);
+        }
+    }
+
+    private void broadcastStep(ConfigurationSection step, boolean ignoreToggle, Map<String, String> context) {
+        if (step == null) return;
+        ConfigurationSection components = step.getConfigurationSection("components");
+        if (components == null) return;
+
+        ConfigurationSection root = step.getParent() != null ? step.getParent().getParent() : null;
+        List<String> globalConditions = root != null ? root.getStringList("conditions") : Collections.emptyList();
+        List<String> stepConditions = step.getStringList("conditions");
+
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (!ignoreToggle && !plugin.core().toggles().isEnabled(player.getUniqueId(), ToggleService.Toggle.ANNOUNCEMENTS)) continue;
-            if (!checkConditions(player, conditions, context)) continue;
+            if (!checkConditions(player, globalConditions, context)) continue;
+            if (!stepConditions.isEmpty() && !checkConditions(player, stepConditions, context)) continue;
 
-            List<String> toRun = new ArrayList<>();
-            List<String> pool = new ArrayList<>();
-
-            for (String k : componentsSec.getKeys(false)) {
-                if (componentsSec.isConfigurationSection(k)) {
-                    if (componentsSec.getBoolean(k + ".forced", false)) {
-                        toRun.add(k);
-                        continue;
-                    }
-                }
-                pool.add(k);
-            }
-
-            if (pickRandom && !pool.isEmpty()) {
-                toRun.add(pool.get(random.nextInt(pool.size())));
-            } else {
-                toRun.addAll(pool);
-            }
-
-            for (String compKey : toRun) {
-                render(player, compKey, componentsSec, context);
-            }
+            components.getKeys(false).forEach(type -> render(player, type, components, context));
         }
     }
 
@@ -71,58 +98,34 @@ public final class AnnouncementService {
 
         switch (type.toLowerCase()) {
             case "chat" -> {
-                List<String> lines;
-                if (isSection) {
-                    assert data != null;
-                    lines = data.getStringList("lines");
-                } else {
-                    lines = components.getStringList(type);
-                }
-
-                for (String line : lines) {
-                    if (line == null || line.isEmpty()) {
-                        player.sendMessage(net.kyori.adventure.text.Component.empty());
-                        continue;
-                    }
-
-                    player.sendMessage(MessageUtil.mini(player, line, context));
-                }
+                List<String> lines = isSection && data != null ? data.getStringList("lines") : components.getStringList(type);
+                lines.forEach(line -> player.sendMessage(MessageUtil.mini(player, line, context)));
             }
             case "actionbar" -> {
-                if (data == null) return;
-                ActionbarUtil.send(plugin, player, data.getString("text"), context);
+                String text = isSection && data != null ? data.getString("text") : components.getString(type);
+                if (text != null && !text.isBlank()) ActionbarUtil.send(plugin, player, text, context);
             }
             case "title" -> {
                 if (data == null) return;
-                TitleUtil.send(player, data.getString("main"), data.getString("sub"),
+                TitleUtil.send(player, data.getString("main", ""), data.getString("sub", ""),
                         data.getInt("fadeIn", 10), data.getInt("stay", 70), data.getInt("fadeOut", 20), context);
             }
             case "bossbar" -> {
                 if (data == null) return;
-                BossbarUtil.send(player, data.getString("text", ""), context,
-                        data.getInt("duration", 100), parseColor(data.getString("color", "WHITE")),
-                        data.getString("overlay", "PROGRESS"), (float) data.getDouble("progress", 1.0),
-                        data.getBoolean("countdown", false));
+                BossbarUtil.send(player, data.getString("text", ""), context, data.getInt("duration", 100),
+                        parseColor(data.getString("color", "WHITE")), data.getString("overlay", "PROGRESS"),
+                        (float) data.getDouble("progress", 1.0), data.getBoolean("countdown", false));
             }
             case "sound" -> {
                 if (data == null) return;
-                SoundUtil.play(player, data.getString("key"),
-                        (float) data.getDouble("volume", 1.0), (float) data.getDouble("pitch", 1.0));
+                String key = data.getString("key");
+                if (key != null && !key.isBlank()) SoundUtil.play(player, key, (float) data.getDouble("volume", 1.0), (float) data.getDouble("pitch", 1.0));
             }
-        }
-    }
-
-    private BossBar.Color parseColor(String colorName) {
-        try {
-            return BossBar.Color.valueOf(colorName.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return BossBar.Color.WHITE;
         }
     }
 
     private boolean checkConditions(Player p, List<String> conditions, Map<String, String> context) {
         if (conditions.isEmpty()) return true;
-
         for (String cond : conditions) {
             String parsed = PlainTextComponentSerializer.plainText().serialize(MessageUtil.mini(p, cond, context));
             if (!evaluateRaw(parsed)) return false;
@@ -145,7 +148,6 @@ public final class AnnouncementService {
         }
 
         if (foundOp == null) return Boolean.parseBoolean(parsed.trim());
-
         String left = parsed.substring(0, opIndex).trim();
         String right = parsed.substring(opIndex + foundOp.length() + 1).trim().replace("'", "");
 
@@ -166,16 +168,21 @@ public final class AnnouncementService {
         };
     }
 
-    private double compare(String left, String right) {
-        try { return Double.parseDouble(left) - Double.parseDouble(right); }
-        catch (NumberFormatException e) { return left.compareTo(right); }
+    private double compare(String l, String r) {
+        try { return Double.parseDouble(l) - Double.parseDouble(r); }
+        catch (NumberFormatException e) { return l.compareTo(r); }
+    }
+
+    private BossBar.Color parseColor(String c) {
+        try { return BossBar.Color.valueOf(c.toUpperCase()); }
+        catch (Exception e) { return BossBar.Color.WHITE; }
     }
 
     public void clearVisuals() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.clearTitle();
-            player.sendActionBar(net.kyori.adventure.text.Component.empty());
-            BossbarUtil.hideAll(player);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.clearTitle();
+            p.sendActionBar(Component.empty());
+            BossbarUtil.hideAll(p);
         }
     }
 }

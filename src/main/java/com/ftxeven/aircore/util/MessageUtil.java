@@ -39,7 +39,7 @@ public final class MessageUtil {
     }
 
     public static Component mini(Player player, String raw, Map<String, String> placeholders, boolean usePapi) {
-        if (raw == null || raw.isBlank()) return null;
+        if (raw == null || raw.isBlank()) return Component.empty();
 
         if ((placeholders == null || placeholders.isEmpty()) && !raw.contains("%") && !raw.contains("<")) {
             return STATIC_MINI_CACHE.computeIfAbsent(raw, MM::deserialize);
