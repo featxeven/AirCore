@@ -2,6 +2,19 @@ package com.ftxeven.aircore.core;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.api.AirCoreExpansion;
+import com.ftxeven.aircore.config.AnnouncementManager;
+import com.ftxeven.aircore.config.ConfigManager;
+import com.ftxeven.aircore.config.LangManager;
+import com.ftxeven.aircore.config.PlaceholderManager;
+import com.ftxeven.aircore.core.modules.chat.ChatManager;
+import com.ftxeven.aircore.core.modules.economy.EconomyManager;
+import com.ftxeven.aircore.core.modules.gui.GuiManager;
+import com.ftxeven.aircore.core.modules.home.HomeManager;
+import com.ftxeven.aircore.core.modules.kit.KitManager;
+import com.ftxeven.aircore.core.modules.teleport.TeleportManager;
+import com.ftxeven.aircore.core.modules.utility.UtilityManager;
+import com.ftxeven.aircore.database.DatabaseManager;
+import com.ftxeven.aircore.database.dao.PlayerInventories;
 import com.ftxeven.aircore.listener.*;
 import com.ftxeven.aircore.core.modules.chat.command.*;
 import com.ftxeven.aircore.core.modules.economy.command.*;
@@ -10,14 +23,24 @@ import com.ftxeven.aircore.core.modules.home.command.*;
 import com.ftxeven.aircore.core.modules.kit.command.*;
 import com.ftxeven.aircore.core.modules.teleport.command.*;
 import com.ftxeven.aircore.core.modules.utility.command.*;
+import com.ftxeven.aircore.util.*;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.command.*;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public final class CoreInitializer {
@@ -26,6 +49,39 @@ public final class CoreInitializer {
 
     public CoreInitializer(AirCore plugin) {
         this.plugin = plugin;
+    }
+
+    public void initialize() {
+        plugin.setSchedulerUtil(new SchedulerUtil(plugin));
+        logServerType();
+
+        plugin.setConfigManager(new ConfigManager(plugin));
+        plugin.setLangManager(new LangManager(plugin));
+
+        DatabaseManager db = new DatabaseManager(plugin);
+        try {
+            db.init();
+            plugin.setDatabaseManager(db);
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to initialize database: " + e.getMessage());
+            plugin.getServer().getPluginManager().disablePlugin(plugin);
+            return;
+        }
+
+        initManagers();
+
+        registerEconomy();
+        registerListeners();
+        registerCommands();
+        setupUtilities();
+        setupIntegrations();
+
+        checkUpdates();
+    }
+
+    private void logServerType() {
+        String type = plugin.scheduler().isFoliaServer() ? "Folia (Region-based)" : "Paper/Spigot (Standard)";
+        plugin.getLogger().info("Server is running " + type);
     }
 
     public void registerEconomy() {
@@ -37,11 +93,63 @@ public final class CoreInitializer {
                         plugin,
                         ServicePriority.Highest
                 );
+                plugin.getLogger().info("Successfully hooked into Vault");
             } catch (Throwable t) {
-                plugin.getLogger().warning("Vault detected but failed to register economy: " + t.getMessage());
+                plugin.getLogger().warning("Vault detected but failed to register economy provider: " + t.getMessage());
             }
         } else {
-            plugin.getLogger().warning("Vault not found, economy provider registration skipped");
+            plugin.getLogger().warning("Vault not found, economy provider registration skipped.");
+        }
+    }
+
+    private void initManagers() {
+        plugin.setPlaceholderManager(new PlaceholderManager(plugin));
+        plugin.setCoreManager(new CoreManager(plugin, plugin.scheduler()));
+        plugin.setAnnouncementManager(new AnnouncementManager(plugin));
+        plugin.setChatManager(new ChatManager(plugin));
+        plugin.setEconomyManager(new EconomyManager(plugin));
+        plugin.setTeleportManager(new TeleportManager(plugin));
+        plugin.setHomeManager(new HomeManager(plugin));
+        plugin.setKitManager(new KitManager(plugin));
+        plugin.setUtilityManager(new UtilityManager(plugin));
+        plugin.setGuiManager(new GuiManager(plugin));
+    }
+
+    private void setupUtilities() {
+        plugin.scheduler().runTask(() -> MessageUtil.init(plugin));
+        TitleUtil.init(plugin.scheduler());
+        SoundUtil.init(plugin.scheduler());
+        ActionbarUtil.init(plugin.scheduler());
+        BossbarUtil.init(plugin.scheduler());
+    }
+
+    public void shutdown() {
+        if (plugin.announcements() != null) plugin.announcements().shutdown();
+        BossbarUtil.hideAll();
+        if (plugin.scheduler() != null) plugin.scheduler().cancelAll();
+
+        handleDataShutdown();
+
+        if (plugin.database() != null) {
+            plugin.database().close();
+        }
+    }
+
+    private void handleDataShutdown() {
+        if (plugin.database() == null) return;
+        Map<UUID, PlayerInventories.InventorySnapshot> shutdownSnapshots = new HashMap<>();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            try {
+                shutdownSnapshots.put(player.getUniqueId(), plugin.database().inventories().createSnapshot(player));
+            } catch (Exception e) {
+                plugin.getLogger().severe("Failed to snapshot " + player.getName() + " during shutdown!");
+            }
+        }
+
+        if (!shutdownSnapshots.isEmpty()) {
+            plugin.getLogger().info("Saving " + shutdownSnapshots.size() + " player inventories...");
+            plugin.database().inventories().saveAllSync(shutdownSnapshots);
         }
     }
 
@@ -57,6 +165,23 @@ public final class CoreInitializer {
         if (pm.getPlugin("WorldGuard") != null) {
             pm.registerEvents(new WorldGuardListener(plugin), plugin);
         }
+    }
+
+    private void checkUpdates() {
+        plugin.scheduler().runAsync(() -> {
+            try (InputStream is = URI.create("https://api.spiget.org/v2/resources/130425/versions/latest").toURL().openStream();
+                 InputStreamReader reader = new InputStreamReader(is)) {
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                if (json.has("name")) {
+                    String latest = json.get("name").getAsString();
+                    String current = plugin.getPluginMeta().getVersion();
+                    if (!current.equalsIgnoreCase(latest)) {
+                        plugin.setLatestVersion(latest);
+                        plugin.getLogger().warning("A new update is available! Current: " + current + " | Latest: " + latest);
+                    }
+                }
+            } catch (Exception ignored) {}
+        });
     }
 
     public void registerCommands() {
