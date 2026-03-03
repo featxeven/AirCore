@@ -179,6 +179,7 @@ teleport:
     error-self: "%prefix% <red>You can't send a request to yourself.</red>"
     error-cooldown: "%prefix% <red>Wait %time% before sending another request.</red>"
     error-disabled: "%prefix% <red><yellow>%player%</yellow> isn't accepting teleport requests.</red>"
+    error-blocked: "%prefix% <red>Current players have teleport requests disabled or have blocked you.</red>"
 
   actions:
     accepted-player: "%prefix% <green>You accepted <yellow>%player%</yellow>'s request.</green>"

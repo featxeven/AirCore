@@ -322,6 +322,7 @@ permissions:
   aircore.command.balance.others: {description: "Check others' balance.", default: op}
   aircore.command.tpa: {description: "Use /tpa.", default: op}
   aircore.command.tpahere: {description: "Use /tpahere.", default: op}
+  aircore.command.tpahere.all: {description: "Use /tpahere @a", default: op}
   aircore.command.tpaccept: {description: "Use /tpaccept.", default: op}
   aircore.command.tpaccept.all: {description: "Accept all.", default: op}
   aircore.command.tpdeny: {description: "Use /tpdeny.", default: op}
@@ -330,6 +331,7 @@ permissions:
   aircore.command.tptoggle.others: {description: "Toggle TP for others.", default: op}
   aircore.command.tp: {description: "Use /tp.", default: op}
   aircore.command.tphere: {description: "Use /tphere.", default: op}
+  aircore.command.tphere.all: {description: "Use /tphere @a", default: op}
   aircore.command.tp.others: {description: "TP players to others.", default: op}
   aircore.command.tppos: {description: "Use /tppos.", default: op}
   aircore.command.tpoffline: {description: "Use /tpoffline.", default: op}
