@@ -96,7 +96,7 @@ announcements:
     interval: 120
     ignore-toggle: true
     conditions:
-      - "%server_tps% < 16"
+      - "%server_tps_1% < 16.0"
     enabled: true
     sequence:
       alert:
