@@ -35,8 +35,8 @@ general:
   console-name: "@Console"
 
   plugin-usage: "%prefix% <white>Available commands:</white>
-    <newline><gray>  • <yellow>/ah reload [module]</yellow> <dark_gray>| <gray>Refresh configs</gray>
-    <newline><gray>  • <yellow>/ah version</yellow> <dark_gray>| <gray>Display plugin version</gray>"
+    <newline><gray>  • <yellow>/aircore reload [module]</yellow> <dark_gray>| <gray>Refresh configs</gray>
+    <newline><gray>  • <yellow>/aircore version</yellow> <dark_gray>| <gray>Display plugin version</gray>"
   plugin-version: "%prefix% <white>Running version <gradient:#00ffcc:#0066ff>%version%</gradient></white>"
   plugin-outdated: "%prefix% <green>There is a new update available! You are currently using <gold>%current%</gold> (latest version is <gold>%latest%</gold>).<green>
     <newline><yellow><click:open_url:'https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/'>https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/</click></yellow>"
@@ -164,6 +164,7 @@ economy:
     success: "%prefix% <green>Items sold for <yellow>$%amount%</yellow>.</green>"
     error-failed: "%prefix% <red>There are some items that cannot be sold.</red>"
     error-invalid: "%prefix% <red>You need to sell at least one item.</red>"
+    error-max-balance: "%prefix% <red>You cannot sell these items because your balance would exceed the limit of <yellow>$%amount%</yellow>.</red>"
 
 # -----------------------------
 # TELEPORT
