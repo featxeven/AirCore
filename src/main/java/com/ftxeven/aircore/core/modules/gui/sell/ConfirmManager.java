@@ -117,8 +117,9 @@ public final class ConfirmManager implements Listener {
             plugin.gui().cooldowns().sendCooldownMessage(player, item);
             return;
         }
-        logic.run();
+
         sellManager.handleAction(item, player, click, ph);
+        logic.run();
     }
 
     @EventHandler(ignoreCancelled = true)
