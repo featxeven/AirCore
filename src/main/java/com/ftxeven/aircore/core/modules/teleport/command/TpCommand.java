@@ -25,9 +25,26 @@ public final class TpCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            if (args.length < 2) {
+                sender.sendMessage("Usage: /" + label + " <player> <target>");
+                return true;
+            }
+
+            Player target = Bukkit.getPlayerExact(args[0]);
+            Player other = Bukkit.getPlayerExact(args[1]);
+
+            if (target == null || other == null) {
+                sender.sendMessage("One or both players not found.");
+                return true;
+            }
+
+            String consoleName = plugin.lang().get("general.console-name");
+            plugin.core().teleports().teleport(target, other.getLocation());
+
+            sender.sendMessage("Teleported " + target.getName() + " to " + other.getName() + ".");
+            MessageUtil.send(target, "teleport.direct.to-player-by",
+                    Map.of("player", consoleName, "target", other.getName()));
             return true;
         }
 
@@ -112,11 +129,16 @@ public final class TpCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player) || !player.hasPermission("aircore.command.tp")) return List.of();
+
+        if (sender instanceof Player player && !player.hasPermission("aircore.command.tp")) {
+            return List.of();
+        }
 
         String input = args[args.length - 1].toLowerCase();
 
-        if (args.length == 1 || (args.length == 2 && player.hasPermission("aircore.command.tp.others"))) {
+        boolean canCompleteSecond = !(sender instanceof Player) || sender.hasPermission("aircore.command.tp.others");
+
+        if (args.length == 1 || (args.length == 2 && canCompleteSecond)) {
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
