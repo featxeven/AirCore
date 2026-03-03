@@ -160,6 +160,17 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         boolean alwaysShow = definition.config().getBoolean("always-show-buttons", true);
         if (!alwaysShow && result.total() <= 0) return;
 
+        double maxBalance = plugin.config().economyMaxBalance();
+        if (maxBalance > 0) {
+            double currentBalance = plugin.economy().balances().getBalance(viewer.getUniqueId());
+            if ((currentBalance + result.total()) > maxBalance) {
+                MessageUtil.send(viewer, "economy.sell.error-max-balance", Map.of(
+                        "amount", plugin.economy().formats().formatAmount(maxBalance)
+                ));
+                return;
+            }
+        }
+
         String key = isAll ? "confirm-all" : "confirm";
         GuiItem button = definition.items().get(key);
 
@@ -192,7 +203,19 @@ public final class SellManager implements GuiManager.CustomGuiManager {
             return;
         }
 
-        double rounded = plugin.economy().formats().round(result.total());
+        double totalSale = result.total();
+        double currentBalance = plugin.economy().balances().getBalance(viewer.getUniqueId());
+        double maxBalance = plugin.config().economyMaxBalance();
+
+        if (maxBalance > 0 && (currentBalance + totalSale) > maxBalance) {
+            MessageUtil.send(viewer, "economy.sell.error-max-balance", Map.of(
+                    "amount", plugin.economy().formats().formatAmount(maxBalance)
+            ));
+            viewer.updateInventory();
+            return;
+        }
+
+        double rounded = plugin.economy().formats().round(totalSale);
         if (plugin.economy().transactions().deposit(viewer.getUniqueId(), rounded).type() == EconomyManager.ResultType.SUCCESS) {
             MessageUtil.send(viewer, "economy.sell.success", Map.of("amount", plugin.economy().formats().formatAmount(rounded)));
 
