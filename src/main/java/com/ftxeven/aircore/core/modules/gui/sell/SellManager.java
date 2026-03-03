@@ -198,24 +198,15 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     public void processSale(Player viewer, Inventory top, SellSlotMapper.WorthResult result, boolean isAll) {
         if (result.hasUnsupported() || result.total() <= 0) {
             MessageUtil.send(viewer, result.hasUnsupported() ? "economy.sell.error-failed" : "economy.sell.error-invalid", Map.of());
-            viewer.updateInventory();
             return;
         }
 
         double totalSale = result.total();
-        double currentBalance = plugin.economy().balances().getBalance(viewer.getUniqueId());
-        double maxBalance = plugin.config().economyMaxBalance();
-
-        if (maxBalance > 0 && (currentBalance + totalSale) > maxBalance) {
-            MessageUtil.send(viewer, "economy.sell.error-max-balance", Map.of(
-                    "amount", plugin.economy().formats().formatAmount(maxBalance)
-            ));
-            viewer.updateInventory();
-            return;
-        }
-
         double rounded = plugin.economy().formats().round(totalSale);
+
         if (plugin.economy().transactions().deposit(viewer.getUniqueId(), rounded).type() == EconomyManager.ResultType.SUCCESS) {
+            markSaleProcessed(viewer.getUniqueId());
+
             MessageUtil.send(viewer, "economy.sell.success", Map.of("amount", plugin.economy().formats().formatAmount(rounded)));
 
             if (definition.config().getBoolean("sell-logs-on-console", false)) {
@@ -223,11 +214,16 @@ public final class SellManager implements GuiManager.CustomGuiManager {
             }
 
             clearSellSlots(top);
-            if (isAll) clearPlayerInv(viewer);
+            if (isAll) {
+                viewer.getInventory().clear();
+            }
 
-            markSaleProcessed(viewer.getUniqueId());
-            refreshConfirmButton(top, viewer);
-            viewer.updateInventory();
+            if (viewer.getOpenInventory().getTopInventory().getHolder() instanceof ConfirmManager.ConfirmHolder) {
+                viewer.closeInventory();
+            } else {
+                refreshConfirmButton(top, viewer);
+                viewer.updateInventory();
+            }
         } else {
             MessageUtil.send(viewer, "economy.sell.error-failed", Map.of());
         }
@@ -320,7 +316,6 @@ public final class SellManager implements GuiManager.CustomGuiManager {
 
     private GuiItem findCustomItemAt(int slot) { return SellSlotMapper.findCustomItemAt(definition, slot); }
     private void clearSellSlots(Inventory top) { for (int slot : cachedSellSlots) if (slot < top.getSize()) top.setItem(slot, null); }
-    private void clearPlayerInv(Player viewer) { for (int i = 0; i < 36; i++) viewer.getInventory().setItem(i, null); }
 
     public void markSaleProcessed(UUID player) { processedSales.add(player); plugin.scheduler().runDelayed(() -> processedSales.remove(player), 20L); }
     public boolean consumeProcessedSale(UUID player) { return processedSales.remove(player); }

@@ -99,27 +99,32 @@ public final class ConfirmManager implements Listener {
         if (item == null) return;
 
         if (item.key().equals("confirm")) {
+            sellManager.markTransitioning(player.getUniqueId());
             handleButtonAction(player, item, () ->
                             sellManager.processSale(player, holder.sellInventory(), holder.result(), holder.isAll()),
-                    holder.placeholders(), event.getClick());
+                    holder.placeholders(), event.getClick(), true);
         } else if (item.key().equals("cancel")) {
-            handleButtonAction(player, item, () -> {
-                sellManager.markTransitioning(player.getUniqueId());
-                player.openInventory(holder.sellInventory());
-            }, holder.placeholders(), event.getClick());
+            sellManager.markTransitioning(player.getUniqueId());
+            handleButtonAction(player, item, () -> player.openInventory(holder.sellInventory()),
+                    holder.placeholders(), event.getClick(), false);
         } else {
             sellManager.handleAction(item, player, event.getClick(), holder.placeholders());
         }
     }
 
-    private void handleButtonAction(Player player, GuiItem item, Runnable logic, Map<String, String> ph, org.bukkit.event.inventory.ClickType click) {
+    private void handleButtonAction(Player player, GuiItem item, Runnable logic, Map<String, String> ph, org.bukkit.event.inventory.ClickType click, boolean runLogicFirst) {
         if (plugin.gui().cooldowns().isOnCooldown(player, item)) {
             plugin.gui().cooldowns().sendCooldownMessage(player, item);
             return;
         }
 
-        sellManager.handleAction(item, player, click, ph);
-        logic.run();
+        if (runLogicFirst) {
+            logic.run();
+            sellManager.handleAction(item, player, click, ph);
+        } else {
+            sellManager.handleAction(item, player, click, ph);
+            logic.run();
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -131,10 +136,13 @@ public final class ConfirmManager implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getInventory().getHolder() instanceof ConfirmHolder holder)) return;
         Player player = (Player) event.getPlayer();
+        UUID uuid = player.getUniqueId();
 
-        if (!plugin.gui().isReloading() && !sellManager.isTransitioning(player.getUniqueId())) {
-            sellManager.returnItems(player, holder.sellInventory());
+        if (plugin.gui().isReloading() || sellManager.isTransitioning(uuid) || sellManager.consumeProcessedSale(uuid)) {
+            return;
         }
+
+        sellManager.returnItems(player, holder.sellInventory());
     }
 
     public GuiDefinition getDefinition() { return this.definition; }
