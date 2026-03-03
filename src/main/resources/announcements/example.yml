@@ -26,7 +26,7 @@
 # <=  : Less than or equal (Numeric)
 
 announcements:
-  # /announcements trigger someone_purchased [args]
+  # /announcement trigger someone_purchased [args]
   someone_purchased:
     interval: 0 # Manual trigger only
     ignore-toggle: true
@@ -52,7 +52,7 @@ announcements:
     interval: 300
     conditions:
       - "%luckperms_primary_group_name% == default"
-      - "%statistic_seconds_since_last_death% < 3600"
+      - "%statistic_hours_played% < 3"
     enabled: true
     sequence:
       info_message:
@@ -108,3 +108,5 @@ announcements:
             duration: 1200
             color: RED
             overlay: PROGRESS
+            progress: 1.0
+            countdown: true
