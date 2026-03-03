@@ -152,10 +152,27 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     }
 
     private void handleButtonPress(Player viewer, Inventory top, boolean isAll) {
+        String key = isAll ? "confirm-all" : "confirm";
+        GuiItem button = definition.items().get(key);
+
+        if (button == null || plugin.gui().cooldowns().isOnCooldown(viewer, button)) {
+            if (button != null) plugin.gui().cooldowns().sendCooldownMessage(viewer, button);
+            return;
+        }
+
         var worthService = plugin.economy().worth();
         SellSlotMapper.WorthResult result = isAll ?
                 SellSlotMapper.calculateWorthAll(top, worthService, definition, viewer) :
                 SellSlotMapper.calculateWorth(top, worthService, definition);
+
+        Map<String, String> ph = new HashMap<>();
+        ph.put("amount", plugin.economy().formats().formatAmount(result.total()));
+        ph.put("worth", plugin.economy().formats().formatAmount(result.total()));
+        ph.put("worth-raw", String.valueOf(result.total()));
+        ph.put("player", viewer.getName());
+
+        plugin.gui().cooldowns().applyCooldown(viewer, button);
+        handleAction(button, viewer, ClickType.LEFT, ph);
 
         boolean alwaysShow = definition.config().getBoolean("always-show-buttons", true);
         if (!alwaysShow && result.total() <= 0) return;
@@ -170,24 +187,6 @@ public final class SellManager implements GuiManager.CustomGuiManager {
                 return;
             }
         }
-
-        String key = isAll ? "confirm-all" : "confirm";
-        GuiItem button = definition.items().get(key);
-
-        if (button == null || plugin.gui().cooldowns().isOnCooldown(viewer, button)) {
-            if (button != null) plugin.gui().cooldowns().sendCooldownMessage(viewer, button);
-            return;
-        }
-
-        plugin.gui().cooldowns().applyCooldown(viewer, button);
-
-        Map<String, String> ph = new HashMap<>();
-        ph.put("amount", plugin.economy().formats().formatAmount(result.total()));
-        ph.put("worth", plugin.economy().formats().formatAmount(result.total()));
-        ph.put("worth-raw", String.valueOf(result.total()));
-        ph.put("player", viewer.getName());
-
-        handleAction(button, viewer, ClickType.LEFT, ph);
 
         if (definition.config().getBoolean("buttons." + key + ".apply-confirm", false) && result.total() > 0 && !result.hasUnsupported()) {
             confirmManager.open(viewer, top, result, isAll);
