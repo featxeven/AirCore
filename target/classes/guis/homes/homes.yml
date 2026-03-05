@@ -148,7 +148,7 @@ buttons:
     format:
       selected: "<#5efce8>⏵ %name%</#5efce8>"
       unselected: "<dark_gray>  %name%</dark_gray>"
-    # To remove a sort, just delete its entry from this list.
+    # To remove a filter, just delete its entry from this list.
     types:
       # The order defined here will determine the order they appear in the cycle
       all: "All"

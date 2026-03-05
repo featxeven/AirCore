@@ -1,7 +1,9 @@
 package com.ftxeven.aircore.core;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.api.AirCoreAPI;
 import com.ftxeven.aircore.api.AirCoreExpansion;
+import com.ftxeven.aircore.api.AirCoreProvider;
 import com.ftxeven.aircore.config.AnnouncementManager;
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.config.LangManager;
@@ -70,6 +72,8 @@ public final class CoreInitializer {
 
         initManagers();
 
+        registerAPI();
+
         registerEconomy();
         registerListeners();
         registerCommands();
@@ -77,6 +81,16 @@ public final class CoreInitializer {
         setupIntegrations();
 
         checkUpdates();
+    }
+
+    private void registerAPI() {
+        try {
+            AirCoreAPI implementation = new com.ftxeven.aircore.core.api.AirCoreAPIImpl(plugin);
+            AirCoreProvider.register(implementation);
+            plugin.getLogger().info("AirCore API has been successfully registered.");
+        } catch (Throwable t) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to register AirCore API!", t);
+        }
     }
 
     private void logServerType() {
@@ -124,6 +138,8 @@ public final class CoreInitializer {
     }
 
     public void shutdown() {
+        AirCoreProvider.unregister();
+        
         if (plugin.announcements() != null) plugin.announcements().shutdown();
         BossbarUtil.hideAll();
         if (plugin.scheduler() != null) plugin.scheduler().cancelAll();

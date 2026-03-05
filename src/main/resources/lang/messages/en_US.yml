@@ -421,7 +421,7 @@ utilities:
     not-found: "%prefix% <red>Announcement <yellow>%name%</yellow> was not found.</red>"
     triggered: "%prefix% <green>Announcement <yellow>%name%</yellow> has been manually triggered.</green>"
     enabled: "%prefix% <green>Announcement <yellow>%name%</yellow> is now enabled and scheduled.</green>"
-    already-enabled: "%prefix% <green>Announcement <yellow>%name%</yellow> is is already enabled.</green>"
+    already-enabled: "%prefix% <green>Announcement <yellow>%name%</yellow> is already enabled.</green>"
     disabled: "%prefix% <red>Announcement <yellow>%name%</yellow> has been disabled.</red>"
     already-disabled: "%prefix% <red>Announcement <yellow>%name%</yellow> is already disabled.</red>"
 

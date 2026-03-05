@@ -10,6 +10,7 @@ import org.bukkit.block.ShulkerBox;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class ItemWorthService {
@@ -142,7 +143,7 @@ public final class ItemWorthService {
         return total;
     }
 
-    private double sumContents(java.util.List<ItemStack> contents, int depth) {
+    private double sumContents(List<ItemStack> contents, int depth) {
         return sumContents(contents.toArray(new ItemStack[0]), depth);
     }
 
