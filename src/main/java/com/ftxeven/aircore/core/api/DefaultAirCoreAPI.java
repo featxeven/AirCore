@@ -2,25 +2,26 @@ package com.ftxeven.aircore.core.api;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.api.AirCoreAPI;
+import com.ftxeven.aircore.api.manager.BlockManager;
+import com.ftxeven.aircore.api.event.block.PlayerBlockEvent;
+import com.ftxeven.aircore.api.event.block.PlayerUnblockEvent;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 import java.util.UUID;
 
-public final class AirCoreAPIImpl implements AirCoreAPI {
+public final class DefaultAirCoreAPI implements AirCoreAPI {
 
     private final AirCore plugin;
-    private final BlockManagerImpl blockManager;
+    private final BlockManager blockManager;
 
-    public AirCoreAPIImpl(AirCore plugin) {
+    public DefaultAirCoreAPI(AirCore plugin) {
         this.plugin = plugin;
         this.blockManager = new BlockManagerImpl();
     }
 
-    @Override
-    public @NotNull BlockManager getBlockManager() {
-        return blockManager;
-    }
+    @Override public @NotNull BlockManager blocks() { return blockManager; }
 
     private final class BlockManagerImpl implements BlockManager {
         @Override
@@ -29,21 +30,24 @@ public final class AirCoreAPIImpl implements AirCoreAPI {
         }
 
         @Override
-        public @NotNull Set<UUID> getBlockedPlayers(@NotNull UUID player) {
+        public @NotNull Set<UUID> getBlocked(@NotNull UUID player) {
             return plugin.core().blocks().getBlocked(player);
         }
 
         @Override
         public void block(@NotNull UUID player, @NotNull UUID target) {
-            // This triggers the internal logic (limits, cache, and DB)
+            if (isBlocked(player, target)) return;
             plugin.core().blocks().block(player, target);
             plugin.scheduler().runAsync(() -> plugin.database().blocks().add(player, target));
+            Bukkit.getPluginManager().callEvent(new PlayerBlockEvent(player, target));
         }
 
         @Override
         public void unblock(@NotNull UUID player, @NotNull UUID target) {
+            if (!isBlocked(player, target)) return;
             plugin.core().blocks().unblock(player, target);
             plugin.scheduler().runAsync(() -> plugin.database().blocks().remove(player, target));
+            Bukkit.getPluginManager().callEvent(new PlayerUnblockEvent(player, target));
         }
     }
 }

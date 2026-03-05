@@ -101,7 +101,6 @@ public final class TpaHereCommand implements TabExecutor {
     }
 
     private boolean canReceiveRequest(Player player, Player target, boolean silent) {
-        // Block check
         if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
             if (!silent) MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", target.getName()));
             return false;

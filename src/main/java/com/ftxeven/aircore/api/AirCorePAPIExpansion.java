@@ -15,11 +15,11 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class AirCoreExpansion extends PlaceholderExpansion {
+public final class AirCorePAPIExpansion extends PlaceholderExpansion {
 
     private final AirCore plugin;
 
-    public AirCoreExpansion(AirCore plugin) { this.plugin = plugin; }
+    public AirCorePAPIExpansion(AirCore plugin) { this.plugin = plugin; }
 
     @Override
     public @NotNull String getIdentifier() { return "aircore"; }

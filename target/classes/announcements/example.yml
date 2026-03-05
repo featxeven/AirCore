@@ -1,0 +1,112 @@
+# -----------------------------
+# AirCore Custom Announcements
+# -----------------------------
+
+# You can create your own .yml files and sub-folders within the /announcements/ directory
+# Example: /announcements/groups/vip.yml
+
+# GLOBAL ANNOUNCEMENT OPTIONS (Defined per announcement)
+# interval:      Frequency in SECONDS. (0 = Manual trigger via command only).
+# ignore-toggle: If true, players who used /announcetoggle will still see this.
+# pick-random:   If true, the system selects only one random component to show.
+# conditions:    List of PAPI requirements. If any fail, the message is skipped.
+
+# Supported operators:
+# ==  : Equals (Case-sensitive)
+# !=  : Not Equals (Case-sensitive)
+# =~  : Equals (Case-insensitive)
+# !~  : Not Equals (Case-insensitive)
+# |-  : Starts with
+# -|  : Ends with
+# <>  : Contains
+# ><  : Does not contain
+# >   : Greater than (Numeric)
+# <   : Less than (Numeric)
+# >=  : Greater than or equal (Numeric)
+# <=  : Less than or equal (Numeric)
+
+announcements:
+  # /announcement trigger someone_purchased [args]
+  someone_purchased:
+    interval: 0 # Manual trigger only
+    ignore-toggle: true
+    enabled: true
+    sequence:
+      purchase_message:
+        components:
+          chat:
+            - ""
+            - "<blue><bold>STORE PURCHASE</bold></blue>"
+            - "<gray>Thank you <white>%args%</white> for supporting the server!</gray>"
+            - "<yellow>They just purchased the <gold>VIP Rank</gold></yellow>"
+            - ""
+          title:
+            main: "<blue><bold>THANK YOU!</bold></blue>"
+            sub: "<white>%args% <gray>just bought a rank!</gray>"
+          sound:
+            key: "ui.toast.challenge_complete"
+            volume: 1.0
+            pitch: 1.0
+
+  welcome_bundle:
+    interval: 300
+    conditions:
+      - "%luckperms_primary_group_name% == default"
+      - "%statistic_hours_played% < 3"
+    enabled: true
+    sequence:
+      info_message:
+        components:
+          chat:
+            - ""
+            - "<gradient:#5e42f3:#8073ff><bold>ANNOUNCEMENT</bold></gradient>"
+            - "<gray>Check out our new <gold>/store</gold> for exclusive ranks!</gray>"
+            - ""
+          actionbar: "<white>Current Event: <green>Double XP Weekly!</green>"
+          sound:
+            key: "block.note_block.pling"
+            volume: 1.0
+            pitch: 1.5
+
+  vip_reminder:
+    interval: 600
+    conditions:
+      - "%luckperms_primary_group_name% == vip"
+    pick-random: true # Picks either tip_fly OR tip_feed
+    enabled: true
+    sequence:
+      tip_fly:
+        components:
+          chat:
+            - "<aqua>[VIP]</aqua> Don't forget you have access to <white>/fly</white>!"
+          sound:
+            key: "block.note_block.pling"
+            volume: 0.5
+            pitch: 2.0
+      tip_feed:
+        components:
+          chat:
+            - "<aqua>[VIP]</aqua> Don't forget to use <white>/feed</white>!"
+          sound:
+            key: "block.note_block.pling"
+            volume: 0.5
+            pitch: 2.0
+
+  status_update:
+    interval: 120
+    ignore-toggle: true
+    conditions:
+      - "%server_tps_1% < 16.0"
+    enabled: true
+    sequence:
+      alert:
+        components:
+          chat:
+            - "<red><b>[!]</b> The server is currently under heavy load.</red>"
+          bossbar:
+            text: "<red>Performance Alert: Server TPS is %server_tps%!</red>"
+            duration: 1200
+            color: RED
+            overlay: PROGRESS
+            progress: 1.0
+            countdown: true

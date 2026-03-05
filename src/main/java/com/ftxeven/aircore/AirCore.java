@@ -1,5 +1,6 @@
 package com.ftxeven.aircore;
 
+import com.ftxeven.aircore.api.AirCoreAPI;
 import com.ftxeven.aircore.config.*;
 import com.ftxeven.aircore.database.DatabaseManager;
 import com.ftxeven.aircore.core.*;
@@ -30,6 +31,7 @@ public final class AirCore extends JavaPlugin {
     private PlaceholderManager placeholderManager;
     private SchedulerUtil schedulerUtil;
     private CoreInitializer coreInitializer;
+    private AirCoreAPI api;
     private String latestVersion = null;
 
     @Override
@@ -67,6 +69,7 @@ public final class AirCore extends JavaPlugin {
     public void setGuiManager(GuiManager guiManager) { this.guiManager = guiManager; }
     public void setPlaceholderManager(PlaceholderManager placeholderManager) { this.placeholderManager = placeholderManager; }
     public void setSchedulerUtil(SchedulerUtil schedulerUtil) { this.schedulerUtil = schedulerUtil; }
+    public void setApi(AirCoreAPI api) { this.api = api; }
     public void setLatestVersion(String latestVersion) { this.latestVersion = latestVersion; }
 
     public ConfigManager config() { return configManager; }
@@ -83,5 +86,6 @@ public final class AirCore extends JavaPlugin {
     public GuiManager gui() { return guiManager; }
     public PlaceholderManager placeholders() { return placeholderManager; }
     public SchedulerUtil scheduler() { return schedulerUtil; }
+    public AirCoreAPI api() { return api; }
     public String getLatestVersion() { return latestVersion; }
 }

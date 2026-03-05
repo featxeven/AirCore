@@ -1,7 +1,7 @@
 package com.ftxeven.aircore.core.modules.utility.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.api.event.PlayerUnblockEvent;
+import com.ftxeven.aircore.api.event.block.PlayerUnblockEvent;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -33,15 +33,13 @@ public final class UnblockCommand implements TabExecutor {
         }
 
         if (!player.hasPermission("aircore.command.unblock")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.unblock"));
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.unblock"));
             return true;
         }
 
         if (args.length == 0 || (plugin.config().errorOnExcessArgs() && args.length > 1)) {
             String usageKey = args.length == 0 ? "errors.incorrect-usage" : "errors.too-many-arguments";
-            MessageUtil.send(player, usageKey,
-                    Map.of("usage", plugin.config().getUsage("unblock", label)));
+            MessageUtil.send(player, usageKey, Map.of("usage", plugin.config().getUsage("unblock", label)));
             return true;
         }
 
@@ -55,21 +53,13 @@ public final class UnblockCommand implements TabExecutor {
         String realName = plugin.database().records().getRealName(targetName);
 
         if (!plugin.core().blocks().isBlocked(playerId, targetId)) {
-            MessageUtil.send(player, "utilities.blocking.not-blocked",
-                    Map.of("player", realName));
+            MessageUtil.send(player, "utilities.blocking.not-blocked", Map.of("player", realName));
             return true;
         }
 
-        plugin.core().blocks().unblock(playerId, targetId);
+        plugin.api().blocks().unblock(playerId, targetId);
 
-        Bukkit.getPluginManager().callEvent(new PlayerUnblockEvent(playerId, targetId));
-
-        plugin.scheduler().runAsync(() ->
-                plugin.database().blocks().remove(playerId, targetId)
-        );
-
-        MessageUtil.send(player, "utilities.blocking.removed",
-                Map.of("player", realName));
+        MessageUtil.send(player, "utilities.blocking.removed", Map.of("player", realName));
         return true;
     }
 

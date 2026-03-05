@@ -1,8 +1,7 @@
 package com.ftxeven.aircore.core.modules.utility.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.api.event.AirCoreBlockBaseEvent;
-import com.ftxeven.aircore.api.event.PlayerBlockEvent;
+import com.ftxeven.aircore.api.event.block.PlayerBlockEvent;
 import com.ftxeven.aircore.util.MessageUtil;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
@@ -99,11 +98,7 @@ public final class BlockCommand implements TabExecutor {
             return;
         }
 
-        plugin.core().blocks().block(playerId, targetId);
-
-        Bukkit.getPluginManager().callEvent(new PlayerBlockEvent(playerId, targetId));
-
-        plugin.scheduler().runAsync(() -> plugin.database().blocks().add(playerId, targetId));
+        plugin.api().blocks().block(playerId, targetId);
 
         MessageUtil.send(executor, "utilities.blocking.added", Map.of("player", displayName));
     }

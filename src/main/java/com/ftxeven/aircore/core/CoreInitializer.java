@@ -2,7 +2,8 @@ package com.ftxeven.aircore.core;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.api.AirCoreAPI;
-import com.ftxeven.aircore.api.AirCoreExpansion;
+import com.ftxeven.aircore.core.api.DefaultAirCoreAPI;
+import com.ftxeven.aircore.api.AirCorePAPIExpansion;
 import com.ftxeven.aircore.api.AirCoreProvider;
 import com.ftxeven.aircore.config.AnnouncementManager;
 import com.ftxeven.aircore.config.ConfigManager;
@@ -85,11 +86,11 @@ public final class CoreInitializer {
 
     private void registerAPI() {
         try {
-            AirCoreAPI implementation = new com.ftxeven.aircore.core.api.AirCoreAPIImpl(plugin);
+            AirCoreAPI implementation = new DefaultAirCoreAPI(plugin);
+            plugin.setApi(implementation);
             AirCoreProvider.register(implementation);
-            plugin.getLogger().info("AirCore API has been successfully registered.");
         } catch (Throwable t) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to register AirCore API!", t);
+            plugin.getLogger().log(Level.SEVERE, "Failed to register API:", t);
         }
     }
 
@@ -273,7 +274,7 @@ public final class CoreInitializer {
 
     public void setupIntegrations() {
         if (plugin.getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new AirCoreExpansion(plugin).register();
+            new AirCorePAPIExpansion(plugin).register();
         }
     }
 

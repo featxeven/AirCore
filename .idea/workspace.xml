@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="api changes">
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/manager/BlockManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/target/classes/announcements/example.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/target/original-AirCore-1.1.8.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/AirCoreAPI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/AirCoreAPI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/AirCoreAPIImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/AirCoreAPIImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/event/AirCoreBlockBaseEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/event/block/AirCoreBlockBaseEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/event/PlayerBlockEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/event/block/PlayerBlockEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/event/PlayerUnblockEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/event/block/PlayerUnblockEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/modules/utility/command/BlockCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/modules/utility/command/BlockCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/modules/utility/command/UnblockCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/modules/utility/command/UnblockCommand.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin Class" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="39jR7k5TEhfPgX2EzIKQSw6C8bi" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.AirCore [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.AirCore [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.AirCore [test].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.AirCore [validate].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.AirCore [verify].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="" />
+      <created>1771207328190</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1771207328190</updated>
+    </task>
+    <task id="LOCAL-00001" summary="relog">
+      <option name="closed" value="true" />
+      <created>1771224820197</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1771224820197</updated>
+    </task>
+    <task id="LOCAL-00002" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771270691796</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1771270691796</updated>
+    </task>
+    <task id="LOCAL-00003" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771303351723</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1771303351723</updated>
+    </task>
+    <task id="LOCAL-00004" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771437240708</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1771437240708</updated>
+    </task>
+    <task id="LOCAL-00005" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771470343331</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1771470343331</updated>
+    </task>
+    <task id="LOCAL-00006" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771476532997</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1771476532997</updated>
+    </task>
+    <task id="LOCAL-00007" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771604690749</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1771604690749</updated>
+    </task>
+    <task id="LOCAL-00008" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771604696113</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1771604696113</updated>
+    </task>
+    <task id="LOCAL-00009" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1771635104022</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1771635104022</updated>
+    </task>
+    <task id="LOCAL-00010" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1772029207718</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1772029207718</updated>
+    </task>
+    <task id="LOCAL-00011" summary="bug fixes">
+      <option name="closed" value="true" />
+      <created>1772234783216</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1772234783216</updated>
+    </task>
+    <task id="LOCAL-00012" summary="innit commit">
+      <option name="closed" value="true" />
+      <created>1772234841197</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1772234841197</updated>
+    </task>
+    <task id="LOCAL-00013" summary="innit commit">
+      <option name="closed" value="true" />
+      <created>1772235203903</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1772235203903</updated>
+    </task>
+    <task id="LOCAL-00014" summary="added new module announcements">
+      <option name="closed" value="true" />
+      <created>1772390885232</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1772390885232</updated>
+    </task>
+    <task id="LOCAL-00015" summary="ver update">
+      <option name="closed" value="true" />
+      <created>1772391328237</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1772391328237</updated>
+    </task>
+    <task id="LOCAL-00016" summary="fix homes removed after reload">
+      <option name="closed" value="true" />
+      <created>1772400236111</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1772400236111</updated>
+    </task>
+    <task id="LOCAL-00017" summary="added sequence: for announcements with interval">
+      <option name="closed" value="true" />
+      <created>1772472824650</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1772472824650</updated>
+    </task>
+    <task id="LOCAL-00018" summary="ver update">
+      <option name="closed" value="true" />
+      <created>1772472837978</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1772472837978</updated>
+    </task>
+    <task id="LOCAL-00019" summary="added new message key error-max-balance">
+      <option name="closed" value="true" />
+      <created>1772518605792</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1772518605792</updated>
+    </task>
+    <task id="LOCAL-00020" summary="added new validation to check max balance limit">
+      <option name="closed" value="true" />
+      <created>1772518622037</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1772518622037</updated>
+    </task>
+    <task id="LOCAL-00021" summary="changed default config">
+      <option name="closed" value="true" />
+      <created>1772518632435</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1772518632435</updated>
+    </task>
+    <task id="LOCAL-00022" summary="execute actions first, then logic">
+      <option name="closed" value="true" />
+      <created>1772518927057</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1772518927057</updated>
+    </task>
+    <task id="LOCAL-00023" summary="added @a argument&#10;added @a permission&#10;added new message key">
+      <option name="closed" value="true" />
+      <created>1772556919073</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1772556919073</updated>
+    </task>
+    <task id="LOCAL-00024" summary="added validation for balance limit on sell">
+      <option name="closed" value="true" />
+      <created>1772556938920</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1772556938920</updated>
+    </task>
+    <task id="LOCAL-00025" summary="changed default placeholder condition">
+      <option name="closed" value="true" />
+      <created>1772556952169</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1772556952169</updated>
+    </task>
+    <task id="LOCAL-00026" summary="added console support">
+      <option name="closed" value="true" />
+      <created>1772556957791</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1772556957791</updated>
+    </task>
+    <task id="LOCAL-00027" summary="fixed: items returned on sell">
+      <option name="closed" value="true" />
+      <created>1772566449052</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1772566449052</updated>
+    </task>
+    <task id="LOCAL-00028" summary="refactor">
+      <option name="closed" value="true" />
+      <created>1772566470869</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1772566470869</updated>
+    </task>
+    <task id="LOCAL-00029" summary="added block api">
+      <option name="closed" value="true" />
+      <created>1772729721798</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1772729721798</updated>
+    </task>
+    <task id="LOCAL-00030" summary="api changes">
+      <option name="closed" value="true" />
+      <created>1772730575636</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1772730575636</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$" />
+    </ignored-roots>
+    <MESSAGE value="relog" />
+    <MESSAGE value="bug fixes" />
+    <MESSAGE value="innit commit" />
+    <MESSAGE value="added new module announcements" />
+    <MESSAGE value="fix homes removed after reload" />
+    <MESSAGE value="added sequence: for announcements with interval" />
+    <MESSAGE value="ver update" />
+    <MESSAGE value="added new message key error-max-balance" />
+    <MESSAGE value="added new validation to check max balance limit" />
+    <MESSAGE value="changed default config" />
+    <MESSAGE value="execute actions first, then logic" />
+    <MESSAGE value="added @a argument&#10;added @a permission&#10;added new message key" />
+    <MESSAGE value="added validation for balance limit on sell" />
+    <MESSAGE value="changed default placeholder condition" />
+    <MESSAGE value="added console support" />
+    <MESSAGE value="fixed: items returned on sell" />
+    <MESSAGE value="refactor" />
+    <MESSAGE value="added block api" />
+    <MESSAGE value="api changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="api changes" />
+  </component>
+</project>
