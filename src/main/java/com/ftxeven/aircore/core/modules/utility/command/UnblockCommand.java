@@ -1,6 +1,7 @@
 package com.ftxeven.aircore.core.modules.utility.command;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.api.event.PlayerUnblockEvent;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -10,10 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class UnblockCommand implements TabExecutor {
 
@@ -40,14 +38,9 @@ public final class UnblockCommand implements TabExecutor {
             return true;
         }
 
-        if (args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("unblock", label)));
-            return true;
-        }
-
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
+        if (args.length == 0 || (plugin.config().errorOnExcessArgs() && args.length > 1)) {
+            String usageKey = args.length == 0 ? "errors.incorrect-usage" : "errors.too-many-arguments";
+            MessageUtil.send(player, usageKey,
                     Map.of("usage", plugin.config().getUsage("unblock", label)));
             return true;
         }
@@ -68,6 +61,9 @@ public final class UnblockCommand implements TabExecutor {
         }
 
         plugin.core().blocks().unblock(playerId, targetId);
+
+        Bukkit.getPluginManager().callEvent(new PlayerUnblockEvent(playerId, targetId));
+
         plugin.scheduler().runAsync(() ->
                 plugin.database().blocks().remove(playerId, targetId)
         );
@@ -83,19 +79,15 @@ public final class UnblockCommand implements TabExecutor {
                                       @NotNull String label,
                                       String @NotNull [] args) {
 
-        if (!(sender instanceof Player player)) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
         if (!player.hasPermission("aircore.command.unblock")) return Collections.emptyList();
-        if (args.length != 1) return Collections.emptyList();
 
         UUID playerId = player.getUniqueId();
         String input = args[0].toLowerCase();
 
         return plugin.core().blocks().getBlocked(playerId).stream()
-                .map(uuid -> {
-                    OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-                    String name = op.getName();
-                    return name != null ? name : uuid.toString();
-                })
+                .map(uuid -> plugin.database().records().getName(uuid))
+                .filter(Objects::nonNull)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)
                 .toList();

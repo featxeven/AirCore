@@ -53,6 +53,24 @@ public final class PlayerRecords {
         return null;
     }
 
+    public String getName(UUID uuid) {
+        if (uuid == null) return null;
+
+        Player online = Bukkit.getPlayer(uuid);
+        if (online != null) return online.getName();
+
+        String sql = "SELECT name FROM player_records WHERE uuid = ? LIMIT 1;";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("name");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to fetch name for UUID " + uuid + ": " + e.getMessage());
+        }
+        return null;
+    }
+
     public String getRealName(String input) {
         if (input == null || input.isBlank()) return input;
 

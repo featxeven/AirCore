@@ -1,6 +1,8 @@
 package com.ftxeven.aircore.core.modules.utility.command;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.api.event.AirCoreBlockBaseEvent;
+import com.ftxeven.aircore.api.event.PlayerBlockEvent;
 import com.ftxeven.aircore.util.MessageUtil;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
@@ -30,7 +32,6 @@ public final class BlockCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command.");
             return true;
@@ -71,12 +72,10 @@ public final class BlockCommand implements TabExecutor {
 
             plugin.scheduler().runTask(() -> {
                 if (!player.isOnline()) return;
-
                 if (bypass) {
                     MessageUtil.send(player, "utilities.blocking.error-cannot", Map.of("player", displayName));
                     return;
                 }
-
                 executeBlock(player, resolved.getUniqueId(), displayName);
             });
         });
@@ -101,6 +100,9 @@ public final class BlockCommand implements TabExecutor {
         }
 
         plugin.core().blocks().block(playerId, targetId);
+
+        Bukkit.getPluginManager().callEvent(new PlayerBlockEvent(playerId, targetId));
+
         plugin.scheduler().runAsync(() -> plugin.database().blocks().add(playerId, targetId));
 
         MessageUtil.send(executor, "utilities.blocking.added", Map.of("player", displayName));
