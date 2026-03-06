@@ -69,8 +69,8 @@ placeholders:
   # Example 8: Numeric comparison
   greater_than:
     conditions: "%aircore_player_balance_raw% > 1000000"
-    output: "$$$ %aircore_player_balance_short%"
-    fallback: "$ %aircore_player_balance_short%"
+    output: "$$$ %aircore_player_balance_SHORT%"
+    fallback: "$ %aircore_player_balance_SHORT%"
 
   # Example 9: Condition chain (Both must be true)
   conditions_chain:

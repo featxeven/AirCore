@@ -4,10 +4,13 @@ import com.ftxeven.aircore.AirCore;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +20,7 @@ public final class MessageUtil {
     private static final MiniMessage MM = MiniMessage.miniMessage();
     private static final Map<String, String> LANG_RAW_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Component> STATIC_MINI_CACHE = new ConcurrentHashMap<>();
+    private static final Tag EMPTY_TAG = Tag.inserting(Component.empty());
 
     private static AirCore plugin;
     private static String PREFIX;
@@ -45,10 +49,8 @@ public final class MessageUtil {
             return STATIC_MINI_CACHE.computeIfAbsent(raw, MM::deserialize);
         }
 
-        TagResolver inlineResolver = createInlineResolver(player, placeholders);
         String applied = apply(raw, player, placeholders, usePapi);
-
-        return MM.deserialize(applied, inlineResolver);
+        return MM.deserialize(applied, new InlineTagResolver(player, placeholders));
     }
 
     public static Component mini(Player player, String raw, Map<String, String> placeholders) {
@@ -90,41 +92,50 @@ public final class MessageUtil {
         }
     }
 
-    private static TagResolver createInlineResolver(Player player, Map<String, String> placeholders) {
-        return TagResolver.resolver(
-                TagResolver.builder()
-                        .tag("sound", (args, context) -> {
-                            String name = args.popOr("Missing sound name").value();
-                            float vol = args.hasNext() ? (float) args.pop().asDouble().orElse(1.0) : 1f;
-                            float pitch = args.hasNext() ? (float) args.pop().asDouble().orElse(1.0) : 1f;
-                            SoundUtil.play(player, name, vol, pitch);
-                            return Tag.inserting(Component.empty());
-                        })
-                        .tag("actionbar", (args, context) -> {
-                            String text = args.popOr("Missing actionbar text").value();
-                            ActionbarUtil.send(plugin, player, text, placeholders);
-                            return Tag.inserting(Component.empty());
-                        })
-                        .tag("title", (args, context) -> {
-                            String title = args.popOr("Missing title text").value();
-                            int fadeIn = args.hasNext() ? args.pop().asInt().orElse(10) : 10;
-                            int stay = args.hasNext() ? args.pop().asInt().orElse(70) : 70;
-                            int fadeOut = args.hasNext() ? args.pop().asInt().orElse(20) : 20;
+    private record InlineTagResolver(Player player, Map<String, String> placeholders) implements TagResolver {
+        @Override
+        public boolean has(@NotNull String name) {
+            return switch (name) {
+                case "sound", "actionbar", "title", "bossbar" -> true;
+                default -> false;
+            };
+        }
 
-                            Component titleComp = MM.deserialize(apply(title, player, placeholders));
-                            TitleUtil.sendComponents(player, titleComp, Component.empty(), fadeIn, stay, fadeOut);
-                            return Tag.inserting(Component.empty());
-                        })
-                        .tag("bossbar", (args, context) -> {
-                            String text = args.popOr("Missing text").value();
-                            int time = args.hasNext() ? args.pop().asInt().orElse(100) : 100;
-                            BossBar.Color color = args.hasNext() ?
-                                    BossBar.Color.valueOf(args.pop().value().toUpperCase()) : BossBar.Color.WHITE;
+        @Override
+        public Tag resolve(@NotNull String name, @NotNull ArgumentQueue args, @NotNull Context context) {
+            switch (name) {
+                case "sound" -> {
+                    String sName = args.popOr("!").value();
+                    float vol = args.hasNext() ? (float) args.pop().asDouble().orElse(1.0) : 1f;
+                    float pitch = args.hasNext() ? (float) args.pop().asDouble().orElse(1.0) : 1f;
+                    SoundUtil.play(player, sName, vol, pitch);
+                    return EMPTY_TAG;
+                }
+                case "actionbar" -> {
+                    ActionbarUtil.send(plugin, player, args.popOr("!").value(), placeholders);
+                    return EMPTY_TAG;
+                }
+                case "title" -> {
+                    String titleText = args.popOr("!").value();
+                    int fadeIn = args.hasNext() ? args.pop().asInt().orElse(10) : 10;
+                    int stay = args.hasNext() ? args.pop().asInt().orElse(70) : 70;
+                    int fadeOut = args.hasNext() ? args.pop().asInt().orElse(20) : 20;
 
-                            BossbarUtil.send(player, text,  placeholders,  time, color,  "PROGRESS",  1.0f, false);
-                            return Tag.inserting(Component.empty());
-                        })
-                        .build()
-        );
+                    Component titleComp = MM.deserialize(apply(titleText, player, placeholders));
+                    TitleUtil.sendComponents(player, titleComp, Component.empty(), fadeIn, stay, fadeOut);
+                    return EMPTY_TAG;
+                }
+                case "bossbar" -> {
+                    String text = args.popOr("!").value();
+                    int time = args.hasNext() ? args.pop().asInt().orElse(100) : 100;
+                    BossBar.Color color = args.hasNext() ?
+                            BossBar.Color.valueOf(args.pop().value().toUpperCase()) : BossBar.Color.WHITE;
+
+                    BossbarUtil.send(player, text, placeholders, time, color, "PROGRESS", 1.0f, false);
+                    return EMPTY_TAG;
+                }
+            }
+            return null;
+        }
     }
 }

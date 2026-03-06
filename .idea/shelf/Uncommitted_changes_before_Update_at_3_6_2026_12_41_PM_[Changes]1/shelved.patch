@@ -1,0 +1,1505 @@
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/command/ChatToggleCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/ChatToggleCommand.java b/src/main/java/com/ftxeven/aircore/core/module/chat/command/ChatToggleCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/command/ChatToggleCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/command/ChatToggleCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/ChatToggleCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/command/ChatToggleCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.command;
++package com.ftxeven.aircore.core.module.chat.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/ChatManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/ChatManager.java b/src/main/java/com/ftxeven/aircore/core/module/chat/ChatManager.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/ChatManager.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/ChatManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/ChatManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/ChatManager.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.chat;
++package com.ftxeven.aircore.core.module.chat;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.chat.service.*;
++import com.ftxeven.aircore.core.module.chat.service.*;
+ 
+ public final class ChatManager {
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgCommand.java b/src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.command;
++package com.ftxeven.aircore.core.module.chat.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/service/CooldownService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/CooldownService.java b/src/main/java/com/ftxeven/aircore/core/module/chat/service/CooldownService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/service/CooldownService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/service/CooldownService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/CooldownService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/service/CooldownService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.service;
++package com.ftxeven.aircore.core.module.chat.service;
+ 
+ import org.bukkit.entity.Player;
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/command/SocialSpyCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/SocialSpyCommand.java b/src/main/java/com/ftxeven/aircore/core/module/chat/command/SocialSpyCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/command/SocialSpyCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/command/SocialSpyCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/SocialSpyCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/command/SocialSpyCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.command;
++package com.ftxeven.aircore.core.module.chat.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/service/DisplayTagsService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/DisplayTagsService.java b/src/main/java/com/ftxeven/aircore/core/module/chat/service/DisplayTagsService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/service/DisplayTagsService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/service/DisplayTagsService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/DisplayTagsService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/service/DisplayTagsService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.service;
++package com.ftxeven.aircore.core.module.chat.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.PlaceholderUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/service/MessageService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/MessageService.java b/src/main/java/com/ftxeven/aircore/core/module/chat/service/MessageService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/service/MessageService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/service/MessageService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/MessageService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/service/MessageService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.service;
++package com.ftxeven.aircore.core.module.chat.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgToggleCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgToggleCommand.java b/src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgToggleCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgToggleCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgToggleCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/MsgToggleCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgToggleCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.command;
++package com.ftxeven.aircore.core.module.chat.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/service/MentionService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/MentionService.java b/src/main/java/com/ftxeven/aircore/core/module/chat/service/MentionService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/service/MentionService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/service/MentionService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/MentionService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/service/MentionService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.service;
++package com.ftxeven.aircore.core.module.chat.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/UtilityManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/UtilityManager.java b/src/main/java/com/ftxeven/aircore/core/module/utility/UtilityManager.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/UtilityManager.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/UtilityManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/UtilityManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/UtilityManager.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.utility;
++package com.ftxeven.aircore.core.module.utility;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.utility.service.*;
++import com.ftxeven.aircore.core.module.utility.service.*;
+ 
+ public final class UtilityManager {
+     private final AirCore plugin;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/service/ChatFormatService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/ChatFormatService.java b/src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/service/ChatFormatService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/ChatFormatService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.service;
++package com.ftxeven.aircore.core.module.chat.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/command/MentionToggleCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/MentionToggleCommand.java b/src/main/java/com/ftxeven/aircore/core/module/chat/command/MentionToggleCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/command/MentionToggleCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/command/MentionToggleCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/MentionToggleCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/command/MentionToggleCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.command;
++package com.ftxeven.aircore.core.module.chat.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/command/SellCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/SellCommand.java b/src/main/java/com/ftxeven/aircore/core/module/economy/command/SellCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/command/SellCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/command/SellCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/SellCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/command/SellCommand.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.economy.command;
++package com.ftxeven.aircore.core.module.economy.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+ import com.ftxeven.aircore.core.gui.sell.SellManager;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/service/UrlFormatService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/UrlFormatService.java b/src/main/java/com/ftxeven/aircore/core/module/chat/service/UrlFormatService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/service/UrlFormatService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/service/UrlFormatService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/service/UrlFormatService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/service/UrlFormatService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.service;
++package com.ftxeven.aircore.core.module.chat.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayToggleCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayToggleCommand.java b/src/main/java/com/ftxeven/aircore/core/module/economy/command/PayToggleCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayToggleCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/command/PayToggleCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayToggleCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/command/PayToggleCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.economy.command;
++package com.ftxeven.aircore.core.module.economy.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/command/EcoCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/EcoCommand.java b/src/main/java/com/ftxeven/aircore/core/module/economy/command/EcoCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/command/EcoCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/command/EcoCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/EcoCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/command/EcoCommand.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.economy.command;
++package com.ftxeven.aircore.core.module.economy.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.Bukkit;
+ import org.bukkit.OfflinePlayer;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/service/SpawnService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/SpawnService.java b/src/main/java/com/ftxeven/aircore/core/module/utility/service/SpawnService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/service/SpawnService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/service/SpawnService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/SpawnService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/service/SpawnService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.service;
++package com.ftxeven.aircore.core.module.utility.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import org.bukkit.Location;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/service/TransactionService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/TransactionService.java b/src/main/java/com/ftxeven/aircore/core/module/economy/service/TransactionService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/service/TransactionService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/service/TransactionService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/TransactionService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/service/TransactionService.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.economy.service;
++package com.ftxeven.aircore.core.module.economy.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ 
+ import java.util.UUID;
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayCommand.java b/src/main/java/com/ftxeven/aircore/core/module/economy/command/PayCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/command/PayCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/PayCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/command/PayCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.economy.command;
++package com.ftxeven.aircore.core.module.economy.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/service/WarpService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/WarpService.java b/src/main/java/com/ftxeven/aircore/core/module/utility/service/WarpService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/service/WarpService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/service/WarpService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/WarpService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/service/WarpService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.service;
++package com.ftxeven.aircore.core.module.utility.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import org.bukkit.Location;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/command/BalanceCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/BalanceCommand.java b/src/main/java/com/ftxeven/aircore/core/module/economy/command/BalanceCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/command/BalanceCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/command/BalanceCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/command/BalanceCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/command/BalanceCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.economy.command;
++package com.ftxeven.aircore.core.module.economy.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/service/BackService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/BackService.java b/src/main/java/com/ftxeven/aircore/core/module/utility/service/BackService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/service/BackService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/service/BackService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/BackService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/service/BackService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.service;
++package com.ftxeven.aircore.core.module.utility.service;
+ 
+ import org.bukkit.Location;
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/service/AfkService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/AfkService.java b/src/main/java/com/ftxeven/aircore/core/module/utility/service/AfkService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/service/AfkService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/service/AfkService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/service/AfkService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/service/AfkService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.service;
++package com.ftxeven.aircore.core.module.utility.service;
+ 
+ import java.util.Map;
+ import java.util.UUID;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/service/FormatService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/FormatService.java b/src/main/java/com/ftxeven/aircore/core/module/economy/service/FormatService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/service/FormatService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/service/FormatService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/FormatService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/service/FormatService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.economy.service;
++package com.ftxeven.aircore.core.module.economy.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/service/EconomyProvider.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/EconomyProvider.java b/src/main/java/com/ftxeven/aircore/core/module/economy/service/EconomyProvider.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/service/EconomyProvider.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/service/EconomyProvider.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/EconomyProvider.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/service/EconomyProvider.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.economy.service;
++package com.ftxeven.aircore.core.module.economy.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ import net.milkbowl.vault.economy.Economy;
+ import net.milkbowl.vault.economy.EconomyResponse;
+ import org.bukkit.OfflinePlayer;
+Index: src/main/java/com/ftxeven/aircore/core/service/TeleportService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore.core.service;\r\n\r\nimport com.ftxeven.aircore.AirCore;\r\nimport com.ftxeven.aircore.core.modules.teleport.service.RequestService;\r\nimport com.ftxeven.aircore.util.MessageUtil;\r\nimport com.ftxeven.aircore.util.TimeUtil;\r\nimport com.ftxeven.aircore.util.SchedulerUtil;\r\nimport org.bukkit.Location;\r\nimport org.bukkit.entity.Player;\r\n\r\nimport java.util.Map;\r\nimport java.util.UUID;\r\nimport java.util.concurrent.ConcurrentHashMap;\r\nimport java.util.function.Consumer;\r\n\r\npublic final class TeleportService {\r\n\r\n    private final AirCore plugin;\r\n    private final SchedulerUtil scheduler;\r\n\r\n    private final Map<UUID, SchedulerUtil.CancellableTask> countdownTasks = new ConcurrentHashMap<>();\r\n    private final Map<UUID, SchedulerUtil.CancellableTask> countdownMessageTasks = new ConcurrentHashMap<>();\r\n    private final Map<UUID, UUID> activeTeleports = new ConcurrentHashMap<>();\r\n    private final Map<UUID, Consumer<String>> cancelHandlers = new ConcurrentHashMap<>();\r\n    private final Map<UUID, Long> teleportImmunityUntil = new ConcurrentHashMap<>();\r\n\r\n    public TeleportService(AirCore plugin, SchedulerUtil scheduler) {\r\n        this.plugin = plugin;\r\n        this.scheduler = scheduler;\r\n    }\r\n\r\n    public Location adjustToCenter(Location loc) {\r\n        if (plugin.config().teleportToCenter()) {\r\n            Location centered = loc.clone();\r\n            centered.setX(Math.floor(loc.getX()) + 0.5);\r\n            centered.setZ(Math.floor(loc.getZ()) + 0.5);\r\n            return centered;\r\n        }\r\n        return loc;\r\n    }\r\n\r\n    public void teleport(Player player, Location loc) {\r\n        scheduler.runLocationTask(player.getLocation(), () ->\r\n                player.teleportAsync(adjustToCenter(loc))\r\n                        .thenAccept(success -> {\r\n                            if (success) {\r\n                                grantImmunity(player);\r\n                            } else {\r\n                                plugin.getLogger().warning(\"Async teleport failed for player \" + player.getName());\r\n                            }\r\n                        })\r\n        );\r\n    }\r\n\r\n    public void startCountdown(Player sender, Player target, Runnable action, Consumer<String> onCancel) {\r\n        UUID senderId = sender.getUniqueId();\r\n        UUID targetId = target.getUniqueId();\r\n\r\n        clearCountdownState(senderId);\r\n        clearCountdownState(targetId);\r\n        activeTeleports.remove(senderId);\r\n        activeTeleports.remove(targetId);\r\n        cancelHandlers.remove(senderId);\r\n        cancelHandlers.remove(targetId);\r\n\r\n        activeTeleports.put(senderId, targetId);\r\n        activeTeleports.put(targetId, senderId);\r\n\r\n        if (onCancel != null) {\r\n            cancelHandlers.put(senderId, onCancel);\r\n            cancelHandlers.put(targetId, onCancel);\r\n        }\r\n\r\n        var request = plugin.teleport().requests().getRequest(targetId, senderId);\r\n        UUID teleporteeId = (request != null && request.type() == RequestService.RequestType.TPAHERE)\r\n                ? targetId : senderId;\r\n\r\n        int seconds = plugin.config().teleportCountdownDuration();\r\n        boolean repeat = plugin.config().teleportCountdownRepeat();\r\n        boolean bypass = sender.hasPermission(\"aircore.bypass.teleport.countdown\");\r\n\r\n        if (seconds <= 0 || bypass) {\r\n            clearCountdownState(senderId);\r\n            clearCountdownState(targetId);\r\n            action.run();\r\n            return;\r\n        }\r\n\r\n        Player teleportee = plugin.getServer().getPlayer(teleporteeId);\r\n        if (teleportee != null) {\r\n            MessageUtil.send(teleportee, \"teleport.countdown\", Map.of(\"time\", TimeUtil.formatSeconds(plugin, seconds)));\r\n        }\r\n\r\n        final int[] remaining = { seconds };\r\n\r\n        if (repeat) {\r\n            SchedulerUtil.CancellableTask msgTask = scheduler.runTimer(() -> {\r\n                remaining[0]--;\r\n                if (remaining[0] <= 0) return;\r\n\r\n                Player online = plugin.getServer().getPlayer(teleporteeId);\r\n                if (online != null && online.isOnline()) {\r\n                    MessageUtil.send(online, \"teleport.countdown\", Map.of(\"time\", TimeUtil.formatSeconds(plugin, remaining[0])));\r\n                }\r\n            }, 20L, 20L);\r\n\r\n            countdownMessageTasks.put(teleporteeId, msgTask);\r\n        }\r\n\r\n        SchedulerUtil.CancellableTask tpTask = scheduler.runDelayed(() -> {\r\n            clearCountdownState(senderId);\r\n            clearCountdownState(targetId);\r\n            action.run();\r\n        }, seconds * 20L);\r\n\r\n        countdownTasks.put(teleporteeId, tpTask);\r\n    }\r\n\r\n    public boolean hasCountdownTask(UUID uuid) {\r\n        return countdownTasks.containsKey(uuid);\r\n    }\r\n\r\n    public void cancelCountdown(Player canceller, boolean cancelledByTarget) {\r\n        if (canceller == null) return;\r\n\r\n        UUID id = canceller.getUniqueId();\r\n        UUID otherId = activeTeleports.remove(id);\r\n\r\n        clearCountdownState(id);\r\n\r\n        if (otherId != null) {\r\n            activeTeleports.remove(otherId);\r\n            clearCountdownState(otherId);\r\n        }\r\n\r\n        Consumer<String> handler = cancelHandlers.remove(id);\r\n        if (handler == null && otherId != null) {\r\n            handler = cancelHandlers.remove(otherId);\r\n        }\r\n\r\n        boolean isSelfTeleport = (otherId == null || otherId.equals(id));\r\n\r\n        if (isSelfTeleport) {\r\n            if (handler != null) {\r\n                handler.accept(\"cancelled\");\r\n            }\r\n            return;\r\n        }\r\n\r\n        Player other = plugin.getServer().getPlayer(otherId);\r\n        if (other != null && other.isOnline()) {\r\n            scheduler.runLocationTask(canceller.getLocation(), () -> {\r\n                if (cancelledByTarget) {\r\n                    MessageUtil.send(other, \"teleport.lifecycle.cancelled-from\", Map.of(\"player\", canceller.getName()));\r\n                    MessageUtil.send(canceller, \"teleport.lifecycle.cancelled-to\", Map.of(\"player\", other.getName()));\r\n                } else {\r\n                    MessageUtil.send(canceller, \"teleport.lifecycle.cancelled-from\", Map.of(\"player\", other.getName()));\r\n                    MessageUtil.send(other, \"teleport.lifecycle.cancelled-to\", Map.of(\"player\", canceller.getName()));\r\n                }\r\n            });\r\n        }\r\n    }\r\n\r\n    private void clearCountdownState(UUID uuid) {\r\n        SchedulerUtil.CancellableTask msgTask = countdownMessageTasks.remove(uuid);\r\n        if (msgTask != null) msgTask.cancel();\r\n\r\n        SchedulerUtil.CancellableTask tpTask = countdownTasks.remove(uuid);\r\n        if (tpTask != null) tpTask.cancel();\r\n    }\r\n\r\n    public boolean hasCountdown(Player player) {\r\n        UUID uuid = player.getUniqueId();\r\n        return countdownTasks.containsKey(uuid) || activeTeleports.containsKey(uuid);\r\n    }\r\n\r\n    public void grantImmunity(Player player) {\r\n        int seconds = plugin.config().teleportImmunitySeconds();\r\n        teleportImmunityUntil.put(player.getUniqueId(), System.currentTimeMillis() + (seconds * 1000L));\r\n    }\r\n\r\n    public boolean hasImmunity(Player player) {\r\n        Long until = teleportImmunityUntil.get(player.getUniqueId());\r\n        return until != null && System.currentTimeMillis() < until;\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/service/TeleportService.java b/src/main/java/com/ftxeven/aircore/core/service/TeleportService.java
+--- a/src/main/java/com/ftxeven/aircore/core/service/TeleportService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/service/TeleportService.java	
+@@ -1,7 +1,7 @@
+ package com.ftxeven.aircore.core.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
++import com.ftxeven.aircore.core.module.teleport.service.RequestService;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import com.ftxeven.aircore.util.TimeUtil;
+ import com.ftxeven.aircore.util.SchedulerUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/service/BalanceService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/BalanceService.java b/src/main/java/com/ftxeven/aircore/core/module/economy/service/BalanceService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/service/BalanceService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/service/BalanceService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/BalanceService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/service/BalanceService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.economy.service;
++package com.ftxeven.aircore.core.module.economy.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/TeleportManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/TeleportManager.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/TeleportManager.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/TeleportManager.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/TeleportManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/TeleportManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/TeleportManager.java	
+@@ -1,9 +1,9 @@
+-package com.ftxeven.aircore.core.modules.teleport;
++package com.ftxeven.aircore.core.module.teleport;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.teleport.service.CooldownService;
+-import com.ftxeven.aircore.core.modules.teleport.service.ExpiryService;
+-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
++import com.ftxeven.aircore.core.module.teleport.service.CooldownService;
++import com.ftxeven.aircore.core.module.teleport.service.ExpiryService;
++import com.ftxeven.aircore.core.module.teleport.service.RequestService;
+ import com.ftxeven.aircore.util.SchedulerUtil;
+ 
+ public final class TeleportManager {
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/GiveCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/GiveCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/GiveCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/GiveCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/GiveCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/GiveCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/GiveCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/FlyCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/FlyCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/FlyCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/FlyCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/FlyCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/FlyCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/FlyCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/BackCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/BackCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/BackCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/BackCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/BackCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/BackCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/BackCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/InvseeCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/InvseeCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/InvseeCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/InvseeCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/InvseeCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/InvseeCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/InvseeCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/FeedCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/FeedCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/FeedCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/FeedCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/FeedCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/FeedCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/FeedCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/GodCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/GodCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/GodCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/GodCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/GodCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/GodCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/GodCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/TimeCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/TimeCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/TimeCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/TimeCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/TimeCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/TimeCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/TimeCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaHereCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaHereCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaHereCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaHereCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaHereCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaHereCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaHereCommand.java	
+@@ -1,8 +1,8 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
++import com.ftxeven.aircore.core.module.teleport.service.RequestService;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import com.ftxeven.aircore.util.TimeUtil;
+ import org.bukkit.Bukkit;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpPosCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpPosCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpPosCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpPosCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpPosCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpPosCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpPosCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetSpawnCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetSpawnCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SetSpawnCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetSpawnCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/SetSpawnCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetSpawnCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SetSpawnCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpHereCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpHereCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpHereCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpHereCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpHereCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpHereCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpHereCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/EnderchestCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/EnderchestCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/EnderchestCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/EnderchestCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/EnderchestCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/EnderchestCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/EnderchestCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpAcceptCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpAcceptCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpAcceptCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpAcceptCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpAcceptCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpAcceptCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpAcceptCommand.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
++import com.ftxeven.aircore.core.module.teleport.service.RequestService;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.Bukkit;
+ import org.bukkit.command.Command;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpeedCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpeedCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SpeedCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpeedCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/SpeedCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpeedCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SpeedCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpDenyCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpDenyCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpDenyCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpDenyCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpDenyCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpDenyCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpDenyCommand.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
++import com.ftxeven.aircore.core.module.teleport.service.RequestService;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.Bukkit;
+ import org.bukkit.command.Command;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/BlockCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/BlockCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/BlockCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/BlockCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/BlockCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/BlockCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/BlockCommand.java	
+@@ -1,7 +1,6 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.api.event.block.PlayerBlockEvent;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import net.luckperms.api.LuckPerms;
+ import net.luckperms.api.model.user.User;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpaCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaCommand.java	
+@@ -1,8 +1,8 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
++import com.ftxeven.aircore.core.module.teleport.service.RequestService;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import com.ftxeven.aircore.util.TimeUtil;
+ import org.bukkit.Bukkit;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/KillCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/KillCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/KillCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/KillCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/KillCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/KillCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/KillCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/HealCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/HealCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/HealCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/HealCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/HealCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/HealCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/HealCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpOfflineCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpOfflineCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpOfflineCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpOfflineCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpOfflineCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpOfflineCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpOfflineCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/WarpCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/WarpCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/WarpCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/WarpCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/WarpCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/WarpCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/WarpCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpToggleCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpToggleCommand.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpToggleCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpToggleCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpToggleCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/command/TpToggleCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpToggleCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.command;
++package com.ftxeven.aircore.core.module.teleport.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpawnCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpawnCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SpawnCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpawnCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/SpawnCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SpawnCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SpawnCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/UnblockCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/UnblockCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/UnblockCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/UnblockCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/UnblockCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/UnblockCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/UnblockCommand.java	
+@@ -1,7 +1,6 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.api.event.block.PlayerUnblockEvent;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.Bukkit;
+ import org.bukkit.OfflinePlayer;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/DelWarpCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/DelWarpCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/DelWarpCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/DelWarpCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/DelWarpCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/DelWarpCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/DelWarpCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/ClearInventoryCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/ClearInventoryCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/ClearInventoryCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/ClearInventoryCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/ClearInventoryCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/ClearInventoryCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/ClearInventoryCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/AfkCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/AfkCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/AfkCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/AfkCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/AfkCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/AfkCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/AfkCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/GamemodeCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/GamemodeCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/GamemodeCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/GamemodeCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/GamemodeCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/GamemodeCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/GamemodeCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/WeatherCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/WeatherCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/WeatherCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/WeatherCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/WeatherCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/WeatherCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/WeatherCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/RepairCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/RepairCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/RepairCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/RepairCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/RepairCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/RepairCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/RepairCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetWarpCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetWarpCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SetWarpCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetWarpCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/SetWarpCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/SetWarpCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/SetWarpCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/VirtualGuiCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/VirtualGuiCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/VirtualGuiCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/VirtualGuiCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/VirtualGuiCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/VirtualGuiCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/VirtualGuiCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/CoreCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore.core;\r\n\r\nimport com.ftxeven.aircore.AirCore;\r\nimport com.ftxeven.aircore.util.MessageUtil;\r\nimport org.bukkit.command.Command;\r\nimport org.bukkit.command.CommandSender;\r\nimport org.bukkit.command.TabExecutor;\r\nimport org.bukkit.entity.Player;\r\nimport org.jetbrains.annotations.NotNull;\r\n\r\nimport java.util.Collections;\r\nimport java.util.List;\r\nimport java.util.Map;\r\nimport java.util.stream.Stream;\r\n\r\npublic final class CoreCommand implements TabExecutor {\r\n\r\n    private final AirCore plugin;\r\n\r\n    public CoreCommand(AirCore plugin) {\r\n        this.plugin = plugin;\r\n    }\r\n\r\n    @Override\r\n    public boolean onCommand(@NotNull CommandSender sender,\r\n                             @NotNull Command cmd,\r\n                             @NotNull String label,\r\n                             String @NotNull [] args) {\r\n\r\n        if (sender instanceof Player player && !player.hasPermission(\"aircore.command.admin\")) {\r\n            MessageUtil.send(player, \"errors.no-permission\", Map.of(\"permission\", \"aircore.command.admin\"));\r\n            return true;\r\n        }\r\n\r\n        if (args.length == 0) {\r\n            sendUsage(sender);\r\n            return true;\r\n        }\r\n\r\n        String sub = args[0].toLowerCase();\r\n        switch (sub) {\r\n            case \"reload\" -> handleReload(sender, args);\r\n            case \"version\" -> {\r\n                String version = plugin.getPluginMeta().getVersion();\r\n                if (sender instanceof Player p) {\r\n                    MessageUtil.send(p, \"general.plugin-version\", Map.of(\"version\", version));\r\n                } else {\r\n                    sender.sendMessage(\"Plugin version is \" + version);\r\n                }\r\n            }\r\n            default -> sendUsage(sender);\r\n        }\r\n        return true;\r\n    }\r\n\r\n    private void handleReload(CommandSender sender, String[] args) {\r\n        String type = args.length > 1 ? args[1].toLowerCase() : \"all\";\r\n\r\n        switch (type) {\r\n            case \"placeholders\" -> {\r\n                plugin.placeholders().reload();\r\n                notifyReload(sender, \"placeholders\");\r\n            }\r\n            case \"config\" -> {\r\n                plugin.config().reload();\r\n                plugin.core().reload();\r\n                notifyReload(sender, \"config\");\r\n            }\r\n            case \"guis\" -> {\r\n                plugin.gui().reload();\r\n                notifyReload(sender, \"guis\");\r\n            }\r\n            case \"messages\" -> {\r\n                plugin.lang().reload();\r\n                notifyReload(sender, \"messages\");\r\n            }\r\n            case \"announcements\" -> {\r\n                plugin.announcements().reload();\r\n                notifyReload(sender, \"announcements\");\r\n            }\r\n            case \"all\" -> {\r\n                plugin.config().reload();\r\n                plugin.lang().reload();\r\n                plugin.core().reload();\r\n                plugin.gui().reload();\r\n                plugin.chat().reload();\r\n                plugin.economy().reload();\r\n                plugin.kit().reload();\r\n                plugin.teleport().reload();\r\n                plugin.utility().reload();\r\n                plugin.placeholders().reload();\r\n                plugin.announcements().reload();\r\n                notifyReload(sender, \"all\");\r\n            }\r\n            default -> {\r\n                if (sender instanceof Player) {\r\n                    sendUsage(sender);\r\n                } else {\r\n                    sender.sendMessage(\"Unknown reload type. Use: placeholders, config, guis, messages, or all.\");\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    private void notifyReload(CommandSender sender, String moduleKey) {\r\n        if (sender instanceof Player p) {\r\n            String translatedModule = plugin.lang().get(\"general.modules.\" + moduleKey);\r\n            MessageUtil.send(p, \"general.plugin-reloaded\", Map.of(\"module\", translatedModule));\r\n        } else {\r\n            String hardcoded = moduleKey.substring(0, 1).toUpperCase() + moduleKey.substring(1);\r\n            sender.sendMessage(hardcoded + \" reloaded successfully.\");\r\n        }\r\n    }\r\n\r\n    private void sendUsage(CommandSender sender) {\r\n        if (sender instanceof Player p) {\r\n            MessageUtil.send(p, \"general.plugin-usage\", Map.of());\r\n        } else {\r\n            sender.sendMessage(\"Usage: /aircore <reload [type]|version>\");\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public List<String> onTabComplete(@NotNull CommandSender sender,\r\n                                      @NotNull Command cmd,\r\n                                      @NotNull String label,\r\n                                      String @NotNull [] args) {\r\n\r\n        if (sender instanceof Player player && !player.hasPermission(\"aircore.command.admin\")) {\r\n            return Collections.emptyList();\r\n        }\r\n\r\n        if (args.length == 1) {\r\n            return Stream.of(\"reload\", \"version\")\r\n                    .filter(s -> s.startsWith(args[0].toLowerCase()))\r\n                    .toList();\r\n        }\r\n\r\n        if (args.length == 2 && args[0].equalsIgnoreCase(\"reload\")) {\r\n            return Stream.of(\"all\", \"placeholders\", \"config\", \"guis\", \"messages\", \"announcements\")\r\n                    .filter(s -> s.startsWith(args[1].toLowerCase()))\r\n                    .toList();\r\n        }\r\n\r\n        return Collections.emptyList();\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/CoreCommand.java b/src/main/java/com/ftxeven/aircore/core/CoreCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/CoreCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/CoreCommand.java	
+@@ -104,7 +104,7 @@
+ 
+     private void notifyReload(CommandSender sender, String moduleKey) {
+         if (sender instanceof Player p) {
+-            String translatedModule = plugin.lang().get("general.modules." + moduleKey);
++            String translatedModule = plugin.lang().get("general.module." + moduleKey);
+             MessageUtil.send(p, "general.plugin-reloaded", Map.of("module", translatedModule));
+         } else {
+             String hardcoded = moduleKey.substring(0, 1).toUpperCase() + moduleKey.substring(1);
+Index: src/main/java/com/ftxeven/aircore/core/CoreInitializer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore.core;\r\n\r\nimport com.ftxeven.aircore.AirCore;\r\nimport com.ftxeven.aircore.api.AirCoreAPI;\r\nimport com.ftxeven.aircore.api.AirCoreAPIImpl;\r\nimport com.ftxeven.aircore.api.AirCorePAPIExpansion;\r\nimport com.ftxeven.aircore.api.AirCoreProvider;\r\nimport com.ftxeven.aircore.config.AnnouncementManager;\r\nimport com.ftxeven.aircore.config.ConfigManager;\r\nimport com.ftxeven.aircore.config.LangManager;\r\nimport com.ftxeven.aircore.config.PlaceholderManager;\r\nimport com.ftxeven.aircore.core.modules.chat.ChatManager;\r\nimport com.ftxeven.aircore.core.modules.economy.EconomyManager;\r\nimport com.ftxeven.aircore.core.gui.GuiManager;\r\nimport com.ftxeven.aircore.core.modules.home.HomeManager;\r\nimport com.ftxeven.aircore.core.modules.kit.KitManager;\r\nimport com.ftxeven.aircore.core.modules.teleport.TeleportManager;\r\nimport com.ftxeven.aircore.core.modules.utility.UtilityManager;\r\nimport com.ftxeven.aircore.database.DatabaseManager;\r\nimport com.ftxeven.aircore.database.dao.PlayerInventories;\r\nimport com.ftxeven.aircore.listener.ListenerManager;\r\nimport com.ftxeven.aircore.core.modules.chat.command.*;\r\nimport com.ftxeven.aircore.core.modules.economy.command.*;\r\nimport com.ftxeven.aircore.core.modules.economy.service.EconomyProvider;\r\nimport com.ftxeven.aircore.core.modules.home.command.*;\r\nimport com.ftxeven.aircore.core.modules.kit.command.*;\r\nimport com.ftxeven.aircore.core.modules.teleport.command.*;\r\nimport com.ftxeven.aircore.core.modules.utility.command.*;\r\nimport com.ftxeven.aircore.util.*;\r\nimport com.google.gson.JsonObject;\r\nimport com.google.gson.JsonParser;\r\nimport net.milkbowl.vault.economy.Economy;\r\nimport org.bukkit.Bukkit;\r\nimport org.bukkit.command.*;\r\nimport org.bukkit.entity.Player;\r\nimport org.bukkit.plugin.ServicePriority;\r\n\r\nimport java.io.InputStream;\r\nimport java.io.InputStreamReader;\r\nimport java.lang.reflect.Field;\r\nimport java.net.URI;\r\nimport java.util.HashMap;\r\nimport java.util.List;\r\nimport java.util.Map;\r\nimport java.util.UUID;\r\nimport java.util.logging.Level;\r\n\r\npublic final class CoreInitializer {\r\n\r\n    private final AirCore plugin;\r\n\r\n    public CoreInitializer(AirCore plugin) {\r\n        this.plugin = plugin;\r\n    }\r\n\r\n    public void initialize() {\r\n        plugin.setSchedulerUtil(new SchedulerUtil(plugin));\r\n        logServerType();\r\n\r\n        plugin.setConfigManager(new ConfigManager(plugin));\r\n        plugin.setLangManager(new LangManager(plugin));\r\n\r\n        DatabaseManager db = new DatabaseManager(plugin);\r\n        try {\r\n            db.init();\r\n            plugin.setDatabaseManager(db);\r\n        } catch (Exception e) {\r\n            plugin.getLogger().severe(\"Failed to initialize database: \" + e.getMessage());\r\n            plugin.getServer().getPluginManager().disablePlugin(plugin);\r\n            return;\r\n        }\r\n\r\n        initManagers();\r\n        registerAPI();\r\n        registerEconomy();\r\n\r\n        ListenerManager listenerManager = new ListenerManager(plugin);\r\n        listenerManager.registerAll();\r\n\r\n        registerCommands();\r\n        setupUtilities();\r\n        setupIntegrations();\r\n\r\n        checkUpdates();\r\n    }\r\n\r\n    private void registerAPI() {\r\n        try {\r\n            AirCoreAPI implementation = new AirCoreAPIImpl(plugin);\r\n            plugin.setApi(implementation);\r\n            AirCoreProvider.register(implementation);\r\n        } catch (Throwable t) {\r\n            plugin.getLogger().log(Level.SEVERE, \"Failed to register API:\", t);\r\n        }\r\n    }\r\n\r\n    private void logServerType() {\r\n        String type = plugin.scheduler().isFoliaServer() ? \"Folia (Region-based)\" : \"Paper/Spigot (Standard)\";\r\n        plugin.getLogger().info(\"Server is running \" + type);\r\n    }\r\n\r\n    public void registerEconomy() {\r\n        if (plugin.getServer().getPluginManager().getPlugin(\"Vault\") != null) {\r\n            try {\r\n                plugin.getServer().getServicesManager().register(\r\n                        Economy.class,\r\n                        new EconomyProvider(plugin, plugin.economy()),\r\n                        plugin,\r\n                        ServicePriority.Highest\r\n                );\r\n                plugin.getLogger().info(\"Successfully hooked into Vault\");\r\n            } catch (Throwable t) {\r\n                plugin.getLogger().warning(\"Vault detected but failed to register economy provider: \" + t.getMessage());\r\n            }\r\n        }\r\n    }\r\n\r\n    private void initManagers() {\r\n        plugin.setPlaceholderManager(new PlaceholderManager(plugin));\r\n        plugin.setCoreManager(new CoreManager(plugin, plugin.scheduler()));\r\n        plugin.setAnnouncementManager(new AnnouncementManager(plugin));\r\n        plugin.setChatManager(new ChatManager(plugin));\r\n        plugin.setEconomyManager(new EconomyManager(plugin));\r\n        plugin.setTeleportManager(new TeleportManager(plugin));\r\n        plugin.setHomeManager(new HomeManager(plugin));\r\n        plugin.setKitManager(new KitManager(plugin));\r\n        plugin.setUtilityManager(new UtilityManager(plugin));\r\n        plugin.setGuiManager(new GuiManager(plugin));\r\n    }\r\n\r\n    private void setupUtilities() {\r\n        plugin.scheduler().runTask(() -> MessageUtil.init(plugin));\r\n        TitleUtil.init(plugin.scheduler());\r\n        SoundUtil.init(plugin.scheduler());\r\n        ActionbarUtil.init(plugin.scheduler());\r\n        BossbarUtil.init(plugin.scheduler());\r\n    }\r\n\r\n    public void shutdown() {\r\n        AirCoreProvider.unregister();\r\n\r\n        if (plugin.announcements() != null) plugin.announcements().shutdown();\r\n        BossbarUtil.hideAll();\r\n        if (plugin.scheduler() != null) plugin.scheduler().cancelAll();\r\n\r\n        handleDataShutdown();\r\n\r\n        if (plugin.database() != null) {\r\n            plugin.database().close();\r\n        }\r\n    }\r\n\r\n    private void handleDataShutdown() {\r\n        if (plugin.database() == null) return;\r\n        Map<UUID, PlayerInventories.InventorySnapshot> shutdownSnapshots = new HashMap<>();\r\n\r\n        for (Player player : Bukkit.getOnlinePlayers()) {\r\n            try {\r\n                shutdownSnapshots.put(player.getUniqueId(), plugin.database().inventories().createSnapshot(player));\r\n            } catch (Exception e) {\r\n                plugin.getLogger().severe(\"Failed to snapshot \" + player.getName() + \" during shutdown!\");\r\n            }\r\n        }\r\n\r\n        if (!shutdownSnapshots.isEmpty()) {\r\n            plugin.getLogger().info(\"Saving \" + shutdownSnapshots.size() + \" player inventories...\");\r\n            plugin.database().inventories().saveAllSync(shutdownSnapshots);\r\n        }\r\n    }\r\n\r\n    private void checkUpdates() {\r\n        plugin.scheduler().runAsync(() -> {\r\n            try (InputStream is = URI.create(\"https://api.spiget.org/v2/resources/130425/versions/latest\").toURL().openStream();\r\n                 InputStreamReader reader = new InputStreamReader(is)) {\r\n                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();\r\n                if (json.has(\"name\")) {\r\n                    String latest = json.get(\"name\").getAsString();\r\n                    String current = plugin.getPluginMeta().getVersion();\r\n                    if (!current.equalsIgnoreCase(latest)) {\r\n                        plugin.setLatestVersion(latest);\r\n                        plugin.getLogger().warning(\"A new update is available! Current: \" + current + \" | Latest: \" + latest);\r\n                    }\r\n                }\r\n            } catch (Exception ignored) {}\r\n        });\r\n    }\r\n\r\n    public void registerCommands() {\r\n        // Chat Commands\r\n        reg(\"msg\", new MsgCommand(plugin));\r\n        reg(\"reply\", new ReplyCommand(plugin));\r\n        reg(\"msgtoggle\", new MsgToggleCommand(plugin));\r\n        reg(\"mentiontoggle\", new MentionToggleCommand(plugin));\r\n        reg(\"chattoggle\", new ChatToggleCommand(plugin));\r\n        reg(\"socialspy\", new SocialSpyCommand(plugin));\r\n\r\n        // Economy Commands\r\n        reg(\"eco\", new EcoCommand(plugin));\r\n        reg(\"balance\", new BalanceCommand(plugin));\r\n        reg(\"pay\", new PayCommand(plugin));\r\n        reg(\"paytoggle\", new PayToggleCommand(plugin));\r\n        reg(\"sell\", new SellCommand(plugin, plugin.gui()));\r\n\r\n        // Teleport Commands\r\n        reg(\"tpa\", new TpaCommand(plugin));\r\n        reg(\"tpahere\", new TpaHereCommand(plugin));\r\n        reg(\"tpaccept\", new TpAcceptCommand(plugin));\r\n        reg(\"tpdeny\", new TpDenyCommand(plugin));\r\n        reg(\"tptoggle\", new TpToggleCommand(plugin));\r\n        reg(\"tp\", new TpCommand(plugin));\r\n        reg(\"tphere\", new TpHereCommand(plugin));\r\n        reg(\"tppos\", new TpPosCommand(plugin));\r\n        reg(\"tpoffline\", new TpOfflineCommand(plugin));\r\n\r\n        // Home/Warp/Spawn\r\n        reg(\"sethome\", new SetHomeCommand(plugin));\r\n        reg(\"delhome\", new DelHomeCommand(plugin));\r\n        reg(\"home\", new HomeCommand(plugin, plugin.gui()));\r\n        reg(\"spawn\", new SpawnCommand(plugin));\r\n        reg(\"setspawn\", new SetSpawnCommand(plugin));\r\n        reg(\"warp\", new WarpCommand(plugin));\r\n        reg(\"setwarp\", new SetWarpCommand(plugin));\r\n        reg(\"delwarp\", new DelWarpCommand(plugin));\r\n\r\n        // Kit Commands\r\n        reg(\"createkit\", new CreateKitCommand(plugin));\r\n        reg(\"delkit\", new DeleteKitCommand(plugin));\r\n        reg(\"editkit\", new EditKitCommand(plugin));\r\n        reg(\"kit\", new KitCommand(plugin));\r\n\r\n        // Utility Commands\r\n        reg(\"block\", new BlockCommand(plugin));\r\n        reg(\"unblock\", new UnblockCommand(plugin));\r\n        reg(\"clearinventory\", new ClearInventoryCommand(plugin));\r\n        reg(\"feed\", new FeedCommand(plugin));\r\n        reg(\"heal\", new HealCommand(plugin));\r\n        reg(\"time\", new TimeCommand(plugin));\r\n        reg(\"weather\", new WeatherCommand(plugin));\r\n        reg(\"gamemode\", new GamemodeCommand(plugin));\r\n        reg(\"kill\", new KillCommand(plugin));\r\n        reg(\"afk\", new AfkCommand(plugin));\r\n        reg(\"god\", new GodCommand(plugin));\r\n        reg(\"speed\", new SpeedCommand(plugin));\r\n        reg(\"fly\", new FlyCommand(plugin));\r\n        reg(\"repair\", new RepairCommand(plugin));\r\n        reg(\"enderchest\", new EnderchestCommand(plugin, plugin.gui()));\r\n        reg(\"invsee\", new InvseeCommand(plugin, plugin.gui()));\r\n        reg(\"give\", new GiveCommand(plugin));\r\n        reg(\"back\", new BackCommand(plugin));\r\n        reg(\"announcement\", new AnnouncementCommand(plugin));\r\n        reg(\"announcetoggle\", new AnnounceToggleCommand(plugin));\r\n\r\n        // Virtual GUIs\r\n        reg(\"craftingtable\", new VirtualGuiCommand(plugin, \"craftingtable\", p -> p.openWorkbench(null, true)));\r\n        reg(\"anvil\", new VirtualGuiCommand(plugin, \"anvil\", p -> p.openAnvil(null, true)));\r\n        reg(\"cartography\", new VirtualGuiCommand(plugin, \"cartography\", p -> p.openCartographyTable(null, true)));\r\n        reg(\"loom\", new VirtualGuiCommand(plugin, \"loom\", p -> p.openLoom(null, true)));\r\n        reg(\"smithingtable\", new VirtualGuiCommand(plugin, \"smithingtable\", p -> p.openSmithingTable(null, true)));\r\n        reg(\"stonecutter\", new VirtualGuiCommand(plugin, \"stonecutter\", p -> p.openStonecutter(null, true)));\r\n        reg(\"grindstone\", new VirtualGuiCommand(plugin, \"grindstone\", p -> p.openGrindstone(null, true)));\r\n\r\n        reg(\"aircore\", new CoreCommand(plugin));\r\n\r\n        unregisterDisabledCommands();\r\n    }\r\n\r\n    public void setupIntegrations() {\r\n        if (plugin.getServer().getPluginManager().getPlugin(\"PlaceholderAPI\") != null) {\r\n            new AirCorePAPIExpansion(plugin).register();\r\n        }\r\n    }\r\n\r\n    private void reg(String name, CommandExecutor executor) {\r\n        String lower = name.toLowerCase();\r\n        if (plugin.config().disabledCommands().contains(lower)) return;\r\n\r\n        PluginCommand cmd = plugin.getCommand(name);\r\n        if (cmd == null) return;\r\n\r\n        cmd.setExecutor(executor);\r\n\r\n        var section = plugin.getConfig().getConfigurationSection(\"command-usages.\" + lower);\r\n        if (section == null) return;\r\n\r\n        String usage = section.getString(\"usage\");\r\n        if (usage != null) {\r\n            cmd.setUsage(usage.replace(\"%label%\", name));\r\n        }\r\n\r\n        List<String> aliases = section.getStringList(\"aliases\");\r\n        if (!aliases.isEmpty()) {\r\n            aliases.removeIf(a -> a == null || a.isBlank());\r\n            cmd.setAliases(aliases);\r\n\r\n            try {\r\n                Map<String, Command> knownCommands = getKnownCommands();\r\n                String pluginPrefix = plugin.getName().toLowerCase() + \":\";\r\n                for (String alias : aliases) {\r\n                    String key = alias.toLowerCase();\r\n                    knownCommands.put(key, cmd);\r\n                    knownCommands.put(pluginPrefix + key, cmd);\r\n                }\r\n            } catch (Exception ignored) {}\r\n        }\r\n    }\r\n\r\n    private void unregisterDisabledCommands() {\r\n        List<String> disabled = plugin.config().disabledCommands();\r\n        for (String cmdName : disabled) {\r\n            try {\r\n                Map<String, Command> knownCommands = getKnownCommands();\r\n                String label = cmdName.toLowerCase();\r\n\r\n                knownCommands.remove(plugin.getName().toLowerCase() + \":\" + label);\r\n                Command vanillaCmd = knownCommands.get(\"minecraft:\" + label);\r\n\r\n                if (vanillaCmd != null) {\r\n                    knownCommands.put(label, vanillaCmd);\r\n                } else {\r\n                    knownCommands.remove(label);\r\n                }\r\n\r\n                PluginCommand pluginCmd = plugin.getCommand(label);\r\n                if (pluginCmd != null) {\r\n                    for (String alias : pluginCmd.getAliases()) {\r\n                        knownCommands.remove(alias.toLowerCase());\r\n                        knownCommands.remove(plugin.getName().toLowerCase() + \":\" + alias.toLowerCase());\r\n                    }\r\n                }\r\n            } catch (Exception e) {\r\n                plugin.getLogger().log(Level.WARNING, \"Failed to restore vanilla command for: \" + cmdName, e);\r\n            }\r\n        }\r\n    }\r\n\r\n    @SuppressWarnings(\"unchecked\")\r\n    private Map<String, Command> getKnownCommands() throws Exception {\r\n        SimpleCommandMap commandMap = (SimpleCommandMap) getCommandMapField().get(plugin.getServer());\r\n        Field knownCommandsField = SimpleCommandMap.class.getDeclaredField(\"knownCommands\");\r\n        knownCommandsField.setAccessible(true);\r\n        return (Map<String, Command>) knownCommandsField.get(commandMap);\r\n    }\r\n\r\n    private Field getCommandMapField() throws NoSuchFieldException {\r\n        Field field = plugin.getServer().getClass().getDeclaredField(\"commandMap\");\r\n        field.setAccessible(true);\r\n        return field;\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java b/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java
+--- a/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java	
++++ b/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java	
+@@ -9,23 +9,23 @@
+ import com.ftxeven.aircore.config.ConfigManager;
+ import com.ftxeven.aircore.config.LangManager;
+ import com.ftxeven.aircore.config.PlaceholderManager;
+-import com.ftxeven.aircore.core.modules.chat.ChatManager;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.chat.ChatManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+-import com.ftxeven.aircore.core.modules.home.HomeManager;
+-import com.ftxeven.aircore.core.modules.kit.KitManager;
+-import com.ftxeven.aircore.core.modules.teleport.TeleportManager;
+-import com.ftxeven.aircore.core.modules.utility.UtilityManager;
++import com.ftxeven.aircore.core.module.home.HomeManager;
++import com.ftxeven.aircore.core.module.kit.KitManager;
++import com.ftxeven.aircore.core.module.teleport.TeleportManager;
++import com.ftxeven.aircore.core.module.utility.UtilityManager;
+ import com.ftxeven.aircore.database.DatabaseManager;
+ import com.ftxeven.aircore.database.dao.PlayerInventories;
+ import com.ftxeven.aircore.listener.ListenerManager;
+-import com.ftxeven.aircore.core.modules.chat.command.*;
+-import com.ftxeven.aircore.core.modules.economy.command.*;
+-import com.ftxeven.aircore.core.modules.economy.service.EconomyProvider;
+-import com.ftxeven.aircore.core.modules.home.command.*;
+-import com.ftxeven.aircore.core.modules.kit.command.*;
+-import com.ftxeven.aircore.core.modules.teleport.command.*;
+-import com.ftxeven.aircore.core.modules.utility.command.*;
++import com.ftxeven.aircore.core.module.chat.command.*;
++import com.ftxeven.aircore.core.module.economy.command.*;
++import com.ftxeven.aircore.core.module.economy.service.EconomyProvider;
++import com.ftxeven.aircore.core.module.home.command.*;
++import com.ftxeven.aircore.core.module.kit.command.*;
++import com.ftxeven.aircore.core.module.teleport.command.*;
++import com.ftxeven.aircore.core.module.utility.command.*;
+ import com.ftxeven.aircore.util.*;
+ import com.google.gson.JsonObject;
+ import com.google.gson.JsonParser;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/service/CooldownService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/service/CooldownService.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/service/CooldownService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/service/CooldownService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/service/CooldownService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/service/CooldownService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/service/CooldownService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.service;
++package com.ftxeven.aircore.core.module.teleport.service;
+ 
+ import java.util.Map;
+ import java.util.UUID;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/service/RequestService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/service/RequestService.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/service/RequestService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/service/RequestService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/service/RequestService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/service/RequestService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/service/RequestService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.service;
++package com.ftxeven.aircore.core.module.teleport.service;
+ 
+ import java.util.*;
+ import java.util.concurrent.ConcurrentHashMap;
+Index: src/main/java/com/ftxeven/aircore/core/modules/teleport/service/ExpiryService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/teleport/service/ExpiryService.java b/src/main/java/com/ftxeven/aircore/core/module/teleport/service/ExpiryService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/teleport/service/ExpiryService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/teleport/service/ExpiryService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/teleport/service/ExpiryService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/teleport/service/ExpiryService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.teleport.service;
++package com.ftxeven.aircore.core.module.teleport.service;
+ 
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.Bukkit;
+Index: src/main/java/com/ftxeven/aircore/core/modules/kit/KitService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/kit/KitService.java b/src/main/java/com/ftxeven/aircore/core/module/kit/KitService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/kit/KitService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/kit/KitService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/kit/KitService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/kit/KitService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.kit;
++package com.ftxeven.aircore.core.module.kit;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import org.bukkit.Bukkit;
+Index: src/main/java/com/ftxeven/aircore/core/modules/kit/KitManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/kit/KitManager.java b/src/main/java/com/ftxeven/aircore/core/module/kit/KitManager.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/kit/KitManager.java
+rename to src/main/java/com/ftxeven/aircore/core/module/kit/KitManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/kit/KitManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/kit/KitManager.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.kit;
++package com.ftxeven.aircore.core.module.kit;
+ 
+ import com.ftxeven.aircore.AirCore;
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnouncementCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnouncementCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/AnnouncementCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnouncementCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/AnnouncementCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnouncementCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/AnnouncementCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.config.AnnouncementManager;
+Index: src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnounceToggleCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnounceToggleCommand.java b/src/main/java/com/ftxeven/aircore/core/module/utility/command/AnnounceToggleCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnounceToggleCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/utility/command/AnnounceToggleCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/utility/command/AnnounceToggleCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/utility/command/AnnounceToggleCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.utility.command;
++package com.ftxeven.aircore.core.module.utility.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;
+Index: src/main/java/com/ftxeven/aircore/core/modules/home/HomeService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/home/HomeService.java b/src/main/java/com/ftxeven/aircore/core/module/home/HomeService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/home/HomeService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/home/HomeService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/home/HomeService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/home/HomeService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.home;
++package com.ftxeven.aircore.core.module.home;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import net.luckperms.api.LuckPerms;
+Index: src/main/java/com/ftxeven/aircore/AirCore.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore;\r\n\r\nimport com.ftxeven.aircore.api.AirCoreAPI;\r\nimport com.ftxeven.aircore.config.*;\r\nimport com.ftxeven.aircore.database.DatabaseManager;\r\nimport com.ftxeven.aircore.core.*;\r\nimport com.ftxeven.aircore.core.modules.chat.ChatManager;\r\nimport com.ftxeven.aircore.core.modules.economy.EconomyManager;\r\nimport com.ftxeven.aircore.core.modules.home.HomeManager;\r\nimport com.ftxeven.aircore.core.modules.kit.KitManager;\r\nimport com.ftxeven.aircore.core.modules.teleport.TeleportManager;\r\nimport com.ftxeven.aircore.core.modules.utility.UtilityManager;\r\nimport com.ftxeven.aircore.core.gui.GuiManager;\r\nimport com.ftxeven.aircore.util.*;\r\nimport org.bukkit.plugin.java.JavaPlugin;\r\n\r\npublic final class AirCore extends JavaPlugin {\r\n\r\n    private ConfigManager configManager;\r\n    private LangManager langManager;\r\n    private AnnouncementManager announcementManager;\r\n    private ChatManager chatManager;\r\n    private EconomyManager economyManager;\r\n    private TeleportManager teleportManager;\r\n    private DatabaseManager databaseManager;\r\n    private CoreManager coreManager;\r\n    private HomeManager homeManager;\r\n    private KitManager kitManager;\r\n    private UtilityManager utilityManager;\r\n    private GuiManager guiManager;\r\n    private PlaceholderManager placeholderManager;\r\n    private SchedulerUtil schedulerUtil;\r\n    private CoreInitializer coreInitializer;\r\n    private AirCoreAPI api;\r\n    private String latestVersion = null;\r\n\r\n    @Override\r\n    public void onLoad() {\r\n        saveDefaultConfig();\r\n    }\r\n\r\n    @Override\r\n    public void onEnable() {\r\n        this.coreInitializer = new CoreInitializer(this);\r\n        this.coreInitializer.initialize();\r\n\r\n        getLogger().info(\"AirCore enabled @ featxeven\");\r\n    }\r\n\r\n    @Override\r\n    public void onDisable() {\r\n        if (coreInitializer != null) {\r\n            coreInitializer.shutdown();\r\n        }\r\n        getLogger().info(\"AirCore disabled @ featxeven\");\r\n    }\r\n\r\n    public void setConfigManager(ConfigManager configManager) { this.configManager = configManager; }\r\n    public void setLangManager(LangManager langManager) { this.langManager = langManager; }\r\n    public void setAnnouncementManager(AnnouncementManager announcementManager) { this.announcementManager = announcementManager; }\r\n    public void setChatManager(ChatManager chatManager) { this.chatManager = chatManager; }\r\n    public void setEconomyManager(EconomyManager economyManager) { this.economyManager = economyManager; }\r\n    public void setTeleportManager(TeleportManager teleportManager) { this.teleportManager = teleportManager; }\r\n    public void setDatabaseManager(DatabaseManager databaseManager) { this.databaseManager = databaseManager; }\r\n    public void setCoreManager(CoreManager coreManager) { this.coreManager = coreManager; }\r\n    public void setHomeManager(HomeManager homeManager) { this.homeManager = homeManager; }\r\n    public void setKitManager(KitManager kitManager) { this.kitManager = kitManager; }\r\n    public void setUtilityManager(UtilityManager utilityManager) { this.utilityManager = utilityManager; }\r\n    public void setGuiManager(GuiManager guiManager) { this.guiManager = guiManager; }\r\n    public void setPlaceholderManager(PlaceholderManager placeholderManager) { this.placeholderManager = placeholderManager; }\r\n    public void setSchedulerUtil(SchedulerUtil schedulerUtil) { this.schedulerUtil = schedulerUtil; }\r\n    public void setApi(AirCoreAPI api) { this.api = api; }\r\n    public void setLatestVersion(String latestVersion) { this.latestVersion = latestVersion; }\r\n\r\n    public ConfigManager config() { return configManager; }\r\n    public LangManager lang() { return langManager; }\r\n    public AnnouncementManager announcements() { return announcementManager; }\r\n    public ChatManager chat() { return chatManager; }\r\n    public EconomyManager economy() { return economyManager; }\r\n    public TeleportManager teleport() { return teleportManager; }\r\n    public DatabaseManager database() { return databaseManager; }\r\n    public CoreManager core() { return coreManager; }\r\n    public HomeManager home() { return homeManager; }\r\n    public KitManager kit() { return kitManager; }\r\n    public UtilityManager utility() { return utilityManager; }\r\n    public GuiManager gui() { return guiManager; }\r\n    public PlaceholderManager placeholders() { return placeholderManager; }\r\n    public SchedulerUtil scheduler() { return schedulerUtil; }\r\n    public AirCoreAPI api() { return api; }\r\n    public String getLatestVersion() { return latestVersion; }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/AirCore.java b/src/main/java/com/ftxeven/aircore/AirCore.java
+--- a/src/main/java/com/ftxeven/aircore/AirCore.java	
++++ b/src/main/java/com/ftxeven/aircore/AirCore.java	
+@@ -4,12 +4,12 @@
+ import com.ftxeven.aircore.config.*;
+ import com.ftxeven.aircore.database.DatabaseManager;
+ import com.ftxeven.aircore.core.*;
+-import com.ftxeven.aircore.core.modules.chat.ChatManager;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
+-import com.ftxeven.aircore.core.modules.home.HomeManager;
+-import com.ftxeven.aircore.core.modules.kit.KitManager;
+-import com.ftxeven.aircore.core.modules.teleport.TeleportManager;
+-import com.ftxeven.aircore.core.modules.utility.UtilityManager;
++import com.ftxeven.aircore.core.module.chat.ChatManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.home.HomeManager;
++import com.ftxeven.aircore.core.module.kit.KitManager;
++import com.ftxeven.aircore.core.module.teleport.TeleportManager;
++import com.ftxeven.aircore.core.module.utility.UtilityManager;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+ import com.ftxeven.aircore.util.*;
+ import org.bukkit.plugin.java.JavaPlugin;
+Index: src/main/java/com/ftxeven/aircore/core/modules/home/HomeManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/home/HomeManager.java b/src/main/java/com/ftxeven/aircore/core/module/home/HomeManager.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/home/HomeManager.java
+rename to src/main/java/com/ftxeven/aircore/core/module/home/HomeManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/home/HomeManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/home/HomeManager.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.home;
++package com.ftxeven.aircore.core.module.home;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import org.bukkit.Location;
+Index: src/main/java/com/ftxeven/aircore/core/modules/kit/command/CreateKitCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/CreateKitCommand.java b/src/main/java/com/ftxeven/aircore/core/module/kit/command/CreateKitCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/kit/command/CreateKitCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/kit/command/CreateKitCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/CreateKitCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/kit/command/CreateKitCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.kit.command;
++package com.ftxeven.aircore.core.module.kit.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore.core.gui.sell;\r\n\r\nimport com.ftxeven.aircore.AirCore;\r\nimport com.ftxeven.aircore.core.modules.economy.EconomyManager;\r\nimport com.ftxeven.aircore.core.gui.GuiDefinition;\r\nimport com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;\r\nimport com.ftxeven.aircore.core.gui.GuiManager;\r\nimport com.ftxeven.aircore.core.gui.ItemAction;\r\nimport com.ftxeven.aircore.util.MessageUtil;\r\nimport com.ftxeven.aircore.util.PlaceholderUtil;\r\nimport net.kyori.adventure.text.minimessage.MiniMessage;\r\nimport org.bukkit.Bukkit;\r\nimport org.bukkit.Material;\r\nimport org.bukkit.configuration.ConfigurationSection;\r\nimport org.bukkit.configuration.file.YamlConfiguration;\r\nimport org.bukkit.entity.Player;\r\nimport org.bukkit.event.HandlerList;\r\nimport org.bukkit.event.inventory.ClickType;\r\nimport org.bukkit.event.inventory.InventoryClickEvent;\r\nimport org.bukkit.event.inventory.InventoryType;\r\nimport org.bukkit.inventory.Inventory;\r\nimport org.bukkit.inventory.InventoryHolder;\r\nimport org.bukkit.inventory.ItemStack;\r\nimport org.jetbrains.annotations.NotNull;\r\n\r\nimport java.io.File;\r\nimport java.util.*;\r\nimport java.util.concurrent.ConcurrentHashMap;\r\n\r\npublic final class SellManager implements GuiManager.CustomGuiManager {\r\n\r\n    private final AirCore plugin;\r\n    private final ItemAction itemAction;\r\n    private final MiniMessage mm = MiniMessage.miniMessage();\r\n    private final Set<UUID> processedSales = ConcurrentHashMap.newKeySet();\r\n    private final Set<UUID> transitioning = ConcurrentHashMap.newKeySet();\r\n    private final SellListener listener;\r\n    private final ConfirmManager confirmManager;\r\n\r\n    private GuiDefinition definition;\r\n    private GuiItem cachedConfirmItem;\r\n    private Set<Integer> cachedSellSlots = Collections.emptySet();\r\n    private Set<Integer> cachedConfirmSlots = Collections.emptySet();\r\n    private boolean enabled;\r\n\r\n    public SellManager(AirCore plugin, ItemAction itemAction) {\r\n        this.plugin = plugin;\r\n        this.itemAction = itemAction;\r\n        this.confirmManager = new ConfirmManager(plugin, this);\r\n        loadDefinition();\r\n        this.listener = new SellListener(plugin, this);\r\n        Bukkit.getPluginManager().registerEvents(this.listener, plugin);\r\n    }\r\n\r\n    public void loadDefinition() {\r\n        File file = new File(plugin.getDataFolder(), \"guis/sell/sell.yml\");\r\n        if (!file.exists()) plugin.saveResource(\"guis/sell/sell.yml\", false);\r\n\r\n        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);\r\n        this.enabled = cfg.getBoolean(\"enabled\", true);\r\n\r\n        Map<String, GuiItem> items = new LinkedHashMap<>();\r\n        List<Integer> sellList = GuiDefinition.parseSlots(cfg.getStringList(\"sell-slots\"));\r\n        this.cachedSellSlots = new HashSet<>(sellList);\r\n        items.put(\"sell-slots\", createEmptyGroup(sellList));\r\n\r\n        this.cachedConfirmSlots = new HashSet<>();\r\n        loadButton(cfg, items, \"confirm\", true);\r\n        loadButton(cfg, items, \"confirm-all\", false);\r\n\r\n        ConfigurationSection itemsSec = cfg.getConfigurationSection(\"items\");\r\n        if (itemsSec != null) {\r\n            for (String key : itemsSec.getKeys(false)) {\r\n                if (items.containsKey(key)) continue;\r\n                ConfigurationSection sec = itemsSec.getConfigurationSection(key);\r\n                if (sec != null) items.put(key, GuiItem.fromSection(key, sec));\r\n            }\r\n        }\r\n\r\n        this.definition = new GuiDefinition(cfg.getString(\"title\", \"Place items here\"), cfg.getInt(\"rows\", 5), items, cfg);\r\n        confirmManager.loadDefinition();\r\n    }\r\n\r\n    private void loadButton(YamlConfiguration cfg, Map<String, GuiItem> items, String key, boolean isConfirm) {\r\n        ConfigurationSection sec = cfg.getConfigurationSection(\"buttons.\" + key);\r\n        if (sec == null) return;\r\n        GuiItem item = GuiItem.fromSection(key, sec);\r\n        items.put(key, item);\r\n\r\n        this.cachedConfirmSlots.addAll(item.slots());\r\n\r\n        if (isConfirm) {\r\n            this.cachedConfirmItem = item;\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public Inventory build(Player viewer, Map<String, String> placeholders) {\r\n        Map<String, String> context = new HashMap<>(placeholders);\r\n        context.put(\"player\", viewer.getName());\r\n        context.put(\"worth\", \"0\");\r\n        context.put(\"worth-raw\", \"0\");\r\n        context.put(\"worth-all\", \"0\");\r\n        context.put(\"worth-all-raw\", \"0\");\r\n\r\n        String title = PlaceholderUtil.apply(viewer, definition.title().replace(\"%player%\", viewer.getName()), context);\r\n        Inventory inv = Bukkit.createInventory(new SellHolder(), definition.rows() * 9, mm.deserialize(title));\r\n\r\n        if (inv.getHolder() instanceof SellHolder holder) {\r\n            holder.setInventory(inv);\r\n        }\r\n\r\n        SellSlotMapper.fillCustom(plugin, inv, definition, viewer, context);\r\n        return inv;\r\n    }\r\n\r\n    @Override\r\n    public void handleClick(InventoryClickEvent event, Player viewer) {\r\n        Inventory top = event.getView().getTopInventory();\r\n        Inventory clicked = event.getClickedInventory();\r\n        if (clicked == null || event.getSlotType() == InventoryType.SlotType.OUTSIDE) return;\r\n\r\n        ItemStack current = event.getCurrentItem();\r\n        int slot = event.getSlot();\r\n        ClickType click = event.getClick();\r\n\r\n        if (clicked.equals(event.getView().getBottomInventory())) {\r\n            if (event.isShiftClick() && current != null && !current.getType().isAir()) {\r\n                event.setCancelled(true);\r\n                distributeToSlots(top, current, clicked, slot);\r\n                refreshConfirmButton(top, viewer);\r\n            }\r\n            return;\r\n        }\r\n\r\n        event.setCancelled(true);\r\n\r\n        if (cachedConfirmSlots.contains(slot)) {\r\n            boolean isAll = isConfirmAllSlot(slot);\r\n            String key = isAll ? \"confirm-all\" : \"confirm\";\r\n            GuiItem buttonDef = definition.items().get(key);\r\n\r\n            if (current != null && buttonDef != null && current.getType() == buttonDef.material()) {\r\n                handleButtonPress(viewer, top, isAll, click, slot);\r\n                return;\r\n            }\r\n\r\n            handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);\r\n            return;\r\n        }\r\n\r\n        if (cachedSellSlots.contains(slot)) {\r\n            if (SellSlotMapper.isCustomFillerAt(definition, slot, current) && event.getCursor().getType().isAir()) {\r\n                handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);\r\n            } else {\r\n                event.setCancelled(false);\r\n                plugin.scheduler().runEntityTaskDelayed(viewer, () -> refreshConfirmButton(top, viewer), 1L);\r\n            }\r\n            return;\r\n        }\r\n\r\n        handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);\r\n    }\r\n\r\n    private boolean isConfirmAllSlot(int slot) {\r\n        GuiItem all = definition.items().get(\"confirm-all\");\r\n        return all != null && all.slots().contains(slot);\r\n    }\r\n\r\n    private void handleButtonPress(Player viewer, Inventory top, boolean isAll, ClickType click, int slot) {\r\n        String key = isAll ? \"confirm-all\" : \"confirm\";\r\n        GuiItem button = definition.items().get(key);\r\n        if (button == null) return;\r\n\r\n        var worthService = plugin.economy().worth();\r\n        SellSlotMapper.WorthResult result = isAll ?\r\n                SellSlotMapper.calculateWorthAll(top, worthService, definition, viewer) :\r\n                SellSlotMapper.calculateWorth(top, worthService, definition);\r\n\r\n        boolean alwaysShow = definition.config().getBoolean(\"always-show-buttons\", true);\r\n        if (!alwaysShow && result.total() <= 0) {\r\n            handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);\r\n            return;\r\n        }\r\n\r\n        if (plugin.gui().cooldowns().isOnCooldown(viewer, button)) {\r\n            plugin.gui().cooldowns().sendCooldownMessage(viewer, button);\r\n            return;\r\n        }\r\n\r\n        String subKey = isAll ? \"sell-all\" : \"sell\";\r\n        String fullPath = \"buttons.\" + key + \".apply-confirm.\" + subKey + \".enabled\";\r\n\r\n        boolean shouldConfirm = definition.config().getBoolean(fullPath, false);\r\n\r\n        shouldConfirm = shouldConfirm && result.total() > 0 && !result.hasUnsupported();\r\n\r\n        Map<String, String> ph = new HashMap<>();\r\n        ph.put(\"amount\", plugin.economy().formats().formatAmount(result.total()));\r\n        ph.put(\"worth\", plugin.economy().formats().formatAmount(result.total()));\r\n        ph.put(\"worth-all\", plugin.economy().formats().formatAmount(result.total()));\r\n        ph.put(\"worth-raw\", String.valueOf(result.total()));\r\n        ph.put(\"player\", viewer.getName());\r\n\r\n        plugin.gui().cooldowns().applyCooldown(viewer, button);\r\n\r\n        if (shouldConfirm) {\r\n            executeNonSellActions(button, viewer, click, ph);\r\n            confirmManager.open(viewer, top, result, isAll);\r\n        } else {\r\n            handleAction(button, viewer, click, ph, top);\r\n        }\r\n    }\r\n\r\n    private void executeNonSellActions(GuiItem item, Player viewer, ClickType click, Map<String, String> ph) {\r\n        List<String> actions = item.getActionsForClick(click);\r\n        if (actions == null) return;\r\n\r\n        for (String action : actions) {\r\n            String lower = action.toLowerCase();\r\n            if (lower.contains(\"[sell]\") || lower.contains(\"[sell-all]\")) continue;\r\n            itemAction.execute(action, viewer, ph);\r\n        }\r\n    }\r\n\r\n    public void processSale(Player viewer, Inventory top, SellSlotMapper.WorthResult result, boolean isAll) {\r\n        if (result.hasUnsupported() || result.total() <= 0) {\r\n            MessageUtil.send(viewer, result.hasUnsupported() ? \"economy.sell.error-failed\" : \"economy.sell.error-invalid\", Map.of());\r\n            return;\r\n        }\r\n\r\n        double totalSale = result.total();\r\n        double rounded = plugin.economy().formats().round(totalSale);\r\n\r\n        double maxBalance = plugin.config().economyMaxBalance();\r\n        if (maxBalance > 0) {\r\n            double currentBalance = plugin.economy().balances().getBalance(viewer.getUniqueId());\r\n            if ((currentBalance + rounded) > maxBalance) {\r\n                MessageUtil.send(viewer, \"economy.sell.error-max-balance\", Map.of(\r\n                        \"amount\", plugin.economy().formats().formatAmount(maxBalance)\r\n                ));\r\n                return;\r\n            }\r\n        }\r\n\r\n        if (plugin.economy().transactions().deposit(viewer.getUniqueId(), rounded).type() == EconomyManager.ResultType.SUCCESS) {\r\n            markSaleProcessed(viewer.getUniqueId());\r\n            MessageUtil.send(viewer, \"economy.sell.success\", Map.of(\"amount\", plugin.economy().formats().formatAmount(rounded)));\r\n\r\n            if (definition.config().getBoolean(\"sell-logs-on-console\", false)) {\r\n                plugin.getLogger().info(viewer.getName() + \" sold items for $\" + rounded);\r\n            }\r\n\r\n            clearSellSlots(top);\r\n            if (isAll) {\r\n                viewer.getInventory().clear();\r\n            }\r\n\r\n            if (!(viewer.getOpenInventory().getTopInventory().getHolder() instanceof ConfirmManager.ConfirmHolder)) {\r\n                refreshConfirmButton(top, viewer);\r\n                viewer.updateInventory();\r\n            }\r\n        } else {\r\n            MessageUtil.send(viewer, \"economy.sell.error-failed\", Map.of());\r\n        }\r\n    }\r\n\r\n    public void handleAction(GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh, Inventory inv) {\r\n        if (item == null) return;\r\n        List<String> actions = item.getActionsForClick(click);\r\n        if (actions == null || actions.isEmpty()) return;\r\n\r\n        Map<String, String> ph = new HashMap<>(extraPh);\r\n        ph.put(\"player\", viewer.getName());\r\n\r\n        for (String action : actions) {\r\n            if (action.equalsIgnoreCase(\"[sell]\")) {\r\n                var result = SellSlotMapper.calculateWorth(inv, plugin.economy().worth(), definition);\r\n                processSale(viewer, inv, result, false);\r\n                continue;\r\n            }\r\n            if (action.equalsIgnoreCase(\"[sell-all]\")) {\r\n                var result = SellSlotMapper.calculateWorthAll(inv, plugin.economy().worth(), definition, viewer);\r\n                processSale(viewer, inv, result, true);\r\n                continue;\r\n            }\r\n            itemAction.execute(action, viewer, ph);\r\n        }\r\n    }\r\n\r\n    public void refreshConfirmButton(Inventory inv, Player viewer) {\r\n        if (!(inv.getHolder() instanceof SellHolder holder)) return;\r\n\r\n        var worthService = plugin.economy().worth();\r\n        double guiWorth = SellSlotMapper.calculateWorth(inv, worthService, definition).total();\r\n        double totalAll = SellSlotMapper.calculateWorthAll(inv, worthService, definition, viewer).total();\r\n\r\n        if (holder.lastWorth == (guiWorth + totalAll)) return;\r\n        holder.lastWorth = guiWorth + totalAll;\r\n\r\n        boolean alwaysShow = definition.config().getBoolean(\"always-show-buttons\", true);\r\n        if (!alwaysShow) {\r\n            if (guiWorth <= 0 && cachedConfirmItem != null) cachedConfirmItem.slots().forEach(s -> inv.setItem(s, null));\r\n            GuiItem all = definition.items().get(\"confirm-all\");\r\n            if (totalAll <= 0 && all != null) all.slots().forEach(s -> inv.setItem(s, null));\r\n        }\r\n\r\n        Map<String, String> context = new HashMap<>();\r\n        context.put(\"player\", viewer.getName());\r\n        context.put(\"worth\", plugin.economy().formats().formatAmount(guiWorth));\r\n        context.put(\"worth-raw\", String.valueOf(guiWorth));\r\n        context.put(\"worth-all\", plugin.economy().formats().formatAmount(totalAll));\r\n        context.put(\"worth-all-raw\", String.valueOf(totalAll));\r\n\r\n        SellSlotMapper.fillCustom(plugin, inv, definition, viewer, context);\r\n    }\r\n\r\n    private void distributeToSlots(Inventory top, ItemStack moving, Inventory sourceInv, int sourceSlot) {\r\n        for (int dest : cachedSellSlots) {\r\n            ItemStack destItem = top.getItem(dest);\r\n            if (destItem != null && destItem.isSimilar(moving)) {\r\n                int transfer = Math.min(moving.getAmount(), destItem.getMaxStackSize() - destItem.getAmount());\r\n                destItem.setAmount(destItem.getAmount() + transfer);\r\n                moving.setAmount(moving.getAmount() - transfer);\r\n            }\r\n            if (moving.getAmount() <= 0) break;\r\n        }\r\n        if (moving.getAmount() > 0) {\r\n            for (int dest : cachedSellSlots) {\r\n                ItemStack item = top.getItem(dest);\r\n                if (item == null || item.getType().isAir()) {\r\n                    top.setItem(dest, moving.clone());\r\n                    moving.setAmount(0);\r\n                    break;\r\n                }\r\n            }\r\n        }\r\n        if (moving.getAmount() <= 0) sourceInv.setItem(sourceSlot, null);\r\n    }\r\n\r\n    private GuiItem createEmptyGroup(List<Integer> slots) {\r\n        return new GuiItem(\"sell-slots\", slots, Material.AIR, null, Collections.emptyList(), false, null,\r\n                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),\r\n                Collections.emptyList(), Collections.emptyList(), null, null, null, Collections.emptyMap(),\r\n                Collections.emptyList(), null, null, null, 0.0, null);\r\n    }\r\n\r\n    public void returnItems(Player player, Inventory inv) {\r\n        GuiItem sellSlotsItem = definition.items().get(\"sell-slots\");\r\n        if (sellSlotsItem == null) return;\r\n\r\n        List<Integer> sellSlots = sellSlotsItem.slots();\r\n        listener.returnItemsToPlayer(player, inv, sellSlots);\r\n    }\r\n\r\n    private GuiItem findCustomItemAt(int slot) { return SellSlotMapper.findCustomItemAt(definition, slot); }\r\n    private void clearSellSlots(Inventory top) { for (int slot : cachedSellSlots) if (slot < top.getSize()) top.setItem(slot, null); }\r\n\r\n    public void markSaleProcessed(UUID player) { processedSales.add(player); plugin.scheduler().runDelayed(() -> processedSales.remove(player), 20L); }\r\n    public boolean consumeProcessedSale(UUID player) { return processedSales.remove(player); }\r\n    public void markTransitioning(UUID player) { transitioning.add(player); plugin.scheduler().runDelayed(() -> transitioning.remove(player), 2L); }\r\n    public boolean isTransitioning(UUID player) { return transitioning.contains(player); }\r\n    public boolean isEnabled() { return enabled; }\r\n    public ItemAction getActionProcessor() { return itemAction; }\r\n\r\n    @Override public void cleanup() { HandlerList.unregisterAll(this.listener); confirmManager.cleanup(); }\r\n    @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof SellHolder || inv.getHolder() instanceof ConfirmManager.ConfirmHolder; }\r\n    @Override public void refresh(Inventory inv, Player v, Map<String, String> ph) { refreshConfirmButton(inv, v); }\r\n    public GuiDefinition definition() { return definition; }\r\n\r\n    public static class SellHolder implements InventoryHolder {\r\n        public double lastWorth = -1.0;\r\n        private Inventory inventory;\r\n        public void setInventory(Inventory inventory) { this.inventory = inventory; }\r\n        @Override public @NotNull Inventory getInventory() { return inventory; }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java b/src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java	
+@@ -1,7 +1,7 @@
+ package com.ftxeven.aircore.core.gui.sell;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ import com.ftxeven.aircore.core.gui.GuiDefinition;
+ import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+Index: src/main/java/com/ftxeven/aircore/core/modules/kit/command/EditKitCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/EditKitCommand.java b/src/main/java/com/ftxeven/aircore/core/module/kit/command/EditKitCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/kit/command/EditKitCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/kit/command/EditKitCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/EditKitCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/kit/command/EditKitCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.kit.command;
++package com.ftxeven.aircore.core.module.kit.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore.core.gui.sell;\r\n\r\nimport com.ftxeven.aircore.AirCore;\r\nimport com.ftxeven.aircore.core.gui.GuiDefinition;\r\nimport com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;\r\nimport com.ftxeven.aircore.core.modules.economy.service.ItemWorthService;\r\nimport org.bukkit.entity.Player;\r\nimport org.bukkit.inventory.Inventory;\r\nimport org.bukkit.inventory.ItemStack;\r\n\r\nimport javax.annotation.Nullable;\r\nimport java.util.*;\r\n\r\npublic final class SellSlotMapper {\r\n\r\n    private SellSlotMapper() {}\r\n\r\n    public static void fillCustom(AirCore plugin, Inventory inv, GuiDefinition def, Player viewer, Map<String, String> placeholders) {\r\n        var worthService = plugin.economy().worth();\r\n        var formatService = plugin.economy().formats();\r\n        boolean alwaysShow = def.config().getBoolean(\"always-show-buttons\", true);\r\n        Map<String, String> mutablePh = new HashMap<>(placeholders);\r\n\r\n        for (GuiItem item : def.items().values()) {\r\n            if (isReservedKey(item.key())) continue;\r\n            renderItem(inv, item, viewer, mutablePh);\r\n        }\r\n\r\n        GuiItem confirm = def.items().get(\"confirm\");\r\n        double worth = calculateWorth(inv, worthService, def).total();\r\n        mutablePh.put(\"worth\", formatService.formatAmount(worth));\r\n        mutablePh.put(\"worth-raw\", String.valueOf(worth));\r\n\r\n        if (confirm != null && (alwaysShow || worth > 0)) {\r\n            renderItem(inv, confirm, viewer, mutablePh);\r\n        }\r\n\r\n        GuiItem confirmAll = def.items().get(\"confirm-all\");\r\n        double worthAll = calculateWorthAll(inv, worthService, def, viewer).total();\r\n        mutablePh.put(\"worth-all\", formatService.formatAmount(worthAll));\r\n        mutablePh.put(\"worth-all-raw\", String.valueOf(worthAll));\r\n\r\n        if (confirmAll != null && (alwaysShow || worthAll > 0)) {\r\n            renderItem(inv, confirmAll, viewer, mutablePh);\r\n        }\r\n\r\n        renderSpecificButton(inv, def, \"cancel\", viewer, mutablePh);\r\n    }\r\n\r\n    public static void fillConfirm(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> placeholders) {\r\n        Map<String, String> ph = new HashMap<>(placeholders);\r\n        for (GuiItem item : def.items().values()) {\r\n            if (item.key().equals(\"confirm\") || item.key().equals(\"cancel\")) continue;\r\n            renderItem(inv, item, viewer, ph);\r\n        }\r\n        renderSpecificButton(inv, def, \"confirm\", viewer, ph);\r\n        renderSpecificButton(inv, def, \"cancel\", viewer, ph);\r\n    }\r\n\r\n    private static void renderItem(Inventory inv, GuiItem item, Player p, Map<String, String> ph) {\r\n        ItemStack stack = item.buildStack(p, ph);\r\n        for (int slot : item.slots()) {\r\n            if (slot < inv.getSize()) inv.setItem(slot, stack);\r\n        }\r\n    }\r\n\r\n    private static void renderSpecificButton(Inventory inv, GuiDefinition def, String key, Player p, Map<String, String> ph) {\r\n        GuiItem item = def.items().get(key);\r\n        if (item != null) renderItem(inv, item, p, ph);\r\n    }\r\n\r\n    public static WorthResult calculateWorth(Inventory inv, ItemWorthService worthService, GuiDefinition def) {\r\n        GuiItem sellGroup = def.items().get(\"sell-slots\");\r\n        if (sellGroup == null) return new WorthResult(0, false);\r\n\r\n        double total = 0;\r\n        boolean unsupported = false;\r\n\r\n        for (int slot : sellGroup.slots()) {\r\n            if (slot >= inv.getSize()) continue;\r\n            ItemStack item = inv.getItem(slot);\r\n            if (item == null || item.getType().isAir()) continue;\r\n\r\n            double price = worthService.getWorth(item);\r\n            if (price <= 0) {\r\n                unsupported = true;\r\n            } else {\r\n                total += price * item.getAmount();\r\n            }\r\n        }\r\n        return new WorthResult(total, unsupported);\r\n    }\r\n\r\n    public static WorthResult calculateWorthAll(Inventory inv, ItemWorthService worthService, GuiDefinition def, Player viewer) {\r\n        WorthResult guiResult = calculateWorth(inv, worthService, def);\r\n        double total = guiResult.total();\r\n        boolean unsupported = guiResult.hasUnsupported();\r\n\r\n        ItemStack[] contents = viewer.getInventory().getStorageContents();\r\n        for (ItemStack item : contents) {\r\n            if (item == null || item.getType().isAir()) continue;\r\n            double price = worthService.getWorth(item);\r\n            if (price > 0) {\r\n                total += price * item.getAmount();\r\n            } else {\r\n                unsupported = true;\r\n            }\r\n        }\r\n        return new WorthResult(total, unsupported);\r\n    }\r\n\r\n    public static boolean isCustomFillerAt(GuiDefinition def, int slot, @Nullable ItemStack current) {\r\n        if (current == null || current.getType().isAir()) return false;\r\n        GuiItem item = findCustomItemAt(def, slot);\r\n        return item != null && current.getType() == item.material();\r\n    }\r\n\r\n    public static GuiItem findCustomItemAt(GuiDefinition def, int slot) {\r\n        for (GuiItem item : def.items().values()) {\r\n            if (isReservedKey(item.key())) continue;\r\n            if (item.slots().contains(slot)) return item;\r\n        }\r\n        return null;\r\n    }\r\n\r\n    private static boolean isReservedKey(String key) {\r\n        return key.equalsIgnoreCase(\"sell-slots\") ||\r\n                key.equalsIgnoreCase(\"confirm\") ||\r\n                key.equalsIgnoreCase(\"confirm-all\") ||\r\n                key.equalsIgnoreCase(\"cancel\");\r\n    }\r\n\r\n    public record WorthResult(double total, boolean hasUnsupported) {}\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java b/src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java
+--- a/src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java	
++++ b/src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java	
+@@ -3,7 +3,7 @@
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.gui.GuiDefinition;
+ import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
+-import com.ftxeven.aircore.core.modules.economy.service.ItemWorthService;
++import com.ftxeven.aircore.core.module.economy.service.ItemWorthService;
+ import org.bukkit.entity.Player;
+ import org.bukkit.inventory.Inventory;
+ import org.bukkit.inventory.ItemStack;
+Index: src/main/java/com/ftxeven/aircore/core/modules/home/command/DelHomeCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/home/command/DelHomeCommand.java b/src/main/java/com/ftxeven/aircore/core/module/home/command/DelHomeCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/home/command/DelHomeCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/home/command/DelHomeCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/home/command/DelHomeCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/home/command/DelHomeCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.home.command;
++package com.ftxeven.aircore.core.module.home.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/kit/command/KitCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/KitCommand.java b/src/main/java/com/ftxeven/aircore/core/module/kit/command/KitCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/kit/command/KitCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/kit/command/KitCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/KitCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/kit/command/KitCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.kit.command;
++package com.ftxeven.aircore.core.module.kit.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.database.dao.PlayerKits;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/service/ItemWorthService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/ItemWorthService.java b/src/main/java/com/ftxeven/aircore/core/module/economy/service/ItemWorthService.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/service/ItemWorthService.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/service/ItemWorthService.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/service/ItemWorthService.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/service/ItemWorthService.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.economy.service;
++package com.ftxeven.aircore.core.module.economy.service;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import org.bukkit.Material;
+Index: src/main/java/com/ftxeven/aircore/core/modules/kit/command/DeleteKitCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/DeleteKitCommand.java b/src/main/java/com/ftxeven/aircore/core/module/kit/command/DeleteKitCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/kit/command/DeleteKitCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/kit/command/DeleteKitCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/kit/command/DeleteKitCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/kit/command/DeleteKitCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.kit.command;
++package com.ftxeven.aircore.core.module.kit.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.util.MessageUtil;
+Index: src/main/java/com/ftxeven/aircore/core/modules/home/command/HomeCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/home/command/HomeCommand.java b/src/main/java/com/ftxeven/aircore/core/module/home/command/HomeCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/home/command/HomeCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/home/command/HomeCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/home/command/HomeCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/home/command/HomeCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.home.command;
++package com.ftxeven.aircore.core.module.home.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.gui.GuiManager;
+Index: src/main/java/com/ftxeven/aircore/core/gui/sell/SellListener.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.ftxeven.aircore.core.gui.sell;\r\n\r\nimport com.ftxeven.aircore.AirCore;\r\nimport com.ftxeven.aircore.core.modules.economy.EconomyManager;\r\nimport com.ftxeven.aircore.util.MessageUtil;\r\nimport org.bukkit.entity.Player;\r\nimport org.bukkit.event.EventHandler;\r\nimport org.bukkit.event.EventPriority;\r\nimport org.bukkit.event.Listener;\r\nimport org.bukkit.event.entity.EntityPickupItemEvent;\r\nimport org.bukkit.event.inventory.*;\r\nimport org.bukkit.event.player.PlayerDropItemEvent;\r\nimport org.bukkit.inventory.Inventory;\r\nimport org.bukkit.inventory.ItemStack;\r\n\r\nimport java.util.*;\r\nimport java.util.concurrent.ConcurrentHashMap;\r\n\r\npublic final class SellListener implements Listener {\r\n\r\n    private final AirCore plugin;\r\n    private final SellManager manager;\r\n    private final Set<UUID> pendingUpdates = ConcurrentHashMap.newKeySet();\r\n\r\n    public SellListener(AirCore plugin, SellManager manager) {\r\n        this.plugin = plugin;\r\n        this.manager = manager;\r\n    }\r\n\r\n    private void debounceRefresh(Player viewer, Inventory inv) {\r\n        if (!pendingUpdates.add(viewer.getUniqueId())) return;\r\n\r\n        plugin.scheduler().runEntityTaskDelayed(viewer, () -> {\r\n            try {\r\n                if (viewer.getOpenInventory().getTopInventory().equals(inv) &&\r\n                        inv.getHolder() instanceof SellManager.SellHolder) {\r\n                    manager.refreshConfirmButton(inv, viewer);\r\n                }\r\n            } finally {\r\n                pendingUpdates.remove(viewer.getUniqueId());\r\n            }\r\n        }, 1L);\r\n    }\r\n\r\n    @EventHandler(priority = EventPriority.LOWEST)\r\n    public void onInventoryClick(InventoryClickEvent event) {\r\n        Inventory top = event.getView().getTopInventory();\r\n        if (top.getHolder() instanceof SellManager.SellHolder) {\r\n            debounceRefresh((Player) event.getWhoClicked(), top);\r\n        }\r\n    }\r\n\r\n    @EventHandler\r\n    public void onInventoryClose(InventoryCloseEvent e) {\r\n        if (!(e.getInventory().getHolder() instanceof SellManager.SellHolder)) return;\r\n\r\n        Player player = (Player) e.getPlayer();\r\n        if (manager.isTransitioning(player.getUniqueId())) return;\r\n\r\n        Inventory inv = e.getInventory();\r\n        var sellSlots = manager.definition().items().get(\"sell-slots\").slots();\r\n\r\n        if (plugin.gui().isReloading() || manager.consumeProcessedSale(player.getUniqueId())) {\r\n            returnItemsToPlayer(player, inv, sellSlots);\r\n            return;\r\n        }\r\n\r\n        boolean sellOnClose = manager.definition().config().getBoolean(\"sell-on-inventory-close\", false);\r\n        if (sellOnClose) {\r\n            SellSlotMapper.WorthResult result = SellSlotMapper.calculateWorth(inv, plugin.economy().worth(), manager.definition());\r\n\r\n            if (result.hasUnsupported() || result.total() <= 0) {\r\n                if (result.total() <= 0 && hasItems(inv, sellSlots)) {\r\n                    MessageUtil.send(player, \"economy.sell.error-invalid\", Map.of());\r\n                } else if (result.hasUnsupported()) {\r\n                    MessageUtil.send(player, \"economy.sell.error-failed\", Map.of());\r\n                }\r\n                returnItemsToPlayer(player, inv, sellSlots);\r\n                return;\r\n            }\r\n\r\n            double rounded = plugin.economy().formats().round(result.total());\r\n            if (plugin.economy().transactions().deposit(player.getUniqueId(), rounded).type() == EconomyManager.ResultType.SUCCESS) {\r\n                MessageUtil.send(player, \"economy.sell.success\", Map.of(\"amount\", plugin.economy().formats().formatAmount(rounded)));\r\n\r\n                if (manager.definition().config().getBoolean(\"sell-logs-on-console\", false)) {\r\n                    plugin.getLogger().info(player.getName() + \" sold items on close for $\" + rounded);\r\n                }\r\n                for (int slot : sellSlots) if (slot < inv.getSize()) inv.setItem(slot, null);\r\n            } else {\r\n                MessageUtil.send(player, \"economy.sell.error-failed\", Map.of());\r\n                returnItemsToPlayer(player, inv, sellSlots);\r\n            }\r\n        } else {\r\n            returnItemsToPlayer(player, inv, sellSlots);\r\n        }\r\n    }\r\n\r\n    @EventHandler\r\n    public void onEntityPickup(EntityPickupItemEvent event) {\r\n        if (event.getEntity() instanceof Player viewer) handleExternalUpdate(viewer);\r\n    }\r\n\r\n    @EventHandler\r\n    public void onPlayerDrop(PlayerDropItemEvent event) {\r\n        handleExternalUpdate(event.getPlayer());\r\n    }\r\n\r\n    private void handleExternalUpdate(Player player) {\r\n        Inventory top = player.getOpenInventory().getTopInventory();\r\n        if (top.getHolder() instanceof SellManager.SellHolder) debounceRefresh(player, top);\r\n    }\r\n\r\n    @EventHandler\r\n    public void onInventoryDrag(InventoryDragEvent event) {\r\n        Inventory top = event.getInventory();\r\n        if (!(top.getHolder() instanceof SellManager.SellHolder)) return;\r\n\r\n        int topSize = top.getSize();\r\n        var sellSlots = manager.definition().items().get(\"sell-slots\").slots();\r\n\r\n        boolean invalid = event.getRawSlots().stream()\r\n                .filter(slot -> slot < topSize)\r\n                .anyMatch(slot -> !sellSlots.contains(slot));\r\n\r\n        if (invalid) {\r\n            event.setCancelled(true);\r\n        } else {\r\n            debounceRefresh((Player) event.getWhoClicked(), top);\r\n        }\r\n    }\r\n\r\n    public void returnItemsToPlayer(Player player, Inventory inv, List<Integer> sellSlots) {\r\n        for (int slot : sellSlots) {\r\n            if (slot >= inv.getSize()) continue;\r\n            ItemStack item = inv.getItem(slot);\r\n            if (item == null || item.getType().isAir()) continue;\r\n\r\n            Map<Integer, ItemStack> leftover = player.getInventory().addItem(item);\r\n            if (!leftover.isEmpty()) {\r\n                leftover.values().forEach(drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));\r\n            }\r\n            inv.setItem(slot, null);\r\n        }\r\n    }\r\n\r\n    private boolean hasItems(Inventory inv, List<Integer> slots) {\r\n        for (int s : slots) {\r\n            ItemStack item = inv.getItem(s);\r\n            if (item != null && !item.getType().isAir()) return true;\r\n        }\r\n        return false;\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/gui/sell/SellListener.java b/src/main/java/com/ftxeven/aircore/core/gui/sell/SellListener.java
+--- a/src/main/java/com/ftxeven/aircore/core/gui/sell/SellListener.java	
++++ b/src/main/java/com/ftxeven/aircore/core/gui/sell/SellListener.java	
+@@ -1,7 +1,7 @@
+ package com.ftxeven.aircore.core.gui.sell;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
++import com.ftxeven.aircore.core.module.economy.EconomyManager;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.entity.Player;
+ import org.bukkit.event.EventHandler;
+Index: src/main/java/com/ftxeven/aircore/core/modules/home/command/SetHomeCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/home/command/SetHomeCommand.java b/src/main/java/com/ftxeven/aircore/core/module/home/command/SetHomeCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/home/command/SetHomeCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/home/command/SetHomeCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/home/command/SetHomeCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/home/command/SetHomeCommand.java	
+@@ -1,7 +1,7 @@
+-package com.ftxeven.aircore.core.modules.home.command;
++package com.ftxeven.aircore.core.module.home.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.home.HomeService;
++import com.ftxeven.aircore.core.module.home.HomeService;
+ import com.ftxeven.aircore.util.MessageUtil;
+ import org.bukkit.command.Command;
+ import org.bukkit.command.CommandSender;
+Index: src/main/java/com/ftxeven/aircore/core/modules/economy/EconomyManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/economy/EconomyManager.java b/src/main/java/com/ftxeven/aircore/core/module/economy/EconomyManager.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/economy/EconomyManager.java
+rename to src/main/java/com/ftxeven/aircore/core/module/economy/EconomyManager.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/economy/EconomyManager.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/economy/EconomyManager.java	
+@@ -1,10 +1,10 @@
+-package com.ftxeven.aircore.core.modules.economy;
++package com.ftxeven.aircore.core.module.economy;
+ 
+ import com.ftxeven.aircore.AirCore;
+-import com.ftxeven.aircore.core.modules.economy.service.BalanceService;
+-import com.ftxeven.aircore.core.modules.economy.service.FormatService;
+-import com.ftxeven.aircore.core.modules.economy.service.ItemWorthService;
+-import com.ftxeven.aircore.core.modules.economy.service.TransactionService;
++import com.ftxeven.aircore.core.module.economy.service.BalanceService;
++import com.ftxeven.aircore.core.module.economy.service.FormatService;
++import com.ftxeven.aircore.core.module.economy.service.ItemWorthService;
++import com.ftxeven.aircore.core.module.economy.service.TransactionService;
+ 
+ public final class EconomyManager {
+ 
+Index: src/main/java/com/ftxeven/aircore/core/modules/chat/command/ReplyCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/ReplyCommand.java b/src/main/java/com/ftxeven/aircore/core/module/chat/command/ReplyCommand.java
+rename from src/main/java/com/ftxeven/aircore/core/modules/chat/command/ReplyCommand.java
+rename to src/main/java/com/ftxeven/aircore/core/module/chat/command/ReplyCommand.java
+--- a/src/main/java/com/ftxeven/aircore/core/modules/chat/command/ReplyCommand.java	
++++ b/src/main/java/com/ftxeven/aircore/core/module/chat/command/ReplyCommand.java	
+@@ -1,4 +1,4 @@
+-package com.ftxeven.aircore.core.modules.chat.command;
++package com.ftxeven.aircore.core.module.chat.command;
+ 
+ import com.ftxeven.aircore.AirCore;
+ import com.ftxeven.aircore.core.service.ToggleService;

@@ -47,7 +47,7 @@ general:
   <sound:entity.experience_orb.pickup:1:1.2>
   <actionbar:'<gradient:#00ffcc:#0066ff>Module %module% reloaded.</gradient>'>"
 
-  modules:
+  module:
     all: "All"
     config: "Config"
     messages: "Messages"
