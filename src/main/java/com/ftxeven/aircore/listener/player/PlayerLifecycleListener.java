@@ -94,11 +94,12 @@ public final class PlayerLifecycleListener implements Listener {
                         plugin.core().toggles().load(uuid, toggles);
                         plugin.economy().balances().setBalanceLocal(uuid, bal);
                         plugin.home().homes().loadFromDatabase(uuid, plugin.database().homes().load(uuid));
-                        plugin.database().blocks().load(uuid).forEach(t -> plugin.core().blocks().block(uuid, t));
+
+                        var blockedData = plugin.database().blocks().load(uuid);
+                        plugin.core().blocks().loadExistingBlocks(uuid, blockedData);
 
                         applyAttributes(player, walk, fly, toggles.get(ToggleService.Toggle.FLY));
                         applyInventoryBundle(player, invBundle);
-
                     } finally {
                         setInvLock(uuid, false);
                     }
@@ -212,6 +213,7 @@ public final class PlayerLifecycleListener implements Listener {
         }
         plugin.core().commandCooldowns().clear(uuid);
         plugin.utility().afk().clearAfk(uuid);
+        plugin.core().blocks().unload(uuid);
     }
 
     @EventHandler public void onPlayerDeath(PlayerDeathEvent e) {

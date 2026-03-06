@@ -77,4 +77,12 @@ public final class BlockService {
     public Set<UUID> getBlocked(UUID player) {
         return blockedPlayers.getOrDefault(player, Collections.emptySet());
     }
+
+    public void loadExistingBlocks(UUID uuid, Set<UUID> targets) {
+        if (targets.isEmpty()) return;
+        Set<UUID> set = blockedPlayers.computeIfAbsent(uuid, k -> ConcurrentHashMap.newKeySet());
+        set.addAll(targets);
+    }
+
+    public void unload(UUID uuid) { blockedPlayers.remove(uuid); }
 }

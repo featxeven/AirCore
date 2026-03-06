@@ -112,10 +112,20 @@ public final class AirCorePAPIExpansion extends PlaceholderExpansion {
             } catch (Exception e) { return null; }
         }
 
-        if (pLow.startsWith("player_block_has_") || pLow.startsWith("player_block_by_")) {
-            UUID target = plugin.database().records().uuidFromName(params.substring(17));
-            if (target == null) return null;
-            return pLow.contains("_has_") ? bool(plugin.core().blocks().isBlocked(uuid, target)) : bool(plugin.core().blocks().isBlocked(target, uuid));
+        if (pLow.startsWith("player_block_")) {
+            boolean isHas = pLow.startsWith("has_", 13);
+            boolean isBy = !isHas && pLow.startsWith("by_", 13);
+
+            if (isHas || isBy) {
+                String targetName = params.substring(isHas ? 17 : 16);
+                UUID target = plugin.database().records().uuidFromName(targetName);
+
+                if (target == null) return "false";
+
+                return isHas
+                        ? bool(plugin.core().blocks().isBlocked(uuid, target))
+                        : bool(plugin.core().blocks().isBlocked(target, uuid));
+            }
         }
 
         if (pLow.startsWith("player_warp_has_permission_")) {
