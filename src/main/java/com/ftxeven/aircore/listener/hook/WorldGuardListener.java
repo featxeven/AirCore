@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.listener;
+package com.ftxeven.aircore.listener.hook;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.service.ToggleService;

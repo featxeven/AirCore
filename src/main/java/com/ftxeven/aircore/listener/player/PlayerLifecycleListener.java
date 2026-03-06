@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.listener;
+package com.ftxeven.aircore.listener.player;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.gui.invsee.enderchest.EnderchestManager;

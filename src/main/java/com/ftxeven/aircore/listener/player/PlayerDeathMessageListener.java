@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.listener;
+package com.ftxeven.aircore.listener.player;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.MessageUtil;
@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class DeathMessageListener implements Listener {
+public final class PlayerDeathMessageListener implements Listener {
     private final AirCore plugin;
     private final Map<UUID, DamageInfo> lastDamageInfo = new ConcurrentHashMap<>();
 
-    public DeathMessageListener(AirCore plugin) {
+    public PlayerDeathMessageListener(AirCore plugin) {
         this.plugin = plugin;
     }
 

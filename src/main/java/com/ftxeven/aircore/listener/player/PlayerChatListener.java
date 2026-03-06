@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.listener;
+package com.ftxeven.aircore.listener.player;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.service.ToggleService;
@@ -15,11 +15,11 @@ import org.bukkit.event.Listener;
 import java.util.Map;
 import java.util.UUID;
 
-public final class ChatControlListener implements Listener {
+public final class PlayerChatListener implements Listener {
 
     private final AirCore plugin;
 
-    public ChatControlListener(AirCore plugin) {
+    public PlayerChatListener(AirCore plugin) {
         this.plugin = plugin;
     }
 

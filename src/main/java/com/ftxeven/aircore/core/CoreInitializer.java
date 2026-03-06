@@ -18,7 +18,7 @@ import com.ftxeven.aircore.core.modules.teleport.TeleportManager;
 import com.ftxeven.aircore.core.modules.utility.UtilityManager;
 import com.ftxeven.aircore.database.DatabaseManager;
 import com.ftxeven.aircore.database.dao.PlayerInventories;
-import com.ftxeven.aircore.listener.*;
+import com.ftxeven.aircore.listener.ListenerManager;
 import com.ftxeven.aircore.core.modules.chat.command.*;
 import com.ftxeven.aircore.core.modules.economy.command.*;
 import com.ftxeven.aircore.core.modules.economy.service.EconomyProvider;
@@ -33,7 +33,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.ServicePriority;
 
 import java.io.InputStream;
@@ -72,11 +71,12 @@ public final class CoreInitializer {
         }
 
         initManagers();
-
         registerAPI();
-
         registerEconomy();
-        registerListeners();
+
+        ListenerManager listenerManager = new ListenerManager(plugin);
+        listenerManager.registerAll();
+
         registerCommands();
         setupUtilities();
         setupIntegrations();
@@ -112,8 +112,6 @@ public final class CoreInitializer {
             } catch (Throwable t) {
                 plugin.getLogger().warning("Vault detected but failed to register economy provider: " + t.getMessage());
             }
-        } else {
-            plugin.getLogger().warning("Vault not found, economy provider registration skipped.");
         }
     }
 
@@ -140,7 +138,7 @@ public final class CoreInitializer {
 
     public void shutdown() {
         AirCoreProvider.unregister();
-        
+
         if (plugin.announcements() != null) plugin.announcements().shutdown();
         BossbarUtil.hideAll();
         if (plugin.scheduler() != null) plugin.scheduler().cancelAll();
@@ -170,20 +168,6 @@ public final class CoreInitializer {
         }
     }
 
-    public void registerListeners() {
-        PluginManager pm = plugin.getServer().getPluginManager();
-
-        pm.registerEvents(new ChatControlListener(plugin), plugin);
-        pm.registerEvents(new DeathMessageListener(plugin), plugin);
-        pm.registerEvents(new PlayerActivityListener(plugin, plugin.scheduler()), plugin);
-        pm.registerEvents(new PlayerLifecycleListener(plugin), plugin);
-        pm.registerEvents(new GuiListener(plugin.gui()), plugin);
-
-        if (pm.getPlugin("WorldGuard") != null) {
-            pm.registerEvents(new WorldGuardListener(plugin), plugin);
-        }
-    }
-
     private void checkUpdates() {
         plugin.scheduler().runAsync(() -> {
             try (InputStream is = URI.create("https://api.spiget.org/v2/resources/130425/versions/latest").toURL().openStream();
@@ -202,6 +186,7 @@ public final class CoreInitializer {
     }
 
     public void registerCommands() {
+        // Chat Commands
         reg("msg", new MsgCommand(plugin));
         reg("reply", new ReplyCommand(plugin));
         reg("msgtoggle", new MsgToggleCommand(plugin));
@@ -209,12 +194,14 @@ public final class CoreInitializer {
         reg("chattoggle", new ChatToggleCommand(plugin));
         reg("socialspy", new SocialSpyCommand(plugin));
 
+        // Economy Commands
         reg("eco", new EcoCommand(plugin));
         reg("balance", new BalanceCommand(plugin));
         reg("pay", new PayCommand(plugin));
         reg("paytoggle", new PayToggleCommand(plugin));
         reg("sell", new SellCommand(plugin, plugin.gui()));
 
+        // Teleport Commands
         reg("tpa", new TpaCommand(plugin));
         reg("tpahere", new TpaHereCommand(plugin));
         reg("tpaccept", new TpAcceptCommand(plugin));
@@ -225,34 +212,30 @@ public final class CoreInitializer {
         reg("tppos", new TpPosCommand(plugin));
         reg("tpoffline", new TpOfflineCommand(plugin));
 
+        // Home/Warp/Spawn
         reg("sethome", new SetHomeCommand(plugin));
         reg("delhome", new DelHomeCommand(plugin));
         reg("home", new HomeCommand(plugin, plugin.gui()));
-
-        reg("createkit", new CreateKitCommand(plugin));
-        reg("delkit", new DeleteKitCommand(plugin));
-        reg("editkit", new EditKitCommand(plugin));
-        reg("kit", new KitCommand(plugin));
-
-        reg("block", new BlockCommand(plugin));
-        reg("unblock", new UnblockCommand(plugin));
         reg("spawn", new SpawnCommand(plugin));
         reg("setspawn", new SetSpawnCommand(plugin));
         reg("warp", new WarpCommand(plugin));
         reg("setwarp", new SetWarpCommand(plugin));
         reg("delwarp", new DelWarpCommand(plugin));
+
+        // Kit Commands
+        reg("createkit", new CreateKitCommand(plugin));
+        reg("delkit", new DeleteKitCommand(plugin));
+        reg("editkit", new EditKitCommand(plugin));
+        reg("kit", new KitCommand(plugin));
+
+        // Utility Commands
+        reg("block", new BlockCommand(plugin));
+        reg("unblock", new UnblockCommand(plugin));
         reg("clearinventory", new ClearInventoryCommand(plugin));
         reg("feed", new FeedCommand(plugin));
         reg("heal", new HealCommand(plugin));
         reg("time", new TimeCommand(plugin));
         reg("weather", new WeatherCommand(plugin));
-        reg("craftingtable", new VirtualGuiCommand(plugin, "craftingtable", p -> p.openWorkbench(null, true)));
-        reg("anvil", new VirtualGuiCommand(plugin, "anvil", p -> p.openAnvil(null, true)));
-        reg("cartography", new VirtualGuiCommand(plugin, "cartography", p -> p.openCartographyTable(null, true)));
-        reg("loom", new VirtualGuiCommand(plugin, "loom", p -> p.openLoom(null, true)));
-        reg("smithingtable", new VirtualGuiCommand(plugin, "smithingtable", p -> p.openSmithingTable(null, true)));
-        reg("stonecutter", new VirtualGuiCommand(plugin, "stonecutter", p -> p.openStonecutter(null, true)));
-        reg("grindstone", new VirtualGuiCommand(plugin, "grindstone", p -> p.openGrindstone(null, true)));
         reg("gamemode", new GamemodeCommand(plugin));
         reg("kill", new KillCommand(plugin));
         reg("afk", new AfkCommand(plugin));
@@ -266,6 +249,15 @@ public final class CoreInitializer {
         reg("back", new BackCommand(plugin));
         reg("announcement", new AnnouncementCommand(plugin));
         reg("announcetoggle", new AnnounceToggleCommand(plugin));
+
+        // Virtual GUIs
+        reg("craftingtable", new VirtualGuiCommand(plugin, "craftingtable", p -> p.openWorkbench(null, true)));
+        reg("anvil", new VirtualGuiCommand(plugin, "anvil", p -> p.openAnvil(null, true)));
+        reg("cartography", new VirtualGuiCommand(plugin, "cartography", p -> p.openCartographyTable(null, true)));
+        reg("loom", new VirtualGuiCommand(plugin, "loom", p -> p.openLoom(null, true)));
+        reg("smithingtable", new VirtualGuiCommand(plugin, "smithingtable", p -> p.openSmithingTable(null, true)));
+        reg("stonecutter", new VirtualGuiCommand(plugin, "stonecutter", p -> p.openStonecutter(null, true)));
+        reg("grindstone", new VirtualGuiCommand(plugin, "grindstone", p -> p.openGrindstone(null, true)));
 
         reg("aircore", new CoreCommand(plugin));
 
@@ -296,21 +288,20 @@ public final class CoreInitializer {
         }
 
         List<String> aliases = section.getStringList("aliases");
-        if (aliases.isEmpty()) return;
+        if (!aliases.isEmpty()) {
+            aliases.removeIf(a -> a == null || a.isBlank());
+            cmd.setAliases(aliases);
 
-        aliases.removeIf(a -> a == null || a.isBlank());
-        cmd.setAliases(aliases);
-
-        try {
-            Map<String, Command> knownCommands = getKnownCommands();
-            String pluginPrefix = plugin.getName().toLowerCase() + ":";
-
-            for (String alias : aliases) {
-                String key = alias.toLowerCase();
-                knownCommands.put(key, cmd);
-                knownCommands.put(pluginPrefix + key, cmd);
-            }
-        } catch (Exception ignored) {}
+            try {
+                Map<String, Command> knownCommands = getKnownCommands();
+                String pluginPrefix = plugin.getName().toLowerCase() + ":";
+                for (String alias : aliases) {
+                    String key = alias.toLowerCase();
+                    knownCommands.put(key, cmd);
+                    knownCommands.put(pluginPrefix + key, cmd);
+                }
+            } catch (Exception ignored) {}
+        }
     }
 
     private void unregisterDisabledCommands() {
@@ -336,7 +327,6 @@ public final class CoreInitializer {
                         knownCommands.remove(plugin.getName().toLowerCase() + ":" + alias.toLowerCase());
                     }
                 }
-
             } catch (Exception e) {
                 plugin.getLogger().log(Level.WARNING, "Failed to restore vanilla command for: " + cmdName, e);
             }
