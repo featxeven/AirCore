@@ -31,16 +31,21 @@
 # GENERAL
 # -----------------------------
 general:
-  prefix: "<gray>[<gradient:#00ffcc:#0066ff>AirCore</gradient>]</gray>"
+  prefix: "<gray>[<gradient:#00ffcc:#0066ff>AirCore</gradient>]"
   console-name: "@Console"
 
   plugin-usage: "%prefix% <white>Available commands:</white>
-    <newline><gray>  • <yellow>/aircore reload [module]</yellow> <dark_gray>| <gray>Refresh configs</gray>
-    <newline><gray>  • <yellow>/aircore version</yellow> <dark_gray>| <gray>Display plugin version</gray>"
+  <newline><gray>  • <yellow>/aircore reload [module]</yellow> <dark_gray>» <gray>Reload configurations</gray>
+  <newline><gray>  • <yellow>/aircore version</yellow> <dark_gray>» <gray>Check versions</gray>"
   plugin-version: "%prefix% <white>Running version <gradient:#00ffcc:#0066ff>%version%</gradient></white>"
-  plugin-outdated: "%prefix% <green>There is a new update available! You are currently using <gold>%current%</gold> (latest version is <gold>%latest%</gold>).<green>
-    <newline><yellow><click:open_url:'https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/'>https://www.spigotmc.org/resources/aircore%E2%9A%A1essential-utilities-server-tools.130425/</click></yellow>"
-  plugin-reloaded: "<sound:block.note_block.chime:1:2>%prefix% <green>Configuration successfully reloaded (<yellow>%module%</yellow>).</green>"
+  plugin-outdated: "%prefix% <gradient:#00ffcc:#0066ff><bold>UPDATE AVAILABLE</bold></gradient>
+  <newline><gray>Current: <red>%current%</red> <dark_gray>»</dark_gray> Latest: <green>%latest%</green>
+  <newline><gray>Download the latest optimization here:</gray>
+  <newline><yellow><underlined><click:open_url:'https://www.spigotmc.org/resources/130425/'>[ Click to Open SpigotMC ]</click></underlined></yellow>
+  <sound:block.note_block.bit:1:1.5>"
+  plugin-reloaded: "%prefix% <gray>Module <white><bold>%module%</bold></white> has been <green>successfully reloaded</green>.</gray>
+  <sound:entity.experience_orb.pickup:1:1.2>
+  <actionbar:'<gradient:#00ffcc:#0066ff>Module %module% reloaded.</gradient>'>"
 
   modules:
     all: "All"

@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="refactor: added ListenerManager and organized packages" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="refactor &amp; fixed placeholder">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -349,14 +352,29 @@
       <option name="project" value="LOCAL" />
       <updated>1772816559299</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Fixed %aircore_player_block_by_&lt;player&gt;% placeholder">
+      <option name="closed" value="true" />
+      <created>1772818848769</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1772818848769</updated>
+    </task>
+    <task id="LOCAL-00039" summary="refactor &amp; fixed placeholder">
+      <option name="closed" value="true" />
+      <created>1772818904513</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1772818904513</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="relog" />
     <MESSAGE value="bug fixes" />
     <MESSAGE value="innit commit" />
     <MESSAGE value="added new module announcements" />
@@ -380,6 +398,8 @@
     <MESSAGE value="replaced perform command with actual logic" />
     <MESSAGE value="refactor: renamed api class &amp; moved gui outside module package to core package" />
     <MESSAGE value="refactor: added ListenerManager and organized packages" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor: added ListenerManager and organized packages" />
+    <MESSAGE value="Fixed %aircore_player_block_by_&lt;player&gt;% placeholder" />
+    <MESSAGE value="refactor &amp; fixed placeholder" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor &amp; fixed placeholder" />
   </component>
 </project>
