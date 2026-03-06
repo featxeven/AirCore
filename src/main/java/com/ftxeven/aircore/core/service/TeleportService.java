@@ -1,7 +1,7 @@
 package com.ftxeven.aircore.core.service;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.teleport.service.RequestService;
+import com.ftxeven.aircore.core.module.teleport.service.RequestService;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.TimeUtil;
 import com.ftxeven.aircore.util.SchedulerUtil;

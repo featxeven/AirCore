@@ -1,7 +1,7 @@
 package com.ftxeven.aircore.core.gui.sell;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.economy.EconomyManager;
+import com.ftxeven.aircore.core.module.economy.EconomyManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

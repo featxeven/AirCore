@@ -104,7 +104,7 @@ public final class CoreCommand implements TabExecutor {
 
     private void notifyReload(CommandSender sender, String moduleKey) {
         if (sender instanceof Player p) {
-            String translatedModule = plugin.lang().get("general.modules." + moduleKey);
+            String translatedModule = plugin.lang().get("general.module." + moduleKey);
             MessageUtil.send(p, "general.plugin-reloaded", Map.of("module", translatedModule));
         } else {
             String hardcoded = moduleKey.substring(0, 1).toUpperCase() + moduleKey.substring(1);
