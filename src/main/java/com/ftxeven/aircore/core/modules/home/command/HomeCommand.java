@@ -1,9 +1,9 @@
 package com.ftxeven.aircore.core.modules.home.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
-import com.ftxeven.aircore.core.modules.gui.homes.HomeManager;
-import com.ftxeven.aircore.core.modules.gui.homes.HomeTargetManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.homes.HomeManager;
+import com.ftxeven.aircore.core.gui.homes.HomeTargetManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

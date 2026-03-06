@@ -1,8 +1,8 @@
-package com.ftxeven.aircore.core.modules.gui.sell;
+package com.ftxeven.aircore.core.gui.sell;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import com.ftxeven.aircore.core.modules.economy.service.ItemWorthService;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;

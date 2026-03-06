@@ -1,8 +1,8 @@
 package com.ftxeven.aircore.api;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.homes.HomeManager;
-import com.ftxeven.aircore.core.modules.gui.homes.HomeTargetManager;
+import com.ftxeven.aircore.core.gui.homes.HomeManager;
+import com.ftxeven.aircore.core.gui.homes.HomeTargetManager;
 import com.ftxeven.aircore.core.service.ToggleService;
 import com.ftxeven.aircore.util.TimeUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;

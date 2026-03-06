@@ -1,7 +1,7 @@
-package com.ftxeven.aircore.core.modules.gui.invsee.inventory;
+package com.ftxeven.aircore.core.gui.invsee.inventory;
 
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import com.ftxeven.aircore.database.dao.PlayerInventories;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;

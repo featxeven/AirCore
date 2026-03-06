@@ -1,7 +1,7 @@
-package com.ftxeven.aircore.core.modules.gui.homes;
+package com.ftxeven.aircore.core.gui.homes;
 
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;

@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.core.modules.gui;
+package com.ftxeven.aircore.core.gui;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;

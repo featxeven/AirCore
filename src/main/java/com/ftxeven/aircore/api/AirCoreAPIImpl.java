@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.core.api;
+package com.ftxeven.aircore.api;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.api.AirCoreAPI;
@@ -11,12 +11,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 import java.util.UUID;
 
-public final class DefaultAirCoreAPI implements AirCoreAPI {
+public final class AirCoreAPIImpl implements AirCoreAPI {
 
     private final AirCore plugin;
     private final BlockManager blockManager;
 
-    public DefaultAirCoreAPI(AirCore plugin) {
+    public AirCoreAPIImpl(AirCore plugin) {
         this.plugin = plugin;
         this.blockManager = new BlockManagerImpl();
     }

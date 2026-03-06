@@ -2,7 +2,7 @@ package com.ftxeven.aircore.core;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.api.AirCoreAPI;
-import com.ftxeven.aircore.core.api.DefaultAirCoreAPI;
+import com.ftxeven.aircore.api.AirCoreAPIImpl;
 import com.ftxeven.aircore.api.AirCorePAPIExpansion;
 import com.ftxeven.aircore.api.AirCoreProvider;
 import com.ftxeven.aircore.config.AnnouncementManager;
@@ -11,7 +11,7 @@ import com.ftxeven.aircore.config.LangManager;
 import com.ftxeven.aircore.config.PlaceholderManager;
 import com.ftxeven.aircore.core.modules.chat.ChatManager;
 import com.ftxeven.aircore.core.modules.economy.EconomyManager;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
 import com.ftxeven.aircore.core.modules.home.HomeManager;
 import com.ftxeven.aircore.core.modules.kit.KitManager;
 import com.ftxeven.aircore.core.modules.teleport.TeleportManager;
@@ -86,7 +86,7 @@ public final class CoreInitializer {
 
     private void registerAPI() {
         try {
-            AirCoreAPI implementation = new DefaultAirCoreAPI(plugin);
+            AirCoreAPI implementation = new AirCoreAPIImpl(plugin);
             plugin.setApi(implementation);
             AirCoreProvider.register(implementation);
         } catch (Throwable t) {

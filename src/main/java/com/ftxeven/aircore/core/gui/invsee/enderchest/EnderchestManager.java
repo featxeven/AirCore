@@ -1,9 +1,9 @@
-package com.ftxeven.aircore.core.modules.gui.invsee.enderchest;
+package com.ftxeven.aircore.core.gui.invsee.enderchest;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
-import com.ftxeven.aircore.core.modules.gui.ItemAction;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.ItemAction;
 import com.ftxeven.aircore.database.dao.PlayerInventories;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;

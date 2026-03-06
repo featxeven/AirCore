@@ -2,8 +2,8 @@ package com.ftxeven.aircore.core.modules.economy.command;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.modules.economy.EconomyManager;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
-import com.ftxeven.aircore.core.modules.gui.sell.SellManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.sell.SellManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

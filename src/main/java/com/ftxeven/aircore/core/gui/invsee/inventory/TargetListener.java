@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.core.modules.gui.invsee.inventory;
+package com.ftxeven.aircore.core.gui.invsee.inventory;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.database.dao.PlayerInventories;

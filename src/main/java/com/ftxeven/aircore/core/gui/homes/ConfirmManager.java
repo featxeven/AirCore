@@ -1,7 +1,7 @@
-package com.ftxeven.aircore.core.modules.gui.homes;
+package com.ftxeven.aircore.core.gui.homes;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;

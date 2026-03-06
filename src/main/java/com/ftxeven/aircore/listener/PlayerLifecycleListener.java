@@ -1,9 +1,9 @@
 package com.ftxeven.aircore.listener;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.invsee.enderchest.EnderchestManager;
-import com.ftxeven.aircore.core.modules.gui.invsee.inventory.InventoryManager;
-import com.ftxeven.aircore.core.modules.gui.invsee.inventory.InventorySlotMapper;
+import com.ftxeven.aircore.core.gui.invsee.enderchest.EnderchestManager;
+import com.ftxeven.aircore.core.gui.invsee.inventory.InventoryManager;
+import com.ftxeven.aircore.core.gui.invsee.inventory.InventorySlotMapper;
 import com.ftxeven.aircore.database.dao.PlayerInventories;
 import com.ftxeven.aircore.core.service.ToggleService;
 import com.ftxeven.aircore.util.BossbarUtil;

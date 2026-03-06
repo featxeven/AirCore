@@ -1,10 +1,10 @@
-package com.ftxeven.aircore.core.modules.gui.invsee.inventory;
+package com.ftxeven.aircore.core.gui.invsee.inventory;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
-import com.ftxeven.aircore.core.modules.gui.ItemAction;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.ItemAction;
 import com.ftxeven.aircore.database.dao.PlayerInventories.InventoryBundle;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;

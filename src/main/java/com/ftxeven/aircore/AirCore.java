@@ -10,7 +10,7 @@ import com.ftxeven.aircore.core.modules.home.HomeManager;
 import com.ftxeven.aircore.core.modules.kit.KitManager;
 import com.ftxeven.aircore.core.modules.teleport.TeleportManager;
 import com.ftxeven.aircore.core.modules.utility.UtilityManager;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
 import com.ftxeven.aircore.util.*;
 import org.bukkit.plugin.java.JavaPlugin;
 

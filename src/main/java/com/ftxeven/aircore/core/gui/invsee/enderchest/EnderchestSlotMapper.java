@@ -1,7 +1,7 @@
-package com.ftxeven.aircore.core.modules.gui.invsee.enderchest;
+package com.ftxeven.aircore.core.gui.invsee.enderchest;
 
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;

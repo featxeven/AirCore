@@ -1,11 +1,11 @@
-package com.ftxeven.aircore.core.modules.gui.sell;
+package com.ftxeven.aircore.core.gui.sell;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.modules.economy.EconomyManager;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
-import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
-import com.ftxeven.aircore.core.modules.gui.ItemAction;
+import com.ftxeven.aircore.core.gui.GuiDefinition;
+import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.core.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.ItemAction;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;

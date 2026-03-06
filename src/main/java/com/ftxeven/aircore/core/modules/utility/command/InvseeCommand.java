@@ -1,7 +1,7 @@
 package com.ftxeven.aircore.core.modules.utility.command;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.GuiManager;
+import com.ftxeven.aircore.core.gui.GuiManager;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;

@@ -1,11 +1,11 @@
-package com.ftxeven.aircore.core.modules.gui;
+package com.ftxeven.aircore.core.gui;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.core.modules.gui.homes.HomeManager;
-import com.ftxeven.aircore.core.modules.gui.homes.HomeTargetManager;
-import com.ftxeven.aircore.core.modules.gui.invsee.enderchest.EnderchestManager;
-import com.ftxeven.aircore.core.modules.gui.invsee.inventory.InventoryManager;
-import com.ftxeven.aircore.core.modules.gui.sell.SellManager;
+import com.ftxeven.aircore.core.gui.homes.HomeManager;
+import com.ftxeven.aircore.core.gui.homes.HomeTargetManager;
+import com.ftxeven.aircore.core.gui.invsee.enderchest.EnderchestManager;
+import com.ftxeven.aircore.core.gui.invsee.inventory.InventoryManager;
+import com.ftxeven.aircore.core.gui.sell.SellManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;

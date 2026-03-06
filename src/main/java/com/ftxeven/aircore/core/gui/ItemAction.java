@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.core.modules.gui;
+package com.ftxeven.aircore.core.gui;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.*;
