@@ -2,6 +2,7 @@ package com.ftxeven.aircore.core.modules.gui.homes;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
+import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -167,30 +168,40 @@ public final class ConfirmManager implements Listener {
     }
 
     private void handleConfirmOrCancel(Player player, GuiDefinition.GuiItem item, HomeConfirmHolder holder, InventoryClickEvent event) {
-        List<String> actions = item.getActionsForClick(event.getClick());
         String homeName = holder.getPlaceholders().get("name");
+        UUID uuid = player.getUniqueId();
+        String nameLower = homeName.toLowerCase();
 
-        boolean isConfirm = item.key().equals("confirm");
-        boolean hasFunctionalAction = false;
+        List<String> actions = item.getActionsForClick(event.getClick());
+        if (actions == null) return;
 
-        if (isConfirm && actions != null) {
+        if (item.key().equals("confirm")) {
             for (String action : actions) {
                 if (action.equalsIgnoreCase("[teleport]")) {
-                    player.performCommand("home " + homeName);
-                    hasFunctionalAction = true;
+                    Location loc = plugin.home().homes().getHomes(uuid).get(nameLower);
+                    if (loc != null) {
+                        plugin.core().teleports().startCountdown(player, player, () -> {
+                            plugin.core().teleports().teleport(player, loc);
+                            MessageUtil.send(player, "homes.teleport.success", Map.of("name", homeName));
+                        }, reason -> MessageUtil.send(player, "homes.teleport.cancelled", Map.of("name", homeName)));
+                    }
                 } else if (action.equalsIgnoreCase("[delete]")) {
-                    player.performCommand("delhome " + homeName);
-                    hasFunctionalAction = true;
+                    if (player.hasPermission("aircore.command.delhome")) {
+                        plugin.home().homes().deleteHome(uuid, nameLower);
+                        plugin.database().homes().delete(uuid, nameLower);
+                        MessageUtil.send(player, "homes.management.deleted", Map.of("name", homeName));
+                    }
                 }
             }
         }
 
         homeManager.handleAction(item, player, event.getClick(), holder.getPlaceholders());
 
-        boolean hasClose = actions != null && actions.stream()
-                .anyMatch(a -> a.toLowerCase().contains("[close]"));
+        boolean hasClose = actions.stream().anyMatch(a -> a.toLowerCase().contains("[close]"));
 
-        if (!hasClose && !hasFunctionalAction) {
+        if (hasClose) {
+            player.closeInventory();
+        } else {
             plugin.scheduler().runEntityTaskDelayed(player, () -> {
                 if (player.isOnline()) {
                     plugin.gui().openGui("homes", player, Map.of(
@@ -199,11 +210,7 @@ public final class ConfirmManager implements Listener {
                             "filter", holder.getFilterType()
                     ));
                 }
-            }, 2L);
-        } else if (hasFunctionalAction) {
-            if (actions.stream().anyMatch(a -> a.equalsIgnoreCase("[delete]"))) {
-                plugin.scheduler().runEntityTaskDelayed(player, () -> plugin.gui().openGui("homes", player, Map.of("page", holder.getPrevPage())), 1L);
-            }
+            }, 1L);
         }
     }
 

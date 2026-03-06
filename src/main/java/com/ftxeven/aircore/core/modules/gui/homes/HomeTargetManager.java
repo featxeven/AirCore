@@ -5,6 +5,7 @@ import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
 import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
 import com.ftxeven.aircore.core.modules.gui.GuiManager;
 import com.ftxeven.aircore.core.modules.gui.ItemAction;
+import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -291,16 +292,46 @@ public final class HomeTargetManager implements GuiManager.CustomGuiManager {
     private void executeTargetHomeActions(List<String> actions, String homeName, String targetName, Player viewer) {
         Map<String, String> ph = Map.of("name", homeName, "target", targetName, "player", viewer.getName());
 
+        UUID targetUUID = plugin.database().records().uuidFromName(targetName);
+        if (targetUUID == null) return;
+
         for (String action : actions) {
             if (action.equalsIgnoreCase("[teleport]")) {
-                viewer.performCommand("home @p " + targetName + " " + homeName);
-            } else if (action.equalsIgnoreCase("[delete]")) {
-                if (viewer.hasPermission("aircore.command.delhome.others")) {
-                    viewer.performCommand("delhome @p " + targetName + " " + homeName);
-
-                    Bukkit.getScheduler().runTaskLater(plugin, () ->
-                            plugin.gui().openGui("homes-target", viewer, Map.of("player", targetName)), 1L);
+                Map<String, Location> targetHomes = plugin.home().homes().getHomes(targetUUID);
+                if (targetHomes.isEmpty()) {
+                    targetHomes = plugin.database().homes().load(targetUUID);
                 }
+
+                Location loc = targetHomes.get(homeName.toLowerCase());
+                if (loc == null) {
+                    MessageUtil.send(viewer, "homes.errors.not-found-for", Map.of("player", targetName, "name", homeName));
+                    continue;
+                }
+
+                plugin.core().teleports().startCountdown(viewer, viewer, () -> {
+                    plugin.core().teleports().teleport(viewer, loc);
+                    MessageUtil.send(viewer, "homes.teleport.success-other", Map.of("player", targetName, "name", homeName));
+                }, reason -> MessageUtil.send(viewer, "homes.teleport.cancelled-other", Map.of("player", targetName, "name", homeName)));
+
+            } else if (action.equalsIgnoreCase("[delete]")) {
+                if (!viewer.hasPermission("aircore.command.delhome.others")) continue;
+
+                plugin.home().homes().deleteHome(targetUUID, homeName.toLowerCase());
+                plugin.database().homes().delete(targetUUID, homeName.toLowerCase());
+
+                MessageUtil.send(viewer, "homes.management.deleted-for", Map.of("player", targetName, "name", homeName));
+
+                Player targetPlayer = Bukkit.getPlayer(targetUUID);
+                if (targetPlayer != null && !targetPlayer.equals(viewer)) {
+                    MessageUtil.send(targetPlayer, "homes.management.deleted-by", Map.of("player", viewer.getName(), "name", homeName));
+                }
+
+                plugin.scheduler().runEntityTask(viewer, () -> {
+                    if (viewer.getOpenInventory().getTopInventory().getHolder() instanceof HomeTargetHolder) {
+                        refresh(viewer.getOpenInventory().getTopInventory(), viewer, Collections.emptyMap());
+                    }
+                });
+
             } else {
                 itemAction.execute(action, viewer, ph);
             }

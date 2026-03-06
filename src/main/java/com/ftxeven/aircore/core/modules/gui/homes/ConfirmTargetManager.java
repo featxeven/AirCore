@@ -4,6 +4,7 @@ import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
 import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
 import com.ftxeven.aircore.core.modules.gui.ItemAction;
+import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -181,21 +182,38 @@ public final class ConfirmTargetManager implements Listener {
 
     private void handleConfirmOrCancel(Player viewer, GuiItem item, HomeConfirmTargetHolder holder, ClickType click) {
         List<String> actions = item.getActionsForClick(click);
+        if (actions == null) return;
+
         String targetName = holder.getTargetName();
         String homeName = holder.getPlaceholders().get("name");
+        UUID targetUUID = plugin.database().records().uuidFromName(targetName);
 
         boolean isConfirm = item.key().equals("confirm");
-        boolean functionalExecuted = false;
 
-        if (isConfirm && actions != null) {
+        if (isConfirm && targetUUID != null) {
             for (String action : actions) {
                 if (action.equalsIgnoreCase("[teleport]")) {
-                    viewer.performCommand("home @p " + targetName + " " + homeName);
-                    functionalExecuted = true;
+                    Map<String, Location> targetHomes = plugin.home().homes().getHomes(targetUUID);
+                    if (targetHomes.isEmpty()) targetHomes = plugin.database().homes().load(targetUUID);
+
+                    Location loc = targetHomes.get(homeName.toLowerCase());
+                    if (loc != null) {
+                        plugin.core().teleports().startCountdown(viewer, viewer, () -> {
+                            plugin.core().teleports().teleport(viewer, loc);
+                            MessageUtil.send(viewer, "homes.teleport.success-other", Map.of("player", targetName, "name", homeName));
+                        }, reason -> MessageUtil.send(viewer, "homes.teleport.cancelled-other", Map.of("player", targetName, "name", homeName)));
+                    }
                 } else if (action.equalsIgnoreCase("[delete]")) {
                     if (viewer.hasPermission("aircore.command.delhome.others")) {
-                        viewer.performCommand("delhome @p " + targetName + " " + homeName);
-                        functionalExecuted = true;
+                        plugin.home().homes().deleteHome(targetUUID, homeName.toLowerCase());
+                        plugin.database().homes().delete(targetUUID, homeName.toLowerCase());
+
+                        MessageUtil.send(viewer, "homes.management.deleted-for", Map.of("player", targetName, "name", homeName));
+
+                        Player targetPlayer = Bukkit.getPlayer(targetUUID);
+                        if (targetPlayer != null && !targetPlayer.equals(viewer)) {
+                            MessageUtil.send(targetPlayer, "homes.management.deleted-by", Map.of("player", viewer.getName(), "name", homeName));
+                        }
                     }
                 }
             }
@@ -203,10 +221,11 @@ public final class ConfirmTargetManager implements Listener {
 
         executeAction(item, viewer, click, holder.getPlaceholders());
 
-        boolean hasClose = actions != null && actions.stream()
-                .anyMatch(a -> a.toLowerCase().contains("[close]"));
+        boolean hasClose = actions.stream().anyMatch(a -> a.toLowerCase().contains("[close]"));
 
-        if (!hasClose && !functionalExecuted) {
+        if (hasClose) {
+            viewer.closeInventory();
+        } else {
             plugin.scheduler().runEntityTaskDelayed(viewer, () -> {
                 if (viewer.isOnline()) {
                     plugin.gui().openGui("homes-target", viewer, Map.of(
@@ -216,11 +235,7 @@ public final class ConfirmTargetManager implements Listener {
                             "filter", holder.getFilterType()
                     ));
                 }
-            }, 2L);
-        } else if (isConfirm && functionalExecuted) {
-            if (actions.stream().anyMatch(a -> a.equalsIgnoreCase("[delete]"))) {
-                plugin.scheduler().runEntityTaskDelayed(viewer, () -> plugin.gui().openGui("homes-target", viewer, Map.of("player", targetName)), 1L);
-            }
+            }, 1L);
         }
     }
 
