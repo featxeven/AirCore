@@ -32,6 +32,16 @@ public final class ItemAction {
         }
     }
 
+    public void execute(String raw, Player p, Map<String, String> ph) {
+        if (p == null || raw == null || raw.isEmpty()) return;
+        ActionData ad = parseSingle(raw);
+        if (ad == null) return;
+
+        Map<String, String> placeholders = ph == null ? Map.of() : ph;
+        if (ad.delay <= 0) run(p, ad, placeholders);
+        else plugin.scheduler().runDelayed(() -> run(p, ad, placeholders), ad.delay);
+    }
+
     private ActionData parseSingle(String raw) {
         String trimmed = raw.trim();
         int delay = 0;

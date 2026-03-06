@@ -3,7 +3,6 @@ package com.ftxeven.aircore.core.modules.gui.sell;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.modules.gui.GuiDefinition;
 import com.ftxeven.aircore.core.modules.gui.GuiDefinition.GuiItem;
-import com.ftxeven.aircore.core.modules.gui.invsee.inventory.InventorySlotMapper;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -86,44 +85,68 @@ public final class ConfirmManager implements Listener {
         Inventory clicked = event.getClickedInventory();
         if (clicked == null) return;
 
-        if (clicked.equals(event.getView().getTopInventory())) {
-            event.setCancelled(true);
-        } else {
+        if (clicked.equals(event.getView().getBottomInventory())) {
             if (event.isShiftClick()) event.setCancelled(true);
             return;
         }
 
+        event.setCancelled(true);
         int slot = event.getSlot();
         Player player = (Player) event.getWhoClicked();
-        GuiItem item = InventorySlotMapper.findItem(definition, slot);
+
+        GuiItem item = null;
+        for (GuiItem guiItem : definition.items().values()) {
+            if (guiItem.slots().contains(slot)) {
+                item = guiItem;
+                break;
+            }
+        }
+
         if (item == null) return;
 
+        List<String> actions = item.getActionsForClick(event.getClick());
+        boolean shouldClose = actions.stream().anyMatch(a -> a.equalsIgnoreCase("[close]"));
+
         if (item.key().equals("confirm")) {
-            sellManager.markTransitioning(player.getUniqueId());
-            handleButtonAction(player, item, () ->
-                            sellManager.processSale(player, holder.sellInventory(), holder.result(), holder.isAll()),
-                    holder.placeholders(), event.getClick(), true);
+            if (holder.isAll()) {
+                handleConfirmAll(item, player, event, holder, shouldClose);
+            } else {
+                sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
+                finalizeNavigation(player, holder, shouldClose);
+            }
         } else if (item.key().equals("cancel")) {
             sellManager.markTransitioning(player.getUniqueId());
-            handleButtonAction(player, item, () -> player.openInventory(holder.sellInventory()),
-                    holder.placeholders(), event.getClick(), false);
+            sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
+            player.openInventory(holder.sellInventory());
         } else {
-            sellManager.handleAction(item, player, event.getClick(), holder.placeholders());
+            sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
         }
     }
 
-    private void handleButtonAction(Player player, GuiItem item, Runnable logic, Map<String, String> ph, org.bukkit.event.inventory.ClickType click, boolean runLogicFirst) {
-        if (plugin.gui().cooldowns().isOnCooldown(player, item)) {
-            plugin.gui().cooldowns().sendCooldownMessage(player, item);
-            return;
-        }
+    private void handleConfirmAll(GuiItem item, Player player, InventoryClickEvent event, ConfirmHolder holder, boolean shouldClose) {
+        List<String> actions = item.getActionsForClick(event.getClick());
+        Map<String, String> ph = holder.placeholders();
 
-        if (runLogicFirst) {
-            logic.run();
-            sellManager.handleAction(item, player, click, ph);
+        for (String action : actions) {
+            if (action.equalsIgnoreCase("[sell]")) {
+                var result = SellSlotMapper.calculateWorthAll(holder.sellInventory(), plugin.economy().worth(), sellManager.definition(), player);
+                sellManager.processSale(player, holder.sellInventory(), result, true);
+                continue;
+            }
+            if (action.equalsIgnoreCase("[close]")) continue;
+            sellManager.getActionProcessor().execute(action, player, ph);
+        }
+        finalizeNavigation(player, holder, shouldClose);
+    }
+
+    private void finalizeNavigation(Player player, ConfirmHolder holder, boolean shouldClose) {
+        if (shouldClose) {
+            player.closeInventory();
         } else {
-            sellManager.handleAction(item, player, click, ph);
-            logic.run();
+            sellManager.markTransitioning(player.getUniqueId());
+            player.openInventory(holder.sellInventory());
+
+            sellManager.refreshConfirmButton(holder.sellInventory(), player);
         }
     }
 

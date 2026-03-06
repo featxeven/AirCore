@@ -97,20 +97,27 @@ public final class PlayerRecords {
     }
 
     public int createPlayerRecord(UUID uuid, String name) {
-        int nextIndex = getMaxJoinIndex() + 1;
         String sql = """
-            INSERT INTO player_records (join_index, uuid, name, balance, updated_at)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(uuid) DO UPDATE SET name = excluded.name, updated_at = excluded.updated_at;
-        """;
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, nextIndex);
-            ps.setString(2, uuid.toString());
-            ps.setString(3, name);
-            ps.setDouble(4, plugin.config().economyDefaultBalance());
-            ps.setLong(5, Instant.now().getEpochSecond());
+        INSERT INTO player_records (uuid, name, balance, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(uuid) DO UPDATE SET 
+            name = excluded.name, 
+            updated_at = excluded.updated_at;
+    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, uuid.toString());
+            ps.setString(2, name);
+            ps.setDouble(3, plugin.config().economyDefaultBalance());
+            ps.setLong(4, Instant.now().getEpochSecond());
+
             ps.executeUpdate();
-            return nextIndex;
+
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             plugin.getLogger().warning("Failed to initialize player record for " + uuid + ": " + e.getMessage());
         }

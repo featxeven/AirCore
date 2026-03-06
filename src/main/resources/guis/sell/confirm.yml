@@ -18,10 +18,11 @@ buttons:
       - " <#736efe>»</#736efe> <#5efce8>Shift-Click</#5efce8> <gray>to sell and return</gray>"
     actions:
       - "[sound] entity.player.levelup 1.0 1.2"
+      - "[sell]"
       - "[close]"
     shift-actions:
       - "[sound] entity.player.levelup 1.0 1.2"
-      - "[player] sell"
+      - "[sell]"
 
   cancel:
     slots: [15]

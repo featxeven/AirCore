@@ -36,8 +36,11 @@ buttons:
       - ""
       - "<#5efce8>Click to proceed to confirmation</#5efce8>"
     actions:
+      - "[sell]"
       - "[sound] ui.button.click 1.0 1.2"
-    apply-confirm: true
+    apply-confirm:
+      sell:
+        enabled: true
 
   confirm-all:
     slots: [42]
@@ -51,8 +54,11 @@ buttons:
       - ""
       - "<#5efce8>Click to proceed to confirmation</#5efce8>"
     actions:
+      - "[sell-all]"
       - "[sound] ui.button.click 1.0 1.2"
-    apply-confirm: true
+    apply-confirm:
+      sell-all:
+        enabled: true
 
 # Custom items
 items:
