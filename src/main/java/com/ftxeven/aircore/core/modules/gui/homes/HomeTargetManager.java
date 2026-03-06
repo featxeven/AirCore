@@ -256,63 +256,55 @@ public final class HomeTargetManager implements GuiManager.CustomGuiManager {
         ConfigurationSection homeSec = definition.config().getConfigurationSection("home-item");
         if (homeSec == null) return;
 
-        GuiItem template = GuiItem.fromSection("home-item", homeSec);
+        List<String> rawActions = click.isShiftClick() ?
+                homeSec.getStringList("shift-actions") : homeSec.getStringList("actions");
 
-        Location loc = holder.homes().stream()
-                .filter(e -> e.getKey().equals(name))
-                .map(Map.Entry::getValue)
-                .findFirst().orElse(null);
+        String confirmType = null;
+        if (rawActions.stream().anyMatch(a -> a.equalsIgnoreCase("[teleport]"))) confirmType = "teleport";
+        if (rawActions.stream().anyMatch(a -> a.equalsIgnoreCase("[delete]"))) confirmType = "delete";
 
-        if (loc != null && loc.getWorld() != null) {
-            ConfigurationSection worldOverride = homeSec.getConfigurationSection("world-types." + loc.getWorld().getName());
-            if (worldOverride != null) {
-                template = template.applyOverride(worldOverride);
-            }
-        }
+        boolean shouldConfirm = confirmType != null &&
+                definition.config().getBoolean("home-item.apply-confirm." + confirmType + ".enabled", false);
 
-        if (isOnCooldown(viewer, template)) return;
+        if (shouldConfirm) {
+            if (confirmType.equals("delete") && !viewer.hasPermission("aircore.command.delhome.others")) return;
 
-        ConfigurationSection applyConfirm = homeSec.getConfigurationSection("apply-confirm");
-        if (applyConfirm != null) {
-            String match = findConfirmType(applyConfirm, click);
-            if (match != null) {
+            Map<String, String> ph = Map.of(
+                    "name", name,
+                    "target", holder.targetName(),
+                    "player", viewer.getName()
+            );
 
-                if (match.equals("delete") && !viewer.hasPermission("aircore.command.delhome.others")) {
-                    return;
+            for (String action : rawActions) {
+                if (!action.equalsIgnoreCase("[teleport]") && !action.equalsIgnoreCase("[delete]")) {
+                    itemAction.execute(action, viewer, ph);
                 }
-
-                ConfigurationSection matchSec = applyConfirm.getConfigurationSection(match);
-                if (matchSec != null) {
-                    String actionKey = getPotentialClickKeys(click).stream()
-                            .filter(matchSec::contains)
-                            .findFirst().orElse("actions");
-
-                    List<String> actions = matchSec.getStringList(actionKey);
-                    if (!actions.isEmpty()) {
-                        itemAction.executeAll(actions, viewer, Map.of(
-                                "name", name,
-                                "target", holder.targetName(),
-                                "player", viewer.getName()
-                        ));
-                    }
-                }
-                confirmManager.open(viewer, holder.targetName(), name, match, String.valueOf(holder.page()), holder.getCurrentSort(), holder.getCurrentFilter());
-                return;
             }
-        }
 
-        handleAction(template, viewer, click, Map.of("name", name, "target", holder.targetName()));
+            confirmManager.open(viewer, holder.targetName(), name, confirmType,
+                    String.valueOf(holder.page()), holder.getCurrentSort(), holder.getCurrentFilter());
+        } else {
+            executeTargetHomeActions(rawActions, name, holder.targetName(), viewer);
+        }
     }
 
-    private String findConfirmType(ConfigurationSection sec, ClickType click) {
-        List<String> potential = getPotentialClickKeys(click);
-        for (String typeKey : sec.getKeys(false)) {
-            ConfigurationSection typeSec = sec.getConfigurationSection(typeKey);
-            if (typeSec != null && typeSec.getBoolean("enabled", false)) {
-                for (String p : potential) if (typeSec.contains(p)) return typeKey;
+    private void executeTargetHomeActions(List<String> actions, String homeName, String targetName, Player viewer) {
+        Map<String, String> ph = Map.of("name", homeName, "target", targetName, "player", viewer.getName());
+
+        for (String action : actions) {
+            if (action.equalsIgnoreCase("[teleport]")) {
+                viewer.performCommand("home @p " + targetName + " " + homeName);
+            } else if (action.equalsIgnoreCase("[delete]")) {
+                if (viewer.hasPermission("aircore.command.delhome.others")) {
+                    viewer.performCommand("delhome @p " + targetName + " " + homeName);
+
+                    Bukkit.getScheduler().runTaskLater(plugin, () ->
+                            plugin.gui().openGui("homes-target", viewer, Map.of("player", targetName)), 1L);
+                }
+            } else {
+                itemAction.execute(action, viewer, ph);
             }
         }
-        return null;
     }
 
     private boolean isOnCooldown(Player viewer, GuiItem item) {
@@ -386,16 +378,6 @@ public final class HomeTargetManager implements GuiManager.CustomGuiManager {
             joiner.add(fmt.replace("%name%", types.getString(key, key)));
         }
         return joiner.toString();
-    }
-
-    private List<String> getPotentialClickKeys(ClickType click) {
-        return switch (click) {
-            case SHIFT_LEFT -> List.of("shift-left-actions", "shift-actions", "actions");
-            case SHIFT_RIGHT -> List.of("shift-right-actions", "shift-actions", "actions");
-            case LEFT -> List.of("left-actions", "actions");
-            case RIGHT -> List.of("right-actions", "actions");
-            default -> List.of("actions");
-        };
     }
 
     @Override

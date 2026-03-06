@@ -1555,7 +1555,7 @@ waxed_weathered_copper_bars: 2
 waxed_oxidized_copper_bars: 2
 
 # Chains
-chain: 1.5
+iron_chain: 1.5
 copper_chain: 1.5
 exposed_copper_chain: 1.5
 weathered_copper_chain: 1.5

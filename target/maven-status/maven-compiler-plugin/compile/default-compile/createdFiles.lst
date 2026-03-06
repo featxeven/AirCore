@@ -107,7 +107,6 @@ com\ftxeven\aircore\core\modules\utility\service\BackService.class
 com\ftxeven\aircore\database\dao\PlayerInventories$InventoryBundle.class
 com\ftxeven\aircore\core\modules\gui\invsee\enderchest\EnderchestManager.class
 com\ftxeven\aircore\core\service\ToggleService.class
-com\ftxeven\aircore\core\modules\gui\homes\HomeTargetManager$1.class
 com\ftxeven\aircore\database\dao\PlayerKits$KitData.class
 com\ftxeven\aircore\listener\PlayerActivityListener.class
 com\ftxeven\aircore\core\modules\gui\GuiDefinition$1.class
@@ -143,7 +142,6 @@ com\ftxeven\aircore\util\ActionbarUtil.class
 com\ftxeven\aircore\api\AirCorePAPIExpansion.class
 com\ftxeven\aircore\core\service\ToggleService$Toggle.class
 com\ftxeven\aircore\core\modules\economy\command\PayCommand.class
-com\ftxeven\aircore\core\modules\gui\homes\HomeManager$1.class
 com\ftxeven\aircore\util\PlaceholderUtil.class
 com\ftxeven\aircore\core\modules\utility\command\SetSpawnCommand.class
 com\ftxeven\aircore\core\modules\utility\service\SpawnService.class

@@ -180,22 +180,47 @@ public final class ConfirmTargetManager implements Listener {
     }
 
     private void handleConfirmOrCancel(Player viewer, GuiItem item, HomeConfirmTargetHolder holder, ClickType click) {
+        List<String> actions = item.getActionsForClick(click);
+        String targetName = holder.getTargetName();
+        String homeName = holder.getPlaceholders().get("name");
+
+        boolean isConfirm = item.key().equals("confirm");
+        boolean functionalExecuted = false;
+
+        if (isConfirm && actions != null) {
+            for (String action : actions) {
+                if (action.equalsIgnoreCase("[teleport]")) {
+                    viewer.performCommand("home @p " + targetName + " " + homeName);
+                    functionalExecuted = true;
+                } else if (action.equalsIgnoreCase("[delete]")) {
+                    if (viewer.hasPermission("aircore.command.delhome.others")) {
+                        viewer.performCommand("delhome @p " + targetName + " " + homeName);
+                        functionalExecuted = true;
+                    }
+                }
+            }
+        }
+
         executeAction(item, viewer, click, holder.getPlaceholders());
 
-        List<String> actions = item.getActionsForClick(click);
-        boolean hasClose = actions != null && actions.stream().anyMatch(a -> a.toLowerCase().contains("[close]"));
+        boolean hasClose = actions != null && actions.stream()
+                .anyMatch(a -> a.toLowerCase().contains("[close]"));
 
-        if (!hasClose) {
+        if (!hasClose && !functionalExecuted) {
             plugin.scheduler().runEntityTaskDelayed(viewer, () -> {
                 if (viewer.isOnline()) {
                     plugin.gui().openGui("homes-target", viewer, Map.of(
-                            "player", holder.getTargetName(),
+                            "player", targetName,
                             "page", holder.getPrevPage(),
                             "sort", holder.getSortType(),
                             "filter", holder.getFilterType()
                     ));
                 }
             }, 2L);
+        } else if (isConfirm && functionalExecuted) {
+            if (actions.stream().anyMatch(a -> a.equalsIgnoreCase("[delete]"))) {
+                plugin.scheduler().runEntityTaskDelayed(viewer, () -> plugin.gui().openGui("homes-target", viewer, Map.of("player", targetName)), 1L);
+            }
         }
     }
 

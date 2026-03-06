@@ -167,13 +167,30 @@ public final class ConfirmManager implements Listener {
     }
 
     private void handleConfirmOrCancel(Player player, GuiDefinition.GuiItem item, HomeConfirmHolder holder, InventoryClickEvent event) {
+        List<String> actions = item.getActionsForClick(event.getClick());
+        String homeName = holder.getPlaceholders().get("name");
+
+        boolean isConfirm = item.key().equals("confirm");
+        boolean hasFunctionalAction = false;
+
+        if (isConfirm && actions != null) {
+            for (String action : actions) {
+                if (action.equalsIgnoreCase("[teleport]")) {
+                    player.performCommand("home " + homeName);
+                    hasFunctionalAction = true;
+                } else if (action.equalsIgnoreCase("[delete]")) {
+                    player.performCommand("delhome " + homeName);
+                    hasFunctionalAction = true;
+                }
+            }
+        }
+
         homeManager.handleAction(item, player, event.getClick(), holder.getPlaceholders());
 
-        List<String> actions = item.getActionsForClick(event.getClick());
         boolean hasClose = actions != null && actions.stream()
                 .anyMatch(a -> a.toLowerCase().contains("[close]"));
 
-        if (!hasClose) {
+        if (!hasClose && !hasFunctionalAction) {
             plugin.scheduler().runEntityTaskDelayed(player, () -> {
                 if (player.isOnline()) {
                     plugin.gui().openGui("homes", player, Map.of(
@@ -183,6 +200,10 @@ public final class ConfirmManager implements Listener {
                     ));
                 }
             }, 2L);
+        } else if (hasFunctionalAction) {
+            if (actions.stream().anyMatch(a -> a.equalsIgnoreCase("[delete]"))) {
+                plugin.scheduler().runEntityTaskDelayed(player, () -> plugin.gui().openGui("homes", player, Map.of("page", holder.getPrevPage())), 1L);
+            }
         }
     }
 

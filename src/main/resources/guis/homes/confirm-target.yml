@@ -19,7 +19,7 @@ teleport:
         - "<#5efce8>▶ Click to proceed</#5efce8>"
       actions:
         - "[sound] entity.player.levelup 1.0 1.2"
-        - "[player] home @p %target% %name%"
+        - "[teleport]"
         - "[close]"
 
     cancel:
@@ -63,7 +63,7 @@ delete:
         - "<#ff5f6d>▶ Click to delete</#ff5f6d>"
       actions:
         - "[sound] entity.generic.explode 1.0 1.2"
-        - "[player] delhome @p %target% %name%"
+        - "[delete]"
 
     cancel:
       slots: [15]
