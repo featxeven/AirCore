@@ -45,7 +45,7 @@ public final class CoreCommand implements TabExecutor {
                 if (sender instanceof Player p) {
                     MessageUtil.send(p, "general.plugin-version", Map.of("version", version));
                 } else {
-                    sender.sendMessage("Plugin version is " + version);
+                    sender.sendMessage("AirCore version is " + version);
                 }
             }
             default -> sendUsage(sender);
@@ -107,8 +107,8 @@ public final class CoreCommand implements TabExecutor {
             String translatedModule = plugin.lang().get("general.module." + moduleKey);
             MessageUtil.send(p, "general.plugin-reloaded", Map.of("module", translatedModule));
         } else {
-            String hardcoded = moduleKey.substring(0, 1).toUpperCase() + moduleKey.substring(1);
-            sender.sendMessage(hardcoded + " reloaded successfully.");
+            String module = moduleKey.substring(0, 1).toUpperCase() + moduleKey.substring(1);
+            sender.sendMessage(module + " reloaded successfully.");
         }
     }
 

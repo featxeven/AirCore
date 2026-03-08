@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="improved default messages">
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_3_6_2026_12_41_PM_[Changes]/BlockService.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_3_6_2026_12_41_PM_[Changes]/shelved.patch" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_3_6_2026_12_41_PM_[Changes]1/BlockService.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_3_6_2026_12_41_PM_[Changes]1/shelved.patch" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_3_6_2026_12_41_PM__Changes_.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_3_6_2026_12_41_PM__Changes_1.xml" afterDir="false" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="small config changes &amp; MessageUtil InlineTags method refactor">
       <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/AirCoreAPIImpl$BlockManagerImpl.class" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/AirCoreAPIImpl.class" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/AirCorePAPIExpansion.class" afterDir="false" />
@@ -62,9 +56,9 @@
       <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerDeathMessageListener$DamageInfo.class" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerDeathMessageListener.class" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerLifecycleListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/original-AirCore-1.1.9.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/MessageUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/MessageUtil.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -442,14 +436,21 @@
       <option name="project" value="LOCAL" />
       <updated>1772819744572</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="small config changes &amp; MessageUtil InlineTags method refactor">
+      <option name="closed" value="true" />
+      <created>1772822521447</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1772822521447</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="innit commit" />
     <MESSAGE value="added new module announcements" />
     <MESSAGE value="fix homes removed after reload" />
     <MESSAGE value="added sequence: for announcements with interval" />
@@ -474,6 +475,7 @@
     <MESSAGE value="Fixed %aircore_player_block_by_&lt;player&gt;% placeholder" />
     <MESSAGE value="refactor &amp; fixed placeholder" />
     <MESSAGE value="improved default messages" />
-    <option name="LAST_COMMIT_MESSAGE" value="improved default messages" />
+    <MESSAGE value="small config changes &amp; MessageUtil InlineTags method refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="small config changes &amp; MessageUtil InlineTags method refactor" />
   </component>
 </project>
