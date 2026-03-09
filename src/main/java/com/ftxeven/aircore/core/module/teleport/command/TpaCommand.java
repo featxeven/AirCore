@@ -102,7 +102,7 @@ public final class TpaCommand implements TabExecutor {
         MessageUtil.send(target, "teleport.requests.tpa-from", Map.of("player", player.getName()));
 
         if (plugin.utility().afk().isAfk(target.getUniqueId())) {
-            MessageUtil.send(player, "errors.afk-interaction-notify", Map.of("player", target.getName()));
+            MessageUtil.send(player, "errors.afk.interaction-notify", Map.of("player", target.getName()));
         }
 
         return true;
