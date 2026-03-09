@@ -69,6 +69,7 @@ public final class DatabaseManager {
                     socialspy_enabled INTEGER NOT NULL DEFAULT 0,
                     pay_enabled INTEGER NOT NULL DEFAULT 1,
                     teleport_enabled INTEGER NOT NULL DEFAULT 1,
+                    announcements_enabled INTEGER NOT NULL DEFAULT 1,
                     god_enabled INTEGER NOT NULL DEFAULT 0,
                     fly_enabled INTEGER NOT NULL DEFAULT 0,
                     world TEXT,
@@ -96,9 +97,10 @@ public final class DatabaseManager {
             }
         }
 
-        if (!columns.contains("announcements_enabled")) {
+        if (!columns.contains("skin_value")) {
             try (Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN announcements_enabled INTEGER NOT NULL DEFAULT 1;");
+                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN skin_value TEXT;");
+                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN skin_signature TEXT;");
             }
         }
     }

@@ -2,7 +2,9 @@ package com.ftxeven.aircore.util;
 
 import com.ftxeven.aircore.AirCore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -107,5 +109,15 @@ public final class TimeUtil {
             case "CUSTOM" -> String.join(" ", parts.subList(0, Math.min(granularity, parts.size())));
             default -> String.join(" ", parts);
         };
+    }
+
+    public static String formatDate(AirCore plugin, long timestamp) {
+        String pattern = plugin.config().getDateFormat();
+        try {
+            return new SimpleDateFormat(pattern).format(new Date(timestamp));
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid date-format in config: " + pattern);
+            return new SimpleDateFormat("dd/MM/yy").format(new Date(timestamp));
+        }
     }
 }

@@ -114,7 +114,7 @@ public final class HomeTargetManager implements GuiManager.CustomGuiManager {
             ph.put("filter", buildFilterList(currentFilter));
             ph.put("limit", String.valueOf(targetLimit));
 
-            HomeSlotMapper.fillHomeInventory(inv, definition, viewer, page, maxPages, homesList, homeSlots, ph, targetLimit, true);
+            HomeSlotMapper.fillHomeInventory(plugin, inv, definition, viewer, page, maxPages, homesList, homeSlots, ph, targetLimit, true);
             return inv;
         } finally {
             CONSTRUCTION_CONTEXT.remove();
@@ -444,7 +444,7 @@ public final class HomeTargetManager implements GuiManager.CustomGuiManager {
             ph.put("filter", buildFilterList(holder.getCurrentFilter()));
             ph.put("limit", String.valueOf(targetLimit));
 
-            HomeSlotMapper.fillHomeInventory(inv, definition, viewer, page, maxPages, homesList, homeSlots, ph, targetLimit, false);
+            HomeSlotMapper.fillHomeInventory(plugin, inv, definition, viewer, page, maxPages, homesList, homeSlots, ph, targetLimit, false);
         } finally {
             CONSTRUCTION_CONTEXT.remove();
         }

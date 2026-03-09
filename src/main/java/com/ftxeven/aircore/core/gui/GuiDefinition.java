@@ -1,5 +1,7 @@
 package com.ftxeven.aircore.core.gui;
 
+import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.database.dao.PlayerRecords;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -127,7 +129,7 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
             );
         }
 
-        public ItemStack buildStack(Player viewer, Map<String, String> placeholders) {
+        public ItemStack buildStack(Player viewer, Map<String, String> placeholders, AirCore plugin) {
             ItemComponent builder = new ItemComponent(this.material);
 
             if (this.rawName != null) {
@@ -160,7 +162,15 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
                     .itemModel(this.itemModel);
 
             if (this.headOwner != null) {
-                builder.skullOwner(PlaceholderUtil.apply(viewer, this.headOwner, placeholders), viewer);
+                String processedOwner = PlaceholderUtil.apply(viewer, this.headOwner, placeholders);
+
+                UUID ownerUuid = plugin.database().records().uuidFromName(processedOwner);
+
+                PlayerRecords.SkinData skin = (ownerUuid != null)
+                        ? plugin.database().records().getSkinData(ownerUuid)
+                        : null;
+
+                builder.skullOwner(processedOwner, viewer, skin);
             }
 
             return builder.build();

@@ -2,6 +2,7 @@ package com.ftxeven.aircore.core.gui;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import com.ftxeven.aircore.database.dao.PlayerRecords;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
@@ -68,6 +69,20 @@ public final class ItemComponent {
         }
 
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(owner));
+    }
+
+    public void skullOwner(String ownerName, Player viewer, PlayerRecords.SkinData skinData) {
+        if (!(meta instanceof SkullMeta skullMeta)) return;
+
+        if (skinData != null && skinData.hasData()) {
+            UUID id = UUID.nameUUIDFromBytes(skinData.value().getBytes());
+            PlayerProfile profile = Bukkit.createProfile(id, ownerName);
+            profile.setProperty(new ProfileProperty("textures", skinData.value(), skinData.signature()));
+            skullMeta.setPlayerProfile(profile);
+            return;
+        }
+
+        skullOwner(ownerName, viewer);
     }
 
     private void applyCustomHead(SkullMeta meta, String texture) {

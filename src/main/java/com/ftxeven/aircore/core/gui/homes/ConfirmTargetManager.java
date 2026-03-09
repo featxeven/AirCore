@@ -120,7 +120,7 @@ public final class ConfirmTargetManager implements Listener {
             def.items().values().stream()
                     .filter(item -> !item.key().equals("confirm") && !item.key().equals("cancel"))
                     .forEach(item -> {
-                        ItemStack stack = item.buildStack(viewer, ph);
+                        ItemStack stack = item.buildStack(viewer, ph, plugin);
                         item.slots().forEach(slot -> {
                             if (slot < inv.getSize()) inv.setItem(slot, stack);
                         });
@@ -138,7 +138,7 @@ public final class ConfirmTargetManager implements Listener {
     private void renderButton(Inventory inv, GuiDefinition def, String key, Player p, Map<String, String> ph) {
         GuiItem item = def.items().get(key);
         if (item != null) {
-            ItemStack stack = item.buildStack(p, ph);
+            ItemStack stack = item.buildStack(p, ph, plugin);
             item.slots().forEach(slot -> {
                 if (slot < inv.getSize()) inv.setItem(slot, stack);
             });

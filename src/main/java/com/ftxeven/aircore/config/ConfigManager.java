@@ -39,6 +39,7 @@ public final class ConfigManager {
     public boolean errorOnExcessArgs() { return b("error-on-excess-args", true); }
     public String timeFormatMode() { return s("time-format.mode", "DETAILED").toUpperCase(); }
     public int timeFormatGranularity() { return i("time-format.granularity", 4); }
+    public String getDateFormat() { return s("date-format", "dd/MM/yy"); }
 
     public double chatCooldown() { return d("chat.chat-cooldown", 0.0); }
     public int pmReplyExpireSeconds() { return i("chat.reply-expire-after", 30); }

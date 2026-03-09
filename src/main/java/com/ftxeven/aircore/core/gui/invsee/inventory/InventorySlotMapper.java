@@ -1,5 +1,6 @@
 package com.ftxeven.aircore.core.gui.invsee.inventory;
 
+import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.gui.GuiDefinition;
 import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import com.ftxeven.aircore.database.dao.PlayerInventories;
@@ -17,22 +18,22 @@ public final class InventorySlotMapper {
 
     private InventorySlotMapper() {}
 
-    public static void fill(Inventory inv, GuiDefinition def, PlayerInventories.InventoryBundle bundle, Player viewer, Map<String, String> ph) {
-        mapToSlots(inv, def, getSlots(def, "hotbar-slots"), bundle.contents(), 0, viewer, ph);
-        mapToSlots(inv, def, getSlots(def, "inventory-slots"), bundle.contents(), 9, viewer, ph);
-        mapToSlots(inv, def, getSlots(def, "armor-slots"), bundle.armor(), 0, viewer, ph);
+    public static void fill(AirCore plugin, Inventory inv, GuiDefinition def, PlayerInventories.InventoryBundle bundle, Player viewer, Map<String, String> ph) {
+        mapToSlots(plugin, inv, def, getSlots(def, "hotbar-slots"), bundle.contents(), 0, viewer, ph);
+        mapToSlots(plugin, inv, def, getSlots(def, "inventory-slots"), bundle.contents(), 9, viewer, ph);
+        mapToSlots(plugin, inv, def, getSlots(def, "armor-slots"), bundle.armor(), 0, viewer, ph);
 
         List<Integer> offhandSlots = getSlots(def, "offhand-slots");
         if (offhandSlots != null && !offhandSlots.isEmpty()) {
-            updateSlot(inv, def, offhandSlots.getFirst(), bundle.offhand(), viewer, ph);
+            updateSlot(plugin, inv, def, offhandSlots.getFirst(), bundle.offhand(), viewer, ph);
         }
     }
 
-    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> ph, InventoryManager mgr) {
+    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> ph, InventoryManager mgr, AirCore plugin) {
         for (GuiItem item : def.items().values()) {
             if (mgr.isDynamicGroup(item.key())) continue;
 
-            ItemStack stack = item.buildStack(viewer, ph);
+            ItemStack stack = item.buildStack(viewer, ph, plugin);
 
             item.slots().stream().filter(s -> s < inv.getSize()).forEach(slot -> {
                 ItemStack current = inv.getItem(slot);
@@ -58,20 +59,20 @@ public final class InventorySlotMapper {
         return new PlayerInventories.InventoryBundle(contents, armor, offhand, null);
     }
 
-    private static void mapToSlots(Inventory inv, GuiDefinition def, List<Integer> slots, ItemStack[] source, int offset, Player viewer, Map<String, String> ph) {
+    private static void mapToSlots(AirCore plugin, Inventory inv, GuiDefinition def, List<Integer> slots, ItemStack[] source, int offset, Player viewer, Map<String, String> ph) {
         if (slots == null) return;
         for (int i = 0; i < slots.size() && (i + offset) < source.length; i++) {
-            updateSlot(inv, def, slots.get(i), source[i + offset], viewer, ph);
+            updateSlot(plugin, inv, def, slots.get(i), source[i + offset], viewer, ph);
         }
     }
 
-    private static void updateSlot(Inventory inv, GuiDefinition def, int slot, ItemStack newItem, Player viewer, Map<String, String> ph) {
+    private static void updateSlot(AirCore plugin, Inventory inv, GuiDefinition def, int slot, ItemStack newItem, Player viewer, Map<String, String> ph) {
         if (newItem != null && !newItem.getType().isAir()) {
             inv.setItem(slot, newItem);
         } else {
             GuiItem filler = findCustomItemAt(def, slot);
             if (filler != null) {
-                ItemStack fillerStack = filler.buildStack(viewer, ph);
+                ItemStack fillerStack = filler.buildStack(viewer, ph, plugin);
 
                 ItemStack current = inv.getItem(slot);
                 if (current == null || !current.isSimilar(fillerStack)) {

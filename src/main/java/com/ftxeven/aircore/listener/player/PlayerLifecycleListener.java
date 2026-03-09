@@ -74,7 +74,9 @@ public final class PlayerLifecycleListener implements Listener {
                         plugin.database().records().createPlayerRecord(uuid, player.getName());
 
                 if (hasJoinedBefore) {
-                    plugin.database().records().updateName(uuid, player.getName());
+                    plugin.database().records().updateJoinInfo(player);
+                } else {
+                    plugin.database().records().updateJoinInfo(player);
                 }
 
                 Map<ToggleService.Toggle, Boolean> toggles = new EnumMap<>(ToggleService.Toggle.class);

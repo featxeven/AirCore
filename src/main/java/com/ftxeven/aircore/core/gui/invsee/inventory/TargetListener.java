@@ -91,7 +91,7 @@ public final class TargetListener implements Listener {
             if (top.getHolder() instanceof InventoryManager.InvseeHolder holder) {
                 if (!holder.targetUUID().equals(targetUUID)) return;
 
-                InventorySlotMapper.fill(top, inventoryManager.definition(), bundle, viewer, ph);
+                InventorySlotMapper.fill(plugin, top, inventoryManager.definition(), bundle, viewer, ph);
             }
         });
     }

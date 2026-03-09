@@ -1,5 +1,6 @@
 package com.ftxeven.aircore.core.gui.invsee.enderchest;
 
+import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.gui.GuiDefinition;
 import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import org.bukkit.entity.Player;
@@ -23,11 +24,11 @@ public final class EnderchestSlotMapper {
         }
     }
 
-    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> ph, EnderchestManager mgr) {
+    public static void fillCustom(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> ph, EnderchestManager mgr, AirCore plugin) {
         for (GuiItem item : def.items().values()) {
             if (mgr.isDynamicGroup(item.key())) continue;
 
-            ItemStack stack = item.buildStack(viewer, ph);
+            ItemStack stack = item.buildStack(viewer, ph, plugin);
 
             item.slots().stream().filter(s -> s < inv.getSize()).forEach(slot -> {
                 if (isDynamicSlot(def, slot)) {

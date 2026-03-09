@@ -72,7 +72,7 @@ public final class ConfirmManager implements Listener {
         Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize("<!italic>" + title));
         holder.setInventory(inv);
 
-        SellSlotMapper.fillConfirm(inv, definition, player, placeholders);
+        SellSlotMapper.fillConfirm(plugin, inv, definition, player, placeholders);
 
         sellManager.markTransitioning(player.getUniqueId());
         player.openInventory(inv);

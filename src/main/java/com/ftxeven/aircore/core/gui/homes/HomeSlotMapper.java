@@ -1,7 +1,9 @@
 package com.ftxeven.aircore.core.gui.homes;
 
+import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.core.gui.GuiDefinition;
 import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
+import com.ftxeven.aircore.util.TimeUtil;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -18,7 +20,6 @@ import java.util.Map;
 
 public final class HomeSlotMapper {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yy").withZone(ZoneId.systemDefault());
 
     private HomeSlotMapper() {}
 
@@ -43,7 +44,7 @@ public final class HomeSlotMapper {
         return processed;
     }
 
-    public static void fillHomeInventory(Inventory inv, GuiDefinition def, Player viewer, int page, int maxPages, List<Map.Entry<String, Location>> homes, int[] homeSlots, Map<String, String> ph, int homeLimit, boolean isInitialOpen) {
+    public static void fillHomeInventory(AirCore plugin, Inventory inv, GuiDefinition def, Player viewer, int page, int maxPages, List<Map.Entry<String, Location>> homes, int[] homeSlots, Map<String, String> ph, int homeLimit, boolean isInitialOpen) {
         ph.putIfAbsent("page", String.valueOf(page));
         ph.putIfAbsent("pages", String.valueOf(maxPages));
         ph.putIfAbsent("player", viewer.getName());
@@ -52,11 +53,11 @@ public final class HomeSlotMapper {
             if (isHomeGridKey(item.key()) || isButtonKey(item.key())) continue;
 
             if (isInitialOpen) {
-                renderItem(inv, item, viewer, ph);
+                renderItem(plugin, inv, item, viewer, ph);
             } else {
                 for (int slot : item.slots()) {
                     if (isManagedSlot(slot, homeSlots, def)) {
-                        inv.setItem(slot, item.buildStack(viewer, ph));
+                        inv.setItem(slot, item.buildStack(viewer, ph, plugin));
                     }
                 }
             }
@@ -71,13 +72,13 @@ public final class HomeSlotMapper {
             if (item.key().equals("next-page") && !showNext) continue;
             if (item.key().equals("previous-page") && !showPrev) continue;
 
-            renderItem(inv, item, viewer, ph);
+            renderItem(plugin, inv, item, viewer, ph);
         }
 
-        renderHomeGrid(inv, def, viewer, homes, homeSlots, page, ph, homeLimit);
+        renderHomeGrid(plugin, inv, def, viewer, homes, homeSlots, page, ph, homeLimit);
     }
 
-    private static void renderHomeGrid(Inventory inv, GuiDefinition def, Player viewer, List<Map.Entry<String, Location>> homes, int[] homeSlots, int page, Map<String, String> basePh, int homeLimit) {
+    private static void renderHomeGrid(AirCore plugin, Inventory inv, GuiDefinition def, Player viewer, List<Map.Entry<String, Location>> homes, int[] homeSlots, int page, Map<String, String> basePh, int homeLimit) {
         Map<String, Long> timestamps;
 
         if (inv.getHolder() instanceof HomeManager.HomeHolder holder) {
@@ -116,13 +117,13 @@ public final class HomeSlotMapper {
                     finalItem = baseHomeItem.applyOverride(worldTypesSec.getConfigurationSection(worldName));
                 }
 
-                long ts = timestamps.getOrDefault(home.getKey(), 0L);
-                Instant instant = Instant.ofEpochSecond(ts);
+                long ts = timestamps.getOrDefault(home.getKey(), 0L) * 1000L;
+                Instant instant = Instant.ofEpochMilli(ts);
 
                 Map<String, String> itemPh = new HashMap<>(basePh);
                 itemPh.put("name", home.getKey());
                 itemPh.put("time", TIME_FORMAT.format(instant));
-                itemPh.put("date", DATE_FORMAT.format(instant));
+                itemPh.put("date", TimeUtil.formatDate(plugin, ts));
                 itemPh.put("world", worldName);
                 itemPh.put("x", Integer.toString(loc.getBlockX()));
                 itemPh.put("y", Integer.toString(loc.getBlockY()));
@@ -138,9 +139,9 @@ public final class HomeSlotMapper {
                         finalItem.hideTooltip(), finalItem.tooltipStyle(), finalItem.cooldown(), finalItem.cooldownMessage()
                 );
 
-                stackToSet = loreFilteredItem.buildStack(viewer, itemPh);
+                stackToSet = loreFilteredItem.buildStack(viewer, itemPh, plugin);
             } else if (availableTemplate != null && globalIndex < homeLimit) {
-                stackToSet = availableTemplate.buildStack(viewer, basePh);
+                stackToSet = availableTemplate.buildStack(viewer, basePh, plugin);
             }
 
             if (stackToSet != null) {
@@ -149,7 +150,7 @@ public final class HomeSlotMapper {
         }
     }
 
-    private static void renderItem(Inventory inv, GuiItem item, Player viewer, Map<String, String> ph) {
+    private static void renderItem(AirCore plugin, Inventory inv, GuiItem item, Player viewer, Map<String, String> ph) {
         if (item == null) return;
 
         GuiItem loreFilteredItem = new GuiItem(
@@ -162,7 +163,8 @@ public final class HomeSlotMapper {
                 item.hideTooltip(), item.tooltipStyle(), item.cooldown(), item.cooldownMessage()
         );
 
-        ItemStack stack = loreFilteredItem.buildStack(viewer, ph);
+        ItemStack stack = loreFilteredItem.buildStack(viewer, ph, plugin);
+
         for (int slot : item.slots()) {
             if (slot >= 0 && slot < inv.getSize()) inv.setItem(slot, stack);
         }

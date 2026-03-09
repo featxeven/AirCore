@@ -20,6 +20,14 @@ time-format:
   mode: DETAILED
   granularity: 2   # Only used when mode = CUSTOM (1 = largest only, 4 = full breakdown)
 
+# Date formatting used for GUIs
+# Common patterns:
+# dd/MM/yy -> 08/03/26
+# dd MMM -> 08 Mar
+# MMMM dd, yyyy -> March 08, 2026
+# E, dd MMM -> Sun, 08 Mar
+date-format: "dd/MM/yy"
+
 # Disabled commands (main names only, do not list aliases)
 # Requires restart to reflect changes
 disabled-commands: []

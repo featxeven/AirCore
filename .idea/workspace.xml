@@ -4,61 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="small config changes &amp; MessageUtil InlineTags method refactor">
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/AirCoreAPIImpl$BlockManagerImpl.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/AirCoreAPIImpl.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/AirCorePAPIExpansion.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/event/block/BlockEvent.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/event/block/PlayerBlockEvent.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/event/block/PlayerUnblockEvent.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/api/manager/BlockManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/GuiDefinition$1.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/GuiDefinition$GuiItem.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/GuiDefinition.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/GuiManager$CustomGuiManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/GuiManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/ItemAction$ActionData.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/ItemAction$Type.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/ItemAction.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/ItemComponent.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/ItemCooldownHandler.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/ConfirmManager$HomeConfirmHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/ConfirmManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/ConfirmTargetManager$HomeConfirmTargetHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/ConfirmTargetManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeManager$HomeHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeTargetManager$HomeTargetHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestManager$EnderchestHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestSlotMapper.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/enderchest/TargetListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/enderchest/ViewerListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/inventory/InventoryManager$InvseeHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/inventory/InventoryManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/inventory/InventorySlotMapper.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/inventory/TargetListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/invsee/inventory/ViewerListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/ConfirmManager$ConfirmHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/ConfirmManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/SellListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/SellManager$SellHolder.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/SellManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/SellSlotMapper$WorthResult.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/ListenerManager.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/hook/WorldGuardListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerActivityListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerChatListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerDeathMessageListener$1.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerDeathMessageListener$DamageInfo.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerDeathMessageListener.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/listener/player/PlayerLifecycleListener.class" afterDir="false" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="ver update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/MessageUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/MessageUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/ConfigManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/ConfigManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/ItemComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/ItemComponent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/database/DatabaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/database/DatabaseManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/database/dao/PlayerRecords.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/database/dao/PlayerRecords.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/listener/player/PlayerLifecycleListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/listener/player/PlayerLifecycleListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/TimeUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/TimeUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/original-AirCore-1.1.9.jar" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -444,17 +405,31 @@
       <option name="project" value="LOCAL" />
       <updated>1772822521447</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="minor bug fixes">
+      <option name="closed" value="true" />
+      <created>1773007337982</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1773007337982</updated>
+    </task>
+    <task id="LOCAL-00044" summary="ver update">
+      <option name="closed" value="true" />
+      <created>1773007364820</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1773007364820</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="added new module announcements" />
     <MESSAGE value="fix homes removed after reload" />
     <MESSAGE value="added sequence: for announcements with interval" />
-    <MESSAGE value="ver update" />
     <MESSAGE value="added new message key error-max-balance" />
     <MESSAGE value="added new validation to check max balance limit" />
     <MESSAGE value="changed default config" />
@@ -476,6 +451,8 @@
     <MESSAGE value="refactor &amp; fixed placeholder" />
     <MESSAGE value="improved default messages" />
     <MESSAGE value="small config changes &amp; MessageUtil InlineTags method refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="small config changes &amp; MessageUtil InlineTags method refactor" />
+    <MESSAGE value="minor bug fixes" />
+    <MESSAGE value="ver update" />
+    <option name="LAST_COMMIT_MESSAGE" value="ver update" />
   </component>
 </project>

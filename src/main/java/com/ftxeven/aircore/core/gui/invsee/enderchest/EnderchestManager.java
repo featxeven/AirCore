@@ -84,7 +84,7 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         Inventory inv = Bukkit.createInventory(new EnderchestHolder(targetUUID, targetName, false), definition.rows() * 9, mm.deserialize(title));
 
         EnderchestSlotMapper.fill(inv, definition, contents);
-        EnderchestSlotMapper.fillCustom(inv, definition, viewer, context, this);
+        EnderchestSlotMapper.fillCustom(inv, definition, viewer, context, this, plugin);
 
         targetListener.registerViewer(targetUUID, viewer);
         return inv;
@@ -235,7 +235,7 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
             context.put("target", holder.targetName());
             context.put("player", viewer.getName());
 
-            EnderchestSlotMapper.fillCustom(inv, definition, viewer, context, this);
+            EnderchestSlotMapper.fillCustom(inv, definition, viewer, context, this, plugin);
         }
     }
 

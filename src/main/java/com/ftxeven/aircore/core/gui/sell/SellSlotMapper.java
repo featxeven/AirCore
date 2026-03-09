@@ -23,7 +23,7 @@ public final class SellSlotMapper {
 
         for (GuiItem item : def.items().values()) {
             if (isReservedKey(item.key())) continue;
-            renderItem(inv, item, viewer, mutablePh);
+            renderItem(plugin, inv, item, viewer, mutablePh);
         }
 
         GuiItem confirm = def.items().get("confirm");
@@ -32,7 +32,7 @@ public final class SellSlotMapper {
         mutablePh.put("worth-raw", String.valueOf(worth));
 
         if (confirm != null && (alwaysShow || worth > 0)) {
-            renderItem(inv, confirm, viewer, mutablePh);
+            renderItem(plugin, inv, confirm, viewer, mutablePh);
         }
 
         GuiItem confirmAll = def.items().get("confirm-all");
@@ -41,32 +41,32 @@ public final class SellSlotMapper {
         mutablePh.put("worth-all-raw", String.valueOf(worthAll));
 
         if (confirmAll != null && (alwaysShow || worthAll > 0)) {
-            renderItem(inv, confirmAll, viewer, mutablePh);
+            renderItem(plugin, inv, confirmAll, viewer, mutablePh);
         }
 
-        renderSpecificButton(inv, def, "cancel", viewer, mutablePh);
+        renderSpecificButton(plugin, inv, def, "cancel", viewer, mutablePh);
     }
 
-    public static void fillConfirm(Inventory inv, GuiDefinition def, Player viewer, Map<String, String> placeholders) {
+    public static void fillConfirm(AirCore plugin, Inventory inv, GuiDefinition def, Player viewer, Map<String, String> placeholders) {
         Map<String, String> ph = new HashMap<>(placeholders);
         for (GuiItem item : def.items().values()) {
             if (item.key().equals("confirm") || item.key().equals("cancel")) continue;
-            renderItem(inv, item, viewer, ph);
+            renderItem(plugin, inv, item, viewer, ph);
         }
-        renderSpecificButton(inv, def, "confirm", viewer, ph);
-        renderSpecificButton(inv, def, "cancel", viewer, ph);
+        renderSpecificButton(plugin, inv, def, "confirm", viewer, ph);
+        renderSpecificButton(plugin, inv, def, "cancel", viewer, ph);
     }
 
-    private static void renderItem(Inventory inv, GuiItem item, Player p, Map<String, String> ph) {
-        ItemStack stack = item.buildStack(p, ph);
+    private static void renderItem(AirCore plugin, Inventory inv, GuiItem item, Player p, Map<String, String> ph) {
+        ItemStack stack = item.buildStack(p, ph, plugin);
         for (int slot : item.slots()) {
             if (slot < inv.getSize()) inv.setItem(slot, stack);
         }
     }
 
-    private static void renderSpecificButton(Inventory inv, GuiDefinition def, String key, Player p, Map<String, String> ph) {
+    private static void renderSpecificButton(AirCore plugin, Inventory inv, GuiDefinition def, String key, Player p, Map<String, String> ph) {
         GuiItem item = def.items().get(key);
-        if (item != null) renderItem(inv, item, p, ph);
+        if (item != null) renderItem(plugin, inv, item, p, ph);
     }
 
     public static WorthResult calculateWorth(Inventory inv, ItemWorthService worthService, GuiDefinition def) {

@@ -16,9 +16,58 @@ public final class PlayerRecords {
     private final AirCore plugin;
     private final Connection connection;
 
+    public record SkinData(String value, String signature) {
+        public boolean hasData() { return value != null && !value.isEmpty(); }
+    }
+
     public PlayerRecords(AirCore plugin, Connection connection) {
         this.plugin = plugin;
         this.connection = connection;
+    }
+
+    public void updateJoinInfo(Player player) {
+        UUID uuid = player.getUniqueId();
+        String name = player.getName();
+
+        var profile = player.getPlayerProfile();
+        var textures = profile.getProperties().stream()
+                .filter(p -> p.getName().equals("textures"))
+                .findFirst().orElse(null);
+
+        String skinValue = textures != null ? textures.getValue() : null;
+        String skinSignature = textures != null ? textures.getSignature() : null;
+
+        String sql = """
+            UPDATE player_records
+            SET name = ?, skin_value = ?, skin_signature = ?, updated_at = ?
+            WHERE uuid = ?;
+        """;
+
+        plugin.database().executeAsync(sql, ps -> {
+            ps.setString(1, name);
+            ps.setString(2, skinValue);
+            ps.setString(3, skinSignature);
+            ps.setLong(4, Instant.now().getEpochSecond());
+            ps.setString(5, uuid.toString());
+        });
+    }
+
+    public SkinData getSkinData(UUID uuid) {
+        String sql = "SELECT skin_value, skin_signature FROM player_records WHERE uuid = ? LIMIT 1;";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new SkinData(
+                            rs.getString("skin_value"),
+                            rs.getString("skin_signature")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to fetch skin for " + uuid + ": " + e.getMessage());
+        }
+        return null;
     }
 
     public Set<UUID> getAllKnownUuids() {
@@ -100,8 +149,8 @@ public final class PlayerRecords {
         String sql = """
         INSERT INTO player_records (uuid, name, balance, updated_at)
         VALUES (?, ?, ?, ?)
-        ON CONFLICT(uuid) DO UPDATE SET 
-            name = excluded.name, 
+        ON CONFLICT(uuid) DO UPDATE SET
+            name = excluded.name,
             updated_at = excluded.updated_at;
     """;
 
@@ -152,17 +201,6 @@ public final class PlayerRecords {
             plugin.getLogger().warning("Failed to fetch join_index for " + uuid + ": " + e.getMessage());
         }
         return null;
-    }
-
-    public int getMaxJoinIndex() {
-        String sql = "SELECT MAX(join_index) AS max_index FROM player_records;";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            if (rs.next()) return rs.getInt("max_index");
-        } catch (SQLException e) {
-            plugin.getLogger().warning("Failed to fetch max join_index: " + e.getMessage());
-        }
-        return 0;
     }
 
     public double getBalance(UUID uuid) {

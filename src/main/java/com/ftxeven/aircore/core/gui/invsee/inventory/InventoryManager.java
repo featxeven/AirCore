@@ -94,8 +94,8 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize(title));
         holder.setInventory(inv);
 
-        InventorySlotMapper.fillCustom(inv, definition, viewer, context, this);
-        InventorySlotMapper.fill(inv, definition, bundle, viewer, context);
+        InventorySlotMapper.fillCustom(inv, definition, viewer, context, this, plugin);
+        InventorySlotMapper.fill(plugin, inv, definition, bundle, viewer, context);
 
         targetListener.registerViewer(targetUUID, viewer);
         return inv;
@@ -283,8 +283,8 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         context.put("target", holder.targetName());
         context.put("player", viewer.getName());
 
-        InventorySlotMapper.fillCustom(inv, definition, viewer, context, this);
-        InventorySlotMapper.fill(inv, definition, bundle, viewer, context);
+        InventorySlotMapper.fillCustom(inv, definition, viewer, context, this, plugin);
+        InventorySlotMapper.fill(plugin, inv, definition, bundle, viewer, context);
     }
 
     private GuiItem createEmptyGroup(String key, List<String> slots) {
