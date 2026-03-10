@@ -78,10 +78,10 @@ public final class AirCorePAPIExpansion extends PlaceholderExpansion {
         if (pLow.equals("player_block_limit")) return getLimit(player, "block", () -> plugin.core().blocks().getLimit(uuid));
         if (pLow.equals("player_home_amount")) return String.valueOf(plugin.database().homes().getHomeAmount(uuid));
         if (pLow.equals("player_block_amount")) return String.valueOf(plugin.database().blocks().load(uuid).size());
-        if (pLow.equals("player_home_guipage") || pLow.equals("player_home_guipages")) {
+        if (pLow.equals("player_home_gui_page") || pLow.equals("player_home_gui_pages")) {
             Player p = player.getPlayer();
             if (p == null) return "0";
-            boolean isPage = pLow.endsWith("guipage");
+            boolean isPage = pLow.endsWith("gui_page");
 
             HomeManager.HomeHolder construction = HomeManager.CONSTRUCTION_CONTEXT.get();
             if (construction != null) {

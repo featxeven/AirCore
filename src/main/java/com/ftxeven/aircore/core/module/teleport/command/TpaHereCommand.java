@@ -138,7 +138,7 @@ public final class TpaHereCommand implements TabExecutor {
         MessageUtil.send(target, "teleport.requests.tpahere-from", Map.of("player", player.getName()));
 
         if (plugin.utility().afk().isAfk(target.getUniqueId())) {
-            MessageUtil.send(player, "utility.afk.interaction-notify", Map.of("player", target.getName()));
+            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", target.getName()));
         }
     }
 
