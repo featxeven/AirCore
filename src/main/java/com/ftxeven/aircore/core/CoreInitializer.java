@@ -9,6 +9,7 @@ import com.ftxeven.aircore.config.AnnouncementManager;
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.config.LangManager;
 import com.ftxeven.aircore.config.PlaceholderManager;
+import com.ftxeven.aircore.core.hook.HookManager;
 import com.ftxeven.aircore.core.module.chat.ChatManager;
 import com.ftxeven.aircore.core.module.economy.EconomyManager;
 import com.ftxeven.aircore.core.gui.GuiManager;
@@ -118,6 +119,7 @@ public final class CoreInitializer {
     private void initManagers() {
         plugin.setPlaceholderManager(new PlaceholderManager(plugin));
         plugin.setCoreManager(new CoreManager(plugin, plugin.scheduler()));
+        plugin.setHookManager(new HookManager());
         plugin.setAnnouncementManager(new AnnouncementManager(plugin));
         plugin.setChatManager(new ChatManager(plugin));
         plugin.setEconomyManager(new EconomyManager(plugin));

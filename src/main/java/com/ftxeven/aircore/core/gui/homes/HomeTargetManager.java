@@ -382,7 +382,7 @@ public final class HomeTargetManager implements GuiManager.CustomGuiManager {
         switch (type.toLowerCase()) {
             case "alphabetical" -> list.sort((e1, e2) -> e1.getKey().compareToIgnoreCase(e2.getKey()));
             case "latest" -> Collections.reverse(list);
-            case "oldest" -> { /* handled */ }
+            case "oldest" -> { /* already handled by db */ }
         }
     }
 

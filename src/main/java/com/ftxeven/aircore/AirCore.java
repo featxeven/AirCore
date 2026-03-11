@@ -2,6 +2,7 @@ package com.ftxeven.aircore;
 
 import com.ftxeven.aircore.api.AirCoreAPI;
 import com.ftxeven.aircore.config.*;
+import com.ftxeven.aircore.core.hook.HookManager;
 import com.ftxeven.aircore.database.DatabaseManager;
 import com.ftxeven.aircore.core.*;
 import com.ftxeven.aircore.core.module.chat.ChatManager;
@@ -32,6 +33,7 @@ public final class AirCore extends JavaPlugin {
     private SchedulerUtil schedulerUtil;
     private CoreInitializer coreInitializer;
     private AirCoreAPI api;
+    private HookManager hookManager;
     private String latestVersion = null;
 
     @Override
@@ -71,6 +73,7 @@ public final class AirCore extends JavaPlugin {
     public void setSchedulerUtil(SchedulerUtil schedulerUtil) { this.schedulerUtil = schedulerUtil; }
     public void setApi(AirCoreAPI api) { this.api = api; }
     public void setLatestVersion(String latestVersion) { this.latestVersion = latestVersion; }
+    public void setHookManager(HookManager hookManager) { this.hookManager = hookManager; }
 
     public ConfigManager config() { return configManager; }
     public LangManager lang() { return langManager; }
@@ -88,4 +91,5 @@ public final class AirCore extends JavaPlugin {
     public SchedulerUtil scheduler() { return schedulerUtil; }
     public AirCoreAPI api() { return api; }
     public String getLatestVersion() { return latestVersion; }
+    public HookManager hooks() { return hookManager; }
 }

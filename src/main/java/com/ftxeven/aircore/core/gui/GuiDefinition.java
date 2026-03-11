@@ -56,8 +56,10 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
             return switch (click) {
                 case LEFT -> !leftActions.isEmpty() ? leftActions : actions;
                 case RIGHT -> !rightActions.isEmpty() ? rightActions : actions;
-                case SHIFT_LEFT -> !shiftLeftActions.isEmpty() ? shiftLeftActions : (!shiftActions.isEmpty() ? shiftActions : actions);
-                case SHIFT_RIGHT -> !shiftRightActions.isEmpty() ? shiftRightActions : (!shiftActions.isEmpty() ? shiftActions : actions);
+                case SHIFT_LEFT ->
+                        !shiftLeftActions.isEmpty() ? shiftLeftActions : (!shiftActions.isEmpty() ? shiftActions : actions);
+                case SHIFT_RIGHT ->
+                        !shiftRightActions.isEmpty() ? shiftRightActions : (!shiftActions.isEmpty() ? shiftActions : actions);
                 default -> actions;
             };
         }
@@ -70,7 +72,8 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
                     try {
                         int pLevel = Integer.parseInt(pKey);
                         priorities.put(pLevel, ItemPriority.fromSection(Objects.requireNonNull(prioSec.getConfigurationSection(pKey))));
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
             }
 
@@ -131,18 +134,27 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
             String rawMat = (match != null && match.material() != null) ? match.material() : this.material;
             String appliedMat = PlaceholderUtil.apply(viewer, rawMat, placeholders);
 
-            Material activeMat = Material.STONE;
+            ItemComponent builder;
             String activeHead = null;
 
-            if (appliedMat.startsWith("head-")) {
-                activeMat = Material.PLAYER_HEAD;
+            if (appliedMat.contains(":")) {
+                String[] split = appliedMat.split(":", 2);
+                String prefix = split[0].toLowerCase();
+                String id = split[1];
+
+                ItemStack hookedItem = plugin.hooks().getItem(id, prefix);
+                if (hookedItem != null) {
+                    builder = new ItemComponent(hookedItem);
+                } else {
+                    builder = new ItemComponent(Material.STONE);
+                }
+            } else if (appliedMat.startsWith("head-")) {
+                builder = new ItemComponent(Material.PLAYER_HEAD);
                 activeHead = appliedMat.substring(5);
             } else {
                 Material m = Material.matchMaterial(appliedMat.toUpperCase());
-                if (m != null) activeMat = m;
+                builder = new ItemComponent(m != null ? m : Material.STONE);
             }
-
-            ItemComponent builder = new ItemComponent(activeMat);
 
             String activeName = (match != null && match.displayName() != null) ? match.displayName() : this.rawName;
             if (activeName != null) {

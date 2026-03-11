@@ -61,6 +61,27 @@
             <version>7.0.12</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.nexomc</groupId>
+            <artifactId>nexo</artifactId>
+            <version>1.4.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.lone</groupId>
+            <artifactId>api-itemsadder</artifactId>
+            <version>4.0.10</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.momirealms</groupId>
+            <artifactId>craft-engine-core</artifactId>
+            <version>0.0.67</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -87,6 +108,26 @@
         <repository>
             <id>enginehub</id>
             <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+
+        <repository>
+            <id>nexomc-repo</id>
+            <url>https://repo.nexomc.com/releases</url>
+        </repository>
+
+        <repository>
+            <id>itemsadder-repo</id>
+            <url>https://maven.devs.beer/</url>
+        </repository>
+
+        <repository>
+            <id>momirealms-repo</id>
+            <url>https://repo.momirealms.net/releases/</url>
+        </repository>
+
+        <repository>
+            <id>alessiodp-repo</id>
+            <url>https://repo.alessiodp.com/releases/</url>
         </repository>
     </repositories>
 

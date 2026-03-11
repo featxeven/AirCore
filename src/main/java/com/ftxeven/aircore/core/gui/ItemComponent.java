@@ -22,6 +22,11 @@ public final class ItemComponent {
         this.meta = item.getItemMeta();
     }
 
+    public ItemComponent(ItemStack item) {
+        this.item = item.clone();
+        this.meta = this.item.getItemMeta();
+    }
+
     public ItemComponent amount(int amount) {
         if (meta != null) item.setAmount(Math.max(1, Math.min(item.getMaxStackSize(), amount)));
         return this;
