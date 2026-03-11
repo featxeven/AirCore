@@ -85,12 +85,12 @@ placeholders:
     priority:
       0: # Highest priority
         conditions:
-          - "%aircore_player_balance_raw% >= 100"
+          - "%aircore_player_balance_raw% <= 100"
           - "%player_name% == 'ftxeven'"
-        output: "%player% has >=$100"
+        output: "%player% has <=$100"
       1:
         conditions:
-          - "%aircore_player_balance_raw% > 1000"
+          - "%aircore_player_balance_raw% < 1000"
         output: "%player% has >$1000"
       2:
         conditions:

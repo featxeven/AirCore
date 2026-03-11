@@ -25,18 +25,14 @@ public final class HomeSlotMapper {
 
     private static List<String> processLore(Player viewer, Inventory inv, List<String> rawLore) {
         if (rawLore == null) return null;
-
         boolean isTargetGui = inv.getHolder() instanceof HomeTargetManager.HomeTargetHolder;
-
         String permissionNode = isTargetGui ? "aircore.command.delhome.others" : "aircore.command.delhome";
         boolean hasDeletePerm = viewer.hasPermission(permissionNode);
 
         List<String> processed = new ArrayList<>();
         for (String line : rawLore) {
             if (line.startsWith("permission:")) {
-                if (hasDeletePerm) {
-                    processed.add(line.substring("permission:".length()).trim());
-                }
+                if (hasDeletePerm) processed.add(line.substring("permission:".length()).trim());
                 continue;
             }
             processed.add(line);
@@ -56,21 +52,22 @@ public final class HomeSlotMapper {
                 renderItem(plugin, inv, item, viewer, ph);
             } else {
                 for (int slot : item.slots()) {
-                    if (isManagedSlot(slot, homeSlots, def)) {
+                    if (!isHomeGridSlot(slot, homeSlots)) {
                         inv.setItem(slot, item.buildStack(viewer, ph, plugin));
                     }
                 }
             }
         }
 
+        boolean alwaysShow = def.config().getBoolean("always-show-buttons", false);
+        boolean hasNext = page < maxPages;
+        boolean hasPrev = page > 1;
+
         for (GuiItem item : def.items().values()) {
             if (!isButtonKey(item.key())) continue;
 
-            boolean showNext = page < maxPages || def.config().getBoolean("always-show-buttons", false);
-            boolean showPrev = page > 1 || def.config().getBoolean("always-show-buttons", false);
-
-            if (item.key().equals("next-page") && !showNext) continue;
-            if (item.key().equals("previous-page") && !showPrev) continue;
+            if (item.key().equals("next-page") && !hasNext && !alwaysShow) continue;
+            if (item.key().equals("previous-page") && !hasPrev && !alwaysShow) continue;
 
             renderItem(plugin, inv, item, viewer, ph);
         }
@@ -78,16 +75,16 @@ public final class HomeSlotMapper {
         renderHomeGrid(plugin, inv, def, viewer, homes, homeSlots, page, ph, homeLimit);
     }
 
+    private static boolean isHomeGridSlot(int slot, int[] homeSlots) {
+        for (int hs : homeSlots) if (slot == hs) return true;
+        return false;
+    }
+
     private static void renderHomeGrid(AirCore plugin, Inventory inv, GuiDefinition def, Player viewer, List<Map.Entry<String, Location>> homes, int[] homeSlots, int page, Map<String, String> basePh, int homeLimit) {
         Map<String, Long> timestamps;
-
-        if (inv.getHolder() instanceof HomeManager.HomeHolder holder) {
-            timestamps = holder.getTimestamps();
-        } else if (inv.getHolder() instanceof HomeTargetManager.HomeTargetHolder holder) {
-            timestamps = holder.getTimestamps();
-        } else {
-            return;
-        }
+        if (inv.getHolder() instanceof HomeManager.HomeHolder holder) timestamps = holder.getTimestamps();
+        else if (inv.getHolder() instanceof HomeTargetManager.HomeTargetHolder holder) timestamps = holder.getTimestamps();
+        else return;
 
         int pageSize = homeSlots.length;
         int start = (page - 1) * pageSize;
@@ -136,23 +133,19 @@ public final class HomeSlotMapper {
                         finalItem.rightActions(), finalItem.shiftActions(), finalItem.shiftLeftActions(),
                         finalItem.shiftRightActions(), finalItem.amount(), finalItem.customModelData(),
                         finalItem.damage(), finalItem.enchants(), finalItem.flags(), finalItem.headOwner(),
-                        finalItem.hideTooltip(), finalItem.tooltipStyle(), finalItem.cooldown(), finalItem.cooldownMessage()
+                        finalItem.hideTooltip(), finalItem.tooltipStyle(), finalItem.cooldown(), finalItem.cooldownMessage(),
+                        finalItem.priorities()
                 );
-
                 stackToSet = loreFilteredItem.buildStack(viewer, itemPh, plugin);
             } else if (availableTemplate != null && globalIndex < homeLimit) {
                 stackToSet = availableTemplate.buildStack(viewer, basePh, plugin);
             }
-
-            if (stackToSet != null) {
-                inv.setItem(slot, stackToSet);
-            }
+            inv.setItem(slot, stackToSet);
         }
     }
 
     private static void renderItem(AirCore plugin, Inventory inv, GuiItem item, Player viewer, Map<String, String> ph) {
         if (item == null) return;
-
         GuiItem loreFilteredItem = new GuiItem(
                 item.key(), item.slots(), item.material(), item.rawName(),
                 processLore(viewer, inv, item.rawLore()),
@@ -160,22 +153,13 @@ public final class HomeSlotMapper {
                 item.rightActions(), item.shiftActions(), item.shiftLeftActions(),
                 item.shiftRightActions(), item.amount(), item.customModelData(),
                 item.damage(), item.enchants(), item.flags(), item.headOwner(),
-                item.hideTooltip(), item.tooltipStyle(), item.cooldown(), item.cooldownMessage()
+                item.hideTooltip(), item.tooltipStyle(), item.cooldown(), item.cooldownMessage(),
+                item.priorities()
         );
-
         ItemStack stack = loreFilteredItem.buildStack(viewer, ph, plugin);
-
         for (int slot : item.slots()) {
             if (slot >= 0 && slot < inv.getSize()) inv.setItem(slot, stack);
         }
-    }
-
-    private static boolean isManagedSlot(int slot, int[] homeSlots, GuiDefinition def) {
-        for (int hs : homeSlots) if (slot == hs) return true;
-        for (GuiItem item : def.items().values()) {
-            if (isButtonKey(item.key()) && item.slots().contains(slot)) return true;
-        }
-        return false;
     }
 
     private static boolean isHomeGridKey(String key) {

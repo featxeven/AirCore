@@ -8,7 +8,7 @@ import com.ftxeven.aircore.database.dao.PlayerInventories;
 import com.ftxeven.aircore.core.service.ToggleService;
 import com.ftxeven.aircore.util.BossbarUtil;
 import com.ftxeven.aircore.util.MessageUtil;
-import net.luckperms.api.LuckPermsProvider;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -21,10 +21,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public final class PlayerLifecycleListener implements Listener {
 
@@ -282,29 +282,32 @@ public final class PlayerLifecycleListener implements Listener {
             if (motd != null && !motd.isEmpty()) p.sendMessage(MessageUtil.mini(p, motd, ph));
             if (br != null && !br.isEmpty()) Bukkit.broadcast(MessageUtil.mini(p, br, ph));
         } else {
-            fetchLuckPermsGroup(p, group -> {
-                String motd = plugin.config().motdJoin(group), br = plugin.config().broadcastJoinFormat(group);
-                if (motd != null && !motd.isEmpty()) p.sendMessage(MessageUtil.mini(p, motd, ph));
-                if (br != null && !br.isEmpty()) Bukkit.broadcast(MessageUtil.mini(p, br, ph));
-            });
+            String group = fetchVaultGroup(p);
+            String motd = plugin.config().motdJoin(group), br = plugin.config().broadcastJoinFormat(group);
+
+            if (motd != null && !motd.isEmpty()) p.sendMessage(MessageUtil.mini(p, motd, ph));
+            if (br != null && !br.isEmpty()) Bukkit.broadcast(MessageUtil.mini(p, br, ph));
         }
     }
 
     private void handleBroadcastOnQuit(Player p) {
-        fetchLuckPermsGroup(p, group -> {
-            String br = plugin.config().broadcastLeaveFormat(group);
-            if (br != null && !br.isEmpty()) Bukkit.broadcast(MessageUtil.mini(p, br, Map.of("player", p.getName())));
-        });
+        String group = fetchVaultGroup(p);
+        String br = plugin.config().broadcastLeaveFormat(group);
+        if (br != null && !br.isEmpty()) {
+            Bukkit.broadcast(MessageUtil.mini(p, br, Map.of("player", p.getName())));
+        }
     }
 
-    private void fetchLuckPermsGroup(Player p, Consumer<String> callback) {
-        if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
-            var user = LuckPermsProvider.get().getUserManager().getUser(p.getUniqueId());
-            if (user != null) {
-                callback.accept(user.getPrimaryGroup());
-            } else {
-                LuckPermsProvider.get().getUserManager().loadUser(p.getUniqueId()).thenAccept(u -> callback.accept(u != null ? u.getPrimaryGroup() : null));
+    private String fetchVaultGroup(Player p) {
+        if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
+            if (rsp != null) {
+                Permission perms = rsp.getProvider();
+                try {
+                    return perms.getPrimaryGroup(p);
+                } catch (UnsupportedOperationException ignored) { }
             }
-        } else callback.accept(null);
+        }
+        return "default";
     }
 }

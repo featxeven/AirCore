@@ -32,7 +32,7 @@ public final class SellCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            sender.sendMessage("Only players may use this command.");
             return true;
         }
 
@@ -48,38 +48,43 @@ public final class SellCommand implements TabExecutor {
 
         SellManager sellManager = (SellManager) guiManager.getManager("sell");
 
-        if (sellManager != null && sellManager.isEnabled()) {
+        boolean guiEnabled = sellManager != null && sellManager.definition().config().getBoolean("enabled", true);
+        if (guiEnabled) {
             guiManager.openGui("sell", player, Map.of("player", player.getName()));
         } else {
-            ItemStack inHand = player.getInventory().getItemInMainHand();
-
-            if (inHand.getType().isAir()) {
-                MessageUtil.send(player, "economy.sell.error-invalid", Map.of());
-                return true;
-            }
-
-            double worthPerItem = plugin.economy().worth().getWorth(inHand);
-            double worth = worthPerItem * inHand.getAmount();
-
-            if (worth <= 0) {
-                MessageUtil.send(player, "economy.sell.error-failed", Map.of());
-                return true;
-            }
-
-            double rounded = plugin.economy().formats().round(worth);
-            String formatted = plugin.economy().formats().formatAmount(rounded);
-
-            var result = plugin.economy().transactions().deposit(player.getUniqueId(), rounded);
-
-            if (result.type() == EconomyManager.ResultType.SUCCESS) {
-                MessageUtil.send(player, "economy.sell.success", Map.of("amount", formatted));
-                player.getInventory().setItemInMainHand(null);
-            } else {
-                MessageUtil.send(player, "economy.sell.error-failed", Map.of());
-            }
+            handleQuickSell(player);
         }
 
         return true;
+    }
+
+    private void handleQuickSell(Player player) {
+        ItemStack inHand = player.getInventory().getItemInMainHand();
+
+        if (inHand.getType().isAir()) {
+            MessageUtil.send(player, "economy.sell.error-invalid", Map.of());
+            return;
+        }
+
+        double worthPerItem = plugin.economy().worth().getWorth(inHand);
+        double totalWorth = worthPerItem * inHand.getAmount();
+
+        if (totalWorth <= 0) {
+            MessageUtil.send(player, "economy.sell.error-failed", Map.of());
+            return;
+        }
+
+        double rounded = plugin.economy().formats().round(totalWorth);
+        String formatted = plugin.economy().formats().formatAmount(rounded);
+
+        var result = plugin.economy().transactions().deposit(player.getUniqueId(), rounded);
+
+        if (result.type() == EconomyManager.ResultType.SUCCESS) {
+            MessageUtil.send(player, "economy.sell.success", Map.of("amount", formatted));
+            player.getInventory().setItemInMainHand(null);
+        } else {
+            MessageUtil.send(player, "economy.sell.error-failed", Map.of());
+        }
     }
 
     @Override

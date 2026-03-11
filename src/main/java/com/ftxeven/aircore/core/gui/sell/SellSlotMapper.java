@@ -79,7 +79,7 @@ public final class SellSlotMapper {
         for (int slot : sellGroup.slots()) {
             if (slot >= inv.getSize()) continue;
             ItemStack item = inv.getItem(slot);
-            if (item == null || item.getType().isAir()) continue;
+            if (item == null || item.getType().isAir() || isCustomFillerAt(def, slot, item)) continue;
 
             double price = worthService.getWorth(item);
             if (price <= 0) {
@@ -96,8 +96,7 @@ public final class SellSlotMapper {
         double total = guiResult.total();
         boolean unsupported = guiResult.hasUnsupported();
 
-        ItemStack[] contents = viewer.getInventory().getStorageContents();
-        for (ItemStack item : contents) {
+        for (ItemStack item : viewer.getInventory().getStorageContents()) {
             if (item == null || item.getType().isAir()) continue;
             double price = worthService.getWorth(item);
             if (price > 0) {
@@ -111,8 +110,16 @@ public final class SellSlotMapper {
 
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, @Nullable ItemStack current) {
         if (current == null || current.getType().isAir()) return false;
-        GuiItem item = findCustomItemAt(def, slot);
-        return item != null && current.getType() == item.material();
+        return findCustomItemAt(def, slot) != null || isReservedButtonSlot(def, slot);
+    }
+
+    private static boolean isReservedButtonSlot(GuiDefinition def, int slot) {
+        return isSlotIn(def, "confirm", slot) || isSlotIn(def, "confirm-all", slot) || isSlotIn(def, "cancel", slot);
+    }
+
+    private static boolean isSlotIn(GuiDefinition def, String key, int slot) {
+        GuiItem item = def.items().get(key);
+        return item != null && item.slots().contains(slot);
     }
 
     public static GuiItem findCustomItemAt(GuiDefinition def, int slot) {

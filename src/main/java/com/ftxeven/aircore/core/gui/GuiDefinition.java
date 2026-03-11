@@ -36,44 +36,67 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
         return result;
     }
 
-    public record GuiItem(String key, List<Integer> slots, Material material, String rawName, List<String> rawLore,
+    public record GuiItem(String key, List<Integer> slots, String material, String rawName, List<String> rawLore,
                           boolean glow, String itemModel, List<String> actions, List<String> leftActions, List<String> rightActions,
                           List<String> shiftActions, List<String> shiftLeftActions, List<String> shiftRightActions,
                           Integer amount, Integer customModelData, Integer damage, Map<String, Integer> enchants,
                           List<ItemFlag> flags, String headOwner, Boolean hideTooltip, String tooltipStyle,
-                          double cooldown, String cooldownMessage) {
+                          double cooldown, String cooldownMessage,
+                          TreeMap<Integer, ItemPriority> priorities) {
 
-        public List<String> getActionsForClick(ClickType click) {
-            List<String> specific = switch (click) {
-                case SHIFT_LEFT -> (shiftLeftActions != null && !shiftLeftActions.isEmpty()) ? shiftLeftActions : shiftActions;
-                case SHIFT_RIGHT -> (shiftRightActions != null && !shiftRightActions.isEmpty()) ? shiftRightActions : shiftActions;
-                case LEFT -> leftActions;
-                case RIGHT -> rightActions;
-                default -> null;
+        public List<String> getActionsForClick(Player viewer, Map<String, String> ph, ClickType click) {
+            if (!priorities.isEmpty()) {
+                for (ItemPriority p : priorities.values()) {
+                    if (p.matches(viewer, ph)) {
+                        return p.actions() != null ? p.actions() : Collections.emptyList();
+                    }
+                }
+            }
+
+            return switch (click) {
+                case LEFT -> !leftActions.isEmpty() ? leftActions : actions;
+                case RIGHT -> !rightActions.isEmpty() ? rightActions : actions;
+                case SHIFT_LEFT -> !shiftLeftActions.isEmpty() ? shiftLeftActions : (!shiftActions.isEmpty() ? shiftActions : actions);
+                case SHIFT_RIGHT -> !shiftRightActions.isEmpty() ? shiftRightActions : (!shiftActions.isEmpty() ? shiftActions : actions);
+                default -> actions;
             };
-            return (specific != null && !specific.isEmpty()) ? specific : actions;
         }
 
-        public GuiItem applyOverride(ConfigurationSection sec) {
-            if (sec == null) return this;
-
-            Material mat = this.material;
-            String head = this.headOwner;
-            String matStr = sec.getString("material");
-
-            if (matStr != null) {
-                if (matStr.startsWith("head-")) {
-                    mat = Material.PLAYER_HEAD;
-                    head = matStr.substring(5);
-                } else {
-                    mat = Material.matchMaterial(matStr);
+        public static GuiItem fromSection(String key, ConfigurationSection sec) {
+            TreeMap<Integer, ItemPriority> priorities = new TreeMap<>();
+            ConfigurationSection prioSec = sec.getConfigurationSection("priority");
+            if (prioSec != null) {
+                for (String pKey : prioSec.getKeys(false)) {
+                    try {
+                        int pLevel = Integer.parseInt(pKey);
+                        priorities.put(pLevel, ItemPriority.fromSection(Objects.requireNonNull(prioSec.getConfigurationSection(pKey))));
+                    } catch (NumberFormatException ignored) {}
                 }
             }
 
             return new GuiItem(
-                    this.key,
-                    this.slots,
-                    mat != null ? mat : this.material,
+                    key, parseSlots(sec.getStringList("slots")),
+                    sec.getString("material", "STONE"),
+                    sec.getString("display-name"), sec.getStringList("lore"),
+                    sec.getBoolean("glow", false), sec.getString("item-model"),
+                    sec.getStringList("actions"), sec.getStringList("left-actions"), sec.getStringList("right-actions"),
+                    sec.getStringList("shift-actions"), sec.getStringList("shift-left-actions"), sec.getStringList("shift-right-actions"),
+                    sec.contains("amount") ? sec.getInt("amount") : null,
+                    sec.contains("custom-model-data") ? sec.getInt("custom-model-data") : null,
+                    sec.contains("damage") ? sec.getInt("damage") : null,
+                    Map.of(), List.of(), null,
+                    sec.contains("hide-tooltip") ? sec.getBoolean("hide-tooltip") : null,
+                    sec.getString("tooltip-style"),
+                    sec.getDouble("cooldown", 0.0), sec.getString("cooldown-message"),
+                    priorities
+            );
+        }
+
+        public GuiItem applyOverride(ConfigurationSection sec) {
+            if (sec == null) return this;
+            return new GuiItem(
+                    this.key, this.slots,
+                    sec.getString("material", this.material),
                     sec.getString("display-name", this.rawName),
                     sec.contains("lore") ? sec.getStringList("lore") : this.rawLore,
                     sec.get("glow") instanceof Boolean b ? b : this.glow,
@@ -87,90 +110,71 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
                     sec.get("amount") instanceof Integer i ? i : this.amount,
                     sec.get("custom-model-data") instanceof Integer i ? i : this.customModelData,
                     sec.get("damage") instanceof Integer i ? i : this.damage,
-                    this.enchants,
-                    this.flags,
-                    head,
+                    this.enchants, this.flags, this.headOwner,
                     sec.get("hide-tooltip") instanceof Boolean b ? b : this.hideTooltip,
                     sec.getString("tooltip-style", this.tooltipStyle),
                     sec.get("cooldown") instanceof Number n ? n.doubleValue() : this.cooldown,
-                    sec.getString("cooldown-message", this.cooldownMessage)
-            );
-        }
-
-        public static GuiItem fromSection(String key, ConfigurationSection sec) {
-            String matStr = sec.getString("material", "STONE");
-            Material mat = Material.matchMaterial(matStr.startsWith("head-") ? "PLAYER_HEAD" : matStr);
-            String headOwner = matStr.startsWith("head-") ? matStr.substring(5) : null;
-
-            return new GuiItem(
-                    key,
-                    parseSlots(sec.getStringList("slots")),
-                    mat == null ? Material.STONE : mat,
-                    sec.getString("display-name"),
-                    sec.getStringList("lore"),
-                    sec.get("glow") instanceof Boolean b ? b : false,
-                    sec.getString("item-model"),
-                    sec.getStringList("actions"),
-                    sec.getStringList("left-actions"),
-                    sec.getStringList("right-actions"),
-                    sec.getStringList("shift-actions"),
-                    sec.getStringList("shift-left-actions"),
-                    sec.getStringList("shift-right-actions"),
-                    sec.get("amount") instanceof Integer i ? i : null,
-                    sec.get("custom-model-data") instanceof Integer i ? i : null,
-                    sec.get("damage") instanceof Integer i ? i : null,
-                    Map.of(),
-                    List.of(),
-                    headOwner,
-                    sec.get("hide-tooltip") instanceof Boolean b ? b : null,
-                    sec.getString("tooltip-style"),
-                    sec.get("cooldown") instanceof Number n ? n.doubleValue() : 0.0,
-                    sec.getString("cooldown-message")
+                    sec.getString("cooldown-message", this.cooldownMessage),
+                    this.priorities
             );
         }
 
         public ItemStack buildStack(Player viewer, Map<String, String> placeholders, AirCore plugin) {
-            ItemComponent builder = new ItemComponent(this.material);
-
-            if (this.rawName != null) {
-                builder.name(MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, this.rawName, placeholders)));
+            ItemPriority match = null;
+            for (ItemPriority p : priorities.values()) {
+                if (p.matches(viewer, placeholders)) {
+                    match = p;
+                    break;
+                }
             }
 
-            if (this.rawLore != null && !this.rawLore.isEmpty()) {
-                List<Component> processedLore = new ArrayList<>(this.rawLore.size());
-                for (String line : this.rawLore) {
+            String rawMat = (match != null && match.material() != null) ? match.material() : this.material;
+            String appliedMat = PlaceholderUtil.apply(viewer, rawMat, placeholders);
+
+            Material activeMat = Material.STONE;
+            String activeHead = null;
+
+            if (appliedMat.startsWith("head-")) {
+                activeMat = Material.PLAYER_HEAD;
+                activeHead = appliedMat.substring(5);
+            } else {
+                Material m = Material.matchMaterial(appliedMat.toUpperCase());
+                if (m != null) activeMat = m;
+            }
+
+            ItemComponent builder = new ItemComponent(activeMat);
+
+            String activeName = (match != null && match.displayName() != null) ? match.displayName() : this.rawName;
+            if (activeName != null) {
+                builder.name(MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, activeName, placeholders)));
+            }
+
+            List<String> activeLore = (match != null && match.lore() != null) ? match.lore() : this.rawLore;
+            if (activeLore != null && !activeLore.isEmpty()) {
+                List<Component> processedLore = new ArrayList<>();
+                for (String line : activeLore) {
                     String applied = PlaceholderUtil.apply(viewer, line, placeholders);
-                    if (applied.contains("\n")) {
-                        for (String split : applied.split("\n")) {
-                            processedLore.add(MM.deserialize("<!italic>" + split));
-                        }
-                    } else {
-                        processedLore.add(MM.deserialize("<!italic>" + applied));
+                    for (String split : applied.split("\n")) {
+                        processedLore.add(MM.deserialize("<!italic>" + split));
                     }
                 }
                 builder.lore(processedLore);
             }
 
-            builder.amount(this.amount != null ? this.amount : 1)
-                    .customModelData(this.customModelData)
+            builder.amount((match != null && match.amount() != null) ? match.amount() : (this.amount != null ? this.amount : 1))
+                    .customModelData((match != null && match.customModelData() != null) ? match.customModelData() : this.customModelData)
                     .damage(this.damage)
                     .enchants(this.enchants)
-                    .glow(this.glow)
+                    .glow((match != null && match.glow() != null) ? match.glow() : this.glow)
                     .flags(this.flags.toArray(new ItemFlag[0]))
-                    .hideTooltip(this.hideTooltip != null && this.hideTooltip)
-                    .tooltipStyle(this.tooltipStyle)
-                    .itemModel(this.itemModel);
+                    .hideTooltip((match != null && match.hideTooltip() != null) ? match.hideTooltip() : (this.hideTooltip != null && this.hideTooltip))
+                    .tooltipStyle((match != null && match.tooltipStyle() != null) ? match.tooltipStyle() : this.tooltipStyle)
+                    .itemModel((match != null && match.itemModel() != null) ? match.itemModel() : this.itemModel);
 
-            if (this.headOwner != null) {
-                String processedOwner = PlaceholderUtil.apply(viewer, this.headOwner, placeholders);
-
-                UUID ownerUuid = plugin.database().records().uuidFromName(processedOwner);
-
-                PlayerRecords.SkinData skin = (ownerUuid != null)
-                        ? plugin.database().records().getSkinData(ownerUuid)
-                        : null;
-
-                builder.skullOwner(processedOwner, viewer, skin);
+            if (activeHead != null) {
+                UUID ownerUuid = plugin.database().records().uuidFromName(activeHead);
+                PlayerRecords.SkinData skin = (ownerUuid != null) ? plugin.database().records().getSkinData(ownerUuid) : null;
+                builder.skullOwner(activeHead, viewer, skin);
             }
 
             return builder.build();

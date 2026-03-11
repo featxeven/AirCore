@@ -48,36 +48,28 @@ public final class SchedulerUtil {
 
     private CancellableTask wrap(BukkitTask task) {
         return new CancellableTask() {
-            @Override
-            public void cancel() {
-                task.cancel();
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return task.isCancelled();
-            }
+            @Override public void cancel() { task.cancel(); }
+            @Override public boolean isCancelled() { return task.isCancelled(); }
         };
     }
 
     private CancellableTask wrap(ScheduledTask task) {
         return new CancellableTask() {
-            @Override
-            public void cancel() {
-                task.cancel();
-            }
+            @Override public void cancel() { task.cancel(); }
+            @Override public boolean isCancelled() { return task.isCancelled(); }
+        };
+    }
 
-            @Override
-            public boolean isCancelled() {
-                return task.isCancelled();
-            }
+    private CancellableTask wrap(BukkitRunnable task) {
+        return new CancellableTask() {
+            @Override public void cancel() { task.cancel(); }
+            @Override public boolean isCancelled() { return task.isCancelled(); }
         };
     }
 
     public void runTask(@NotNull Runnable task) {
         if (folia) {
-            Bukkit.getGlobalRegionScheduler()
-                    .run(plugin, t -> task.run());
+            Bukkit.getGlobalRegionScheduler().run(plugin, t -> task.run());
             return;
         }
         Bukkit.getScheduler().runTask(plugin, task);
@@ -85,16 +77,14 @@ public final class SchedulerUtil {
 
     public @NotNull CancellableTask runDelayed(@NotNull Runnable task, long delayTicks) {
         if (folia) {
-            return wrap(Bukkit.getGlobalRegionScheduler()
-                    .runDelayed(plugin, t -> task.run(), delayTicks));
+            return wrap(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, t -> task.run(), delayTicks));
         }
         return wrap(Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks));
     }
 
     public @NotNull CancellableTask runTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         if (folia) {
-            return wrap(Bukkit.getGlobalRegionScheduler()
-                    .runAtFixedRate(plugin, t -> task.run(), delayTicks, periodTicks));
+            return wrap(Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, t -> task.run(), delayTicks, periodTicks));
         }
         return wrap(Bukkit.getScheduler().runTaskTimer(plugin, task, delayTicks, periodTicks));
     }
@@ -124,58 +114,30 @@ public final class SchedulerUtil {
     }
 
     public @NotNull CancellableTask runEntityTask(@NotNull Entity entity, @NotNull Runnable task) {
-        if (!plugin.isEnabled()) {
-            task.run();
-            return new CancellableTask() {
-                @Override public void cancel() {}
-                @Override public boolean isCancelled() { return true; }
-            };
-        }
-
         if (folia) {
-            return wrap(entity.getScheduler().run(plugin, t -> task.run(), null));
+            ScheduledTask scheduledTask = entity.getScheduler().run(plugin, t -> task.run(), null);
+            return wrap(scheduledTask);
         }
         return wrap(Bukkit.getScheduler().runTask(plugin, task));
     }
 
-    public void runEntityTaskDelayed(
-            @NotNull Entity entity,
-            @NotNull Runnable task,
-            long delayTicks
-    ) {
+    public @NotNull CancellableTask runEntityTaskDelayed(@NotNull Entity entity, @NotNull Runnable task, long delayTicks) {
         if (folia) {
-            entity.getScheduler()
-                    .runDelayed(plugin, t -> task.run(), null, delayTicks);
-            return;
+            ScheduledTask scheduledTask = entity.getScheduler().runDelayed(plugin, t -> task.run(), null, delayTicks);
+            return wrap(scheduledTask);
         }
-        Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks);
+        return wrap(Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks));
     }
 
-    public void runEntityTimer(
-            @NotNull Entity entity,
-            @NotNull java.util.function.Consumer<CancellableTask> taskConsumer,
-            long delayTicks,
-            long periodTicks
-    ) {
+    public void runEntityTimer(@NotNull Entity entity, @NotNull java.util.function.Consumer<CancellableTask> taskConsumer, long delayTicks, long periodTicks) {
         if (folia) {
             entity.getScheduler().runAtFixedRate(plugin, t -> taskConsumer.accept(wrap(t)), null, delayTicks, periodTicks);
         } else {
             new BukkitRunnable() {
                 private final CancellableTask wrapper = wrap(this);
-
-                @Override
-                public void run() {
-                    taskConsumer.accept(wrapper);
-                }
+                @Override public void run() { taskConsumer.accept(wrapper); }
             }.runTaskTimer(plugin, delayTicks, periodTicks);
         }
-    }
-
-    private CancellableTask wrap(BukkitRunnable task) {
-        return new CancellableTask() {
-            @Override public void cancel() { task.cancel(); }
-            @Override public boolean isCancelled() { return task.isCancelled(); }
-        };
     }
 
     public void runLocationTask(@NotNull Location location, @NotNull Runnable task) {
@@ -186,27 +148,16 @@ public final class SchedulerUtil {
         }
     }
 
-    public @NotNull CancellableTask runLocationTaskDelayed(
-            @NotNull Location location,
-            @NotNull Runnable task,
-            long delayTicks
-    ) {
+    public @NotNull CancellableTask runLocationTaskDelayed(@NotNull Location location, @NotNull Runnable task, long delayTicks) {
         if (folia) {
-            return wrap(Bukkit.getRegionScheduler()
-                    .runDelayed(plugin, location, t -> task.run(), delayTicks));
+            return wrap(Bukkit.getRegionScheduler().runDelayed(plugin, location, t -> task.run(), delayTicks));
         }
         return wrap(Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks));
     }
 
-    public @NotNull CancellableTask runLocationTimer(
-            @NotNull Location location,
-            @NotNull Runnable task,
-            long delayTicks,
-            long periodTicks
-    ) {
+    public @NotNull CancellableTask runLocationTimer(@NotNull Location location, @NotNull Runnable task, long delayTicks, long periodTicks) {
         if (folia) {
-            return wrap(Bukkit.getRegionScheduler()
-                    .runAtFixedRate(plugin, location, t -> task.run(), delayTicks, periodTicks));
+            return wrap(Bukkit.getRegionScheduler().runAtFixedRate(plugin, location, t -> task.run(), delayTicks, periodTicks));
         }
         return wrap(Bukkit.getScheduler().runTaskTimer(plugin, task, delayTicks, periodTicks));
     }

@@ -5,10 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="fixed message key">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/ItemPriority.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/AirCorePAPIExpansion.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/api/AirCorePAPIExpansion.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaHereCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/teleport/command/TpaHereCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/GuiDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/GuiDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/GuiManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/GuiManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/ConfirmManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/ConfirmManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/ConfirmTargetManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/ConfirmTargetManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeSlotMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/homes/HomeTargetManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestSlotMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/enderchest/EnderchestSlotMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/inventory/InventoryManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/inventory/InventoryManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/inventory/InventorySlotMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/inventory/InventorySlotMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/inventory/ViewerListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/invsee/inventory/ViewerListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/sell/ConfirmManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/sell/ConfirmManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/sell/SellManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/gui/sell/SellSlotMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/economy/command/SellCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/economy/command/SellCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/database/DatabaseManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/database/DatabaseManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/listener/player/PlayerLifecycleListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/listener/player/PlayerLifecycleListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

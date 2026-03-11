@@ -92,10 +92,6 @@ public final class GuiManager {
         }
     }
 
-    public ItemAction itemAction() {
-        return itemAction;
-    }
-
     public CustomGuiManager getManager(String id) { return managers.get(id.toLowerCase()); }
     public EnderchestManager getEnderchestManager() { return (EnderchestManager) managers.get("enderchest"); }
     public InventoryManager getInventoryManager() { return (InventoryManager) managers.get("inventory"); }

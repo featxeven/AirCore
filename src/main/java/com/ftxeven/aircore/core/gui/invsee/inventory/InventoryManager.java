@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -27,13 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class InventoryManager implements GuiManager.CustomGuiManager {
 
-    private static final Set<String> DYNAMIC_GROUPS = Set.of(
-            "hotbar-slots",
-            "inventory-slots",
-            "armor-slots",
-            "offhand-slots"
-    );
-
+    private static final Set<String> DYNAMIC_GROUPS = Set.of("hotbar-slots", "inventory-slots", "armor-slots", "offhand-slots");
+    private static final String[] SHIFT_PRIORITY = {"armor-slots", "offhand-slots", "inventory-slots", "hotbar-slots"};
     private final AirCore plugin;
     private final ItemAction itemAction;
     private final MiniMessage mm = MiniMessage.miniMessage();
@@ -41,13 +37,13 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
     private final TargetListener targetListener;
     private final ViewerListener viewerListener;
     private GuiDefinition definition;
+    private final Map<UUID, Map<Integer, Long>> slotLocks = new ConcurrentHashMap<>();
 
     public InventoryManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
         this.itemAction = itemAction;
         this.targetListener = new TargetListener(plugin, this);
         this.viewerListener = new ViewerListener(this);
-
         Bukkit.getPluginManager().registerEvents(targetListener, plugin);
         Bukkit.getPluginManager().registerEvents(viewerListener, plugin);
         loadDefinition();
@@ -56,14 +52,9 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
     private void loadDefinition() {
         File file = new File(plugin.getDataFolder(), "guis/invsee/inventory.yml");
         if (!file.exists()) plugin.saveResource("guis/invsee/inventory.yml", false);
-
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         Map<String, GuiItem> items = new LinkedHashMap<>();
-
-        for (String key : DYNAMIC_GROUPS) {
-            items.put(key, createEmptyGroup(key, cfg.getStringList(key)));
-        }
-
+        for (String key : DYNAMIC_GROUPS) items.put(key, createEmptyGroup(key, cfg.getStringList(key)));
         ConfigurationSection itemsSec = cfg.getConfigurationSection("items");
         if (itemsSec != null) {
             for (String key : itemsSec.getKeys(false)) {
@@ -71,7 +62,6 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
                 if (sec != null) items.put(key, GuiItem.fromSection(key, sec));
             }
         }
-
         this.definition = new GuiDefinition(cfg.getString("title", "Invsee"), cfg.getInt("rows", 6), items, cfg);
     }
 
@@ -80,25 +70,48 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         String targetName = placeholders.get("target");
         Player target = Bukkit.getPlayerExact(targetName);
         UUID targetUUID = target != null ? target.getUniqueId() : plugin.database().records().uuidFromName(targetName);
-
         InventoryBundle bundle = target != null
                 ? new InventoryBundle(target.getInventory().getContents(), target.getInventory().getArmorContents(), target.getInventory().getItemInOffHand(), target.getEnderChest().getContents())
-                : Optional.ofNullable(plugin.database().inventories().loadAllInventory(targetUUID)).orElse(emptyBundle());
+                : Optional.ofNullable(plugin.database().inventories().loadAllInventory(targetUUID)).orElseGet(InventoryManager::emptyBundle);
 
-        Map<String, String> context = new HashMap<>(placeholders);
-        context.put("target", targetName);
-        context.put("player", viewer.getName());
-
-        String title = PlaceholderUtil.apply(viewer, definition.title().replace("%target%", targetName), context);
         InvseeHolder holder = new InvseeHolder(targetUUID, targetName);
-        Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize(title));
+        Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, definition.title().replace("%target%", targetName), placeholders)));
         holder.setInventory(inv);
-
-        InventorySlotMapper.fillCustom(inv, definition, viewer, context, this, plugin);
-        InventorySlotMapper.fill(plugin, inv, definition, bundle, viewer, context);
-
+        InventorySlotMapper.fillCustom(inv, definition, viewer, placeholders, this, plugin);
+        InventorySlotMapper.fill(plugin, inv, definition, bundle, viewer, placeholders);
         targetListener.registerViewer(targetUUID, viewer);
         return inv;
+    }
+
+    public boolean isSlotLocked(UUID targetUUID, int slot) {
+        Map<Integer, Long> targetMap = slotLocks.get(targetUUID);
+        if (targetMap == null) return false;
+        Long expiry = targetMap.get(slot);
+        if (expiry == null) return false;
+        if (System.currentTimeMillis() > expiry) {
+            targetMap.remove(slot);
+            return false;
+        }
+        return true;
+    }
+
+    public void lockSlot(UUID targetUUID, int slot) {
+        long lockDuration = plugin.scheduler().isFoliaServer() ? 100L : 0L;
+
+        if (lockDuration > 0) {
+            slotLocks.computeIfAbsent(targetUUID, k -> new ConcurrentHashMap<>())
+                    .put(slot, System.currentTimeMillis() + lockDuration);
+        }
+    }
+
+    public boolean hasActiveLocks(UUID targetUUID) {
+        if (!plugin.scheduler().isFoliaServer()) return false;
+
+        Map<Integer, Long> targetMap = slotLocks.get(targetUUID);
+        if (targetMap == null || targetMap.isEmpty()) return false;
+
+        targetMap.entrySet().removeIf(entry -> System.currentTimeMillis() > entry.getValue());
+        return !targetMap.isEmpty();
     }
 
     @Override
@@ -107,16 +120,26 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         Inventory clicked = event.getClickedInventory();
         if (clicked == null || !(top.getHolder() instanceof InvseeHolder holder)) return;
 
-        boolean canModify = viewer.hasPermission("aircore.command.invsee.modify");
+        UUID targetUUID = holder.targetUUID();
         int slot = event.getSlot();
+
+        if (clicked.equals(top)) {
+            if (isSlotLocked(targetUUID, slot)) {
+                event.setCancelled(true);
+                return;
+            }
+            lockSlot(targetUUID, slot);
+        }
+
+        boolean canModify = viewer.hasPermission("aircore.command.invsee.modify");
         ItemStack current = event.getCurrentItem();
         ItemStack cursor = event.getCursor();
 
         if (clicked.equals(event.getView().getBottomInventory())) {
-            if (event.isShiftClick()) {
+            if (event.isShiftClick() && canModify && current != null && current.getType() != Material.AIR) {
                 event.setCancelled(true);
-                if (canModify && current != null && !current.getType().isAir()) {
-                    distributeToSlots(definition, top, current, clicked, slot);
+                if (distributeToSlots(top, current)) {
+                    clicked.setItem(slot, null);
                     syncAndRefresh(top, viewer);
                 }
             }
@@ -130,175 +153,161 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         boolean dynamic = InventorySlotMapper.isDynamicSlot(definition, slot);
         boolean filler = InventorySlotMapper.isCustomFillerAt(definition, slot, current);
 
-        if (isArmorSlot(slot) && !cursor.getType().isAir() && !isValidArmorForSlot(cursor, slot)) return;
+        if (!canModify || !dynamic) {
+            handleAction(viewer, holder, item, event.getClick());
+            return;
+        }
 
-        if (event.getClick() == ClickType.NUMBER_KEY && clicked == top) {
-            if (!canModify || !dynamic) return;
+        if (event.getAction() == InventoryAction.HOTBAR_SWAP) {
             ItemStack hotbarItem = viewer.getInventory().getItem(event.getHotbarButton());
-            if (isArmorSlot(slot) && hotbarItem != null && !hotbarItem.getType().isAir() && !isValidArmorForSlot(hotbarItem, slot)) return;
+            if (isArmorSlot(slot) && hotbarItem != null && !isValidArmorForSlot(hotbarItem, slot)) return;
 
-            top.setItem(slot, hotbarItem == null ? null : hotbarItem.clone());
+            top.setItem(slot, (hotbarItem == null || hotbarItem.getType().isAir()) ? null : hotbarItem.clone());
             viewer.getInventory().setItem(event.getHotbarButton(), filler ? null : current);
             syncAndRefresh(top, viewer);
             return;
         }
 
-        if (canModify && dynamic) {
-            if (filler && !cursor.getType().isAir()) {
+        if (filler) {
+            if (!cursor.getType().isAir()) {
+                if (isArmorSlot(slot) && !isValidArmorForSlot(cursor, slot)) return;
                 top.setItem(slot, cursor.clone());
                 viewer.setItemOnCursor(null);
                 syncAndRefresh(top, viewer);
-            } else if (!filler) {
-                event.setCancelled(false);
-                syncAndRefresh(top, viewer);
             }
         } else {
-            handleAction(viewer, holder, filler ? InventorySlotMapper.findCustomItemAt(definition, slot) : item, event.getClick());
+            event.setCancelled(false);
+            plugin.scheduler().runEntityTaskDelayed(viewer, () -> syncAndRefresh(top, viewer), 1L);
         }
     }
 
-    private void handleAction(Player viewer, InvseeHolder ih, GuiItem item, ClickType click) {
-        if (item == null || plugin.gui().cooldowns().isOnCooldown(viewer, item)) {
-            if (item != null) plugin.gui().cooldowns().sendCooldownMessage(viewer, item);
-            return;
-        }
-        plugin.gui().cooldowns().applyCooldown(viewer, item);
-        List<String> actions = item.getActionsForClick(click);
-        if (actions != null && !actions.isEmpty()) {
-            Map<String, String> context = new HashMap<>();
-            context.put("player", viewer.getName());
-            context.put("target", ih.targetName());
-
-            itemAction.executeAll(actions, viewer, context);
-        }
-    }
-
-    private void distributeToSlots(GuiDefinition def, Inventory top, ItemStack moving, Inventory sourceInv, int sourceSlot) {
-        String[] priority = {"armor-slots", "offhand-slots", "inventory-slots", "hotbar-slots"};
-        for (String groupKey : priority) {
-            List<Integer> slots = def.items().get(groupKey).slots();
-
-            for (int slot : slots) {
+    private boolean distributeToSlots(Inventory top, ItemStack toMove) {
+        ItemStack item = toMove.clone();
+        for (String groupKey : SHIFT_PRIORITY) {
+            GuiItem group = definition.items().get(groupKey);
+            if (group == null) continue;
+            for (int slot : group.slots()) {
+                if (groupKey.equals("armor-slots") && !isValidArmorForSlot(item, slot)) continue;
                 ItemStack target = top.getItem(slot);
-
-                if (groupKey.equals("armor-slots") && !isValidArmorForSlot(moving, slot)) continue;
-
-                if (target != null && target.isSimilar(moving)) {
-                    int transfer = Math.min(moving.getAmount(), target.getMaxStackSize() - target.getAmount());
-                    target.setAmount(target.getAmount() + transfer);
-                    moving.setAmount(moving.getAmount() - transfer);
-                }
-                if (moving.getAmount() <= 0) break;
-            }
-
-            if (moving.getAmount() > 0) {
-                for (int slot : slots) {
-                    if (groupKey.equals("armor-slots") && !isValidArmorForSlot(moving, slot)) continue;
-
-                    ItemStack target = top.getItem(slot);
-                    if (target == null || target.getType().isAir() || InventorySlotMapper.isCustomFillerAt(def, slot, target)) {
-                        top.setItem(slot, moving.clone());
-                        moving.setAmount(0);
-                        break;
+                if (target != null && target.isSimilar(item) && !InventorySlotMapper.isCustomFillerAt(definition, slot, target)) {
+                    int adding = Math.min(item.getAmount(), target.getMaxStackSize() - target.getAmount());
+                    if (adding > 0) {
+                        target.setAmount(target.getAmount() + adding);
+                        item.setAmount(item.getAmount() - adding);
                     }
                 }
-            }
-
-            if (moving.getAmount() <= 0) {
-                sourceInv.setItem(sourceSlot, null);
-                return;
+                if (item.getAmount() <= 0) return true;
             }
         }
+        for (String groupKey : SHIFT_PRIORITY) {
+            GuiItem group = definition.items().get(groupKey);
+            if (group == null) continue;
+            for (int slot : group.slots()) {
+                if (groupKey.equals("armor-slots") && !isValidArmorForSlot(item, slot)) continue;
+                ItemStack target = top.getItem(slot);
+                if (target == null || target.getType() == Material.AIR || InventorySlotMapper.isCustomFillerAt(definition, slot, target)) {
+                    top.setItem(slot, item.clone());
+                    item.setAmount(0);
+                    return true;
+                }
+            }
+        }
+        toMove.setAmount(item.getAmount());
+        return item.getAmount() <= 0;
     }
 
     public void syncAndRefresh(Inventory top, Player viewer) {
-        if (!(top.getHolder() instanceof InvseeHolder ih) || !pendingUpdates.add(viewer.getUniqueId())) return;
+        if (!(top.getHolder() instanceof InvseeHolder ih)) return;
 
-        plugin.scheduler().runEntityTaskDelayed(viewer, () -> {
-            try {
-                InventoryBundle bundle = InventorySlotMapper.extractBundle(top, definition);
-                applyBundleToTarget(ih.targetUUID(), bundle);
+        UUID targetUUID = ih.targetUUID();
+        if (!pendingUpdates.add(targetUUID)) return;
 
-                Map<String, String> placeholders = Map.of(
-                        "player", viewer.getName(),
-                        "target", ih.targetName()
-                );
-
-                targetListener.refreshViewers(ih.targetUUID(), bundle, viewer, placeholders);
-
-            } finally {
-                pendingUpdates.remove(viewer.getUniqueId());
-            }
-        }, 1L);
-    }
-
-    void applyBundleToTarget(UUID targetUUID, InventoryBundle bundle) {
         Player target = Bukkit.getPlayer(targetUUID);
 
-        plugin.database().inventories().saveInventory(targetUUID, bundle.contents(), bundle.armor(), bundle.offhand());
-
         if (target != null && target.isOnline()) {
-            plugin.scheduler().runEntityTask(target, () -> {
-                var inv = target.getInventory();
-                inv.setContents(bundle.contents());
-                inv.setArmorContents(bundle.armor());
-                inv.setItemInOffHand(bundle.offhand());
-                target.updateInventory();
+            plugin.scheduler().runEntityTaskDelayed(target, () -> {
+                try {
+                    InventoryBundle bundle = InventorySlotMapper.extractBundle(top, definition);
+                    applyBundleToTarget(targetUUID, bundle);
+
+                    Map<String, String> ph = Map.of("player", viewer.getName(), "target", ih.targetName());
+                    targetListener.refreshViewers(targetUUID, bundle, viewer, ph);
+
+                    viewer.updateInventory();
+                } finally {
+                    plugin.scheduler().runEntityTaskDelayed(target, () -> pendingUpdates.remove(targetUUID), 2L);
+                }
+            }, 1L);
+        } else {
+            plugin.scheduler().runAsync(() -> {
+                try {
+                    InventoryBundle bundle = InventorySlotMapper.extractBundle(top, definition);
+                    plugin.database().inventories().saveInventory(targetUUID, bundle.contents(), bundle.armor(), bundle.offhand());
+                } finally {
+                    pendingUpdates.remove(targetUUID);
+                }
             });
         }
     }
 
-    private boolean isArmorSlot(int slot) {
-        return definition.items().get("armor-slots").slots().contains(slot);
+    void applyBundleToTarget(UUID targetUUID, InventoryBundle bundle) {
+        plugin.database().inventories().saveInventory(targetUUID, bundle.contents(), bundle.armor(), bundle.offhand());
+
+        Player target = Bukkit.getPlayer(targetUUID);
+        if (target != null && target.isOnline()) {
+            target.getInventory().setContents(bundle.contents());
+            target.getInventory().setArmorContents(bundle.armor());
+            target.getInventory().setItemInOffHand(bundle.offhand());
+            target.updateInventory();
+        }
+    }
+
+    private void handleAction(Player viewer, InvseeHolder ih, GuiItem item, ClickType click) {
+        if (item == null || plugin.gui().cooldowns().isOnCooldown(viewer, item)) return;
+        Map<String, String> ctx = Map.of("player", viewer.getName(), "target", ih.targetName());
+        plugin.gui().cooldowns().applyCooldown(viewer, item);
+        List<String> actions = item.getActionsForClick(viewer, ctx, click);
+        if (actions != null) itemAction.executeAll(actions, viewer, ctx);
     }
 
     public boolean isValidArmorForSlot(ItemStack item, int slot) {
-        if (item == null || item.getType().isAir()) return false;
-        List<Integer> armor = definition.items().get("armor-slots").slots();
-        if (armor.size() != 4) return false;
-        String name = item.getType().name();
+        if (item == null || item.getType() == Material.AIR) return false;
+        GuiItem armorGroup = definition.items().get("armor-slots");
+        if (armorGroup == null) return false;
+        List<Integer> armor = armorGroup.slots();
+        if (armor.size() < 4) return false;
+        Material type = item.getType();
+        String name = type.name();
         if (slot == armor.get(0)) return name.endsWith("_BOOTS");
         if (slot == armor.get(1)) return name.endsWith("_LEGGINGS");
         if (slot == armor.get(2)) return name.endsWith("_CHESTPLATE");
-        if (slot == armor.get(3)) return name.endsWith("_HELMET") || item.getType() == Material.CARVED_PUMPKIN || item.getType() == Material.PLAYER_HEAD;
+        if (slot == armor.get(3)) return name.endsWith("_HELMET") || type == Material.CARVED_PUMPKIN || type == Material.PLAYER_HEAD;
         return false;
     }
 
-    @Override
-    public void refresh(Inventory inv, Player viewer, Map<String, String> placeholders) {
-        if (!(inv.getHolder() instanceof InvseeHolder holder)) return;
+    private boolean isArmorSlot(int slot) {
+        GuiItem armorGroup = definition.items().get("armor-slots");
+        return armorGroup != null && armorGroup.slots().contains(slot);
+    }
 
+    @Override public void refresh(Inventory inv, Player viewer, Map<String, String> placeholders) {
+        if (!(inv.getHolder() instanceof InvseeHolder holder)) return;
         Player target = Bukkit.getPlayer(holder.targetUUID());
         InventoryBundle bundle = (target != null && target.isOnline())
-                ? new InventoryBundle(
-                target.getInventory().getContents(),
-                target.getInventory().getArmorContents(),
-                target.getInventory().getItemInOffHand(),
-                target.getEnderChest().getContents()
-        )
-                : Optional.ofNullable(plugin.database().inventories().loadAllInventory(holder.targetUUID()))
-                .orElse(emptyBundle());
-
-        Map<String, String> context = new HashMap<>(placeholders);
-        context.put("target", holder.targetName());
-        context.put("player", viewer.getName());
-
-        InventorySlotMapper.fillCustom(inv, definition, viewer, context, this, plugin);
-        InventorySlotMapper.fill(plugin, inv, definition, bundle, viewer, context);
+                ? new InventoryBundle(target.getInventory().getContents(), target.getInventory().getArmorContents(), target.getInventory().getItemInOffHand(), target.getEnderChest().getContents())
+                : Optional.ofNullable(plugin.database().inventories().loadAllInventory(holder.targetUUID())).orElseGet(InventoryManager::emptyBundle);
+        InventorySlotMapper.fillCustom(inv, definition, viewer, placeholders, this, plugin);
+        InventorySlotMapper.fill(plugin, inv, definition, bundle, viewer, placeholders);
     }
 
     private GuiItem createEmptyGroup(String key, List<String> slots) {
-        return new GuiItem(key, GuiDefinition.parseSlots(slots), Material.AIR, null, Collections.emptyList(),
-                false, null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                Collections.emptyList(), Collections.emptyList(), null, null, null, Collections.emptyMap(),
-                Collections.emptyList(), null, null, null, 0.0, null);
+        return new GuiItem(key, GuiDefinition.parseSlots(slots), "AIR", null, List.of(), false, null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), null, null, null, Map.of(), List.of(), null, null, null, 0.0, null, new TreeMap<>());
     }
 
     @Override public void cleanup() { HandlerList.unregisterAll(targetListener); HandlerList.unregisterAll(viewerListener); }
-    @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof InvseeHolder; }
+    @Override public boolean owns(Inventory inv) { return inv != null && inv.getHolder() instanceof InvseeHolder; }
     public boolean isDynamicGroup(String key) { return DYNAMIC_GROUPS.contains(key); }
     public GuiDefinition definition() { return definition; }
-    public TargetListener getTargetListener() { return targetListener; }
     private static InventoryBundle emptyBundle() { return new InventoryBundle(new ItemStack[36], new ItemStack[4], null, new ItemStack[27]); }
 
     public static class InvseeHolder implements InventoryHolder {
@@ -311,4 +320,7 @@ public final class InventoryManager implements GuiManager.CustomGuiManager {
         public void setInventory(Inventory inv) { this.inventory = inv; }
         @Override public @NotNull Inventory getInventory() { return inventory; }
     }
+
+    public boolean isPending(UUID targetUUID) { return pendingUpdates.contains(targetUUID); }
+    public TargetListener getTargetListener() { return targetListener; }
 }

@@ -539,8 +539,8 @@ death:
       MINECART_TNT: "TNT Minecart"
       BED: "Bed"
       RESPAWN_ANCHOR: "Respawn Anchor"
-      WIND_CHARGE: "a Wind Charge"
-      BREEZE_WIND_CHARGE: "a Breeze Wind Charge"
+      WIND_CHARGE: "Wind Charge"
+      BREEZE_WIND_CHARGE: "Breeze Wind Charge"
 
 # -----------------------------
 # GENERAL ERRORS

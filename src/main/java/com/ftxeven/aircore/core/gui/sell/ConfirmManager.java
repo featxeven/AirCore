@@ -43,7 +43,6 @@ public final class ConfirmManager implements Listener {
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         Map<String, GuiItem> items = new LinkedHashMap<>();
-
         loadSection(cfg.getConfigurationSection("buttons"), items);
         loadSection(cfg.getConfigurationSection("items"), items);
 
@@ -59,21 +58,16 @@ public final class ConfirmManager implements Listener {
     }
 
     public void open(Player player, Inventory sellInventory, SellSlotMapper.WorthResult result, boolean isAll) {
-        String formatted = plugin.economy().formats().formatAmount(result.total());
+        Map<String, String> ph = new HashMap<>();
+        ph.put("player", player.getName());
+        ph.put("total", plugin.economy().formats().formatAmount(result.total()));
+        ph.put("total-raw", String.valueOf(result.total()));
 
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("player", player.getName());
-        placeholders.put("total", formatted);
-        placeholders.put("total-raw", String.valueOf(result.total()));
-
-        String title = PlaceholderUtil.apply(player, definition.title(), placeholders);
-
-        ConfirmHolder holder = new ConfirmHolder(definition, sellInventory, result, isAll, placeholders);
-        Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize("<!italic>" + title));
+        ConfirmHolder holder = new ConfirmHolder(definition, sellInventory, result, isAll, ph);
+        Inventory inv = Bukkit.createInventory(holder, definition.rows() * 9, mm.deserialize("<!italic>" + PlaceholderUtil.apply(player, definition.title(), ph)));
         holder.setInventory(inv);
 
-        SellSlotMapper.fillConfirm(plugin, inv, definition, player, placeholders);
-
+        SellSlotMapper.fillConfirm(plugin, inv, definition, player, ph);
         sellManager.markTransitioning(player.getUniqueId());
         player.openInventory(inv);
     }
@@ -81,62 +75,53 @@ public final class ConfirmManager implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof ConfirmHolder holder)) return;
+        event.setCancelled(true);
 
         Inventory clicked = event.getClickedInventory();
-        if (clicked == null) return;
+        if (clicked == null || clicked.equals(event.getView().getBottomInventory())) return;
 
-        if (clicked.equals(event.getView().getBottomInventory())) {
-            if (event.isShiftClick()) event.setCancelled(true);
-            return;
-        }
-
-        event.setCancelled(true);
         int slot = event.getSlot();
         Player player = (Player) event.getWhoClicked();
 
-        GuiItem item = null;
-        for (GuiItem guiItem : definition.items().values()) {
-            if (guiItem.slots().contains(slot)) {
-                item = guiItem;
+        GuiItem actionItem = null;
+        for (String key : List.of("confirm", "cancel")) {
+            GuiItem item = definition.items().get(key);
+            if (item != null && item.slots().contains(slot)) {
+                actionItem = item;
                 break;
             }
         }
 
-        if (item == null) return;
+        if (actionItem != null) {
+            handleConfirmOrCancel(player, actionItem, holder, event);
+            return;
+        }
 
-        List<String> actions = item.getActionsForClick(event.getClick());
-        boolean shouldClose = actions.stream().anyMatch(a -> a.equalsIgnoreCase("[close]"));
-
-        if (item.key().equals("confirm")) {
-            if (holder.isAll()) {
-                handleConfirmAll(item, player, event, holder, shouldClose);
-            } else {
+        for (GuiItem item : definition.items().values()) {
+            if (item.slots().contains(slot)) {
                 sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
-                finalizeNavigation(player, holder, shouldClose);
+                return;
             }
-        } else if (item.key().equals("cancel")) {
-            sellManager.markTransitioning(player.getUniqueId());
-            sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
-            player.openInventory(holder.sellInventory());
-        } else {
-            sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
         }
     }
 
-    private void handleConfirmAll(GuiItem item, Player player, InventoryClickEvent event, ConfirmHolder holder, boolean shouldClose) {
-        List<String> actions = item.getActionsForClick(event.getClick());
-        Map<String, String> ph = holder.placeholders();
+    private void handleConfirmOrCancel(Player player, GuiItem item, ConfirmHolder holder, InventoryClickEvent event) {
+        List<String> actions = item.getActionsForClick(player, holder.placeholders(), event.getClick());
+        boolean shouldClose = actions.stream().anyMatch(a -> a.equalsIgnoreCase("[close]"));
 
-        for (String action : actions) {
-            if (action.equalsIgnoreCase("[sell]")) {
-                var result = SellSlotMapper.calculateWorthAll(holder.sellInventory(), plugin.economy().worth(), sellManager.definition(), player);
-                sellManager.processSale(player, holder.sellInventory(), result, true);
-                continue;
+        if (item.key().equals("confirm")) {
+            sellManager.processSale(player, holder.sellInventory(), holder.result(), holder.isAll());
+
+            for (String action : actions) {
+                if (action.equalsIgnoreCase("[sell]") || action.equalsIgnoreCase("[close]")) continue;
+                sellManager.getActionProcessor().execute(action, player, holder.placeholders());
             }
-            if (action.equalsIgnoreCase("[close]")) continue;
-            sellManager.getActionProcessor().execute(action, player, ph);
+            finalizeNavigation(player, holder, shouldClose);
+        } else {
+            sellManager.markTransitioning(player.getUniqueId());
+            sellManager.handleAction(item, player, event.getClick(), holder.placeholders(), holder.sellInventory());
+            player.openInventory(holder.sellInventory());
         }
-        finalizeNavigation(player, holder, shouldClose);
     }
 
     private void finalizeNavigation(Player player, ConfirmHolder holder, boolean shouldClose) {
@@ -145,7 +130,6 @@ public final class ConfirmManager implements Listener {
         } else {
             sellManager.markTransitioning(player.getUniqueId());
             player.openInventory(holder.sellInventory());
-
             sellManager.refreshConfirmButton(holder.sellInventory(), player);
         }
     }
@@ -159,16 +143,11 @@ public final class ConfirmManager implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!(event.getInventory().getHolder() instanceof ConfirmHolder holder)) return;
         Player player = (Player) event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        if (plugin.gui().isReloading() || sellManager.isTransitioning(uuid) || sellManager.consumeProcessedSale(uuid)) {
-            return;
-        }
+        if (plugin.gui().isReloading() || sellManager.isTransitioning(player.getUniqueId()) || sellManager.consumeProcessedSale(player.getUniqueId())) return;
 
         sellManager.returnItems(player, holder.sellInventory());
     }
 
-    public GuiDefinition getDefinition() { return this.definition; }
     public void cleanup() { HandlerList.unregisterAll(this); }
 
     public static final class ConfirmHolder implements InventoryHolder {
@@ -179,17 +158,11 @@ public final class ConfirmManager implements Listener {
         private final Map<String, String> placeholders;
         private Inventory inventory;
 
-        public ConfirmHolder(GuiDefinition definition, Inventory sellInventory, SellSlotMapper.WorthResult result, boolean isAll, Map<String, String> placeholders) {
-            this.definition = definition;
-            this.sellInventory = sellInventory;
-            this.result = result;
-            this.isAll = isAll;
-            this.placeholders = placeholders;
+        public ConfirmHolder(GuiDefinition def, Inventory sellInv, SellSlotMapper.WorthResult res, boolean all, Map<String, String> ph) {
+            this.definition = def; this.sellInventory = sellInv; this.result = res; this.isAll = all; this.placeholders = ph;
         }
-
         @Override public @NotNull Inventory getInventory() { return inventory; }
         public void setInventory(Inventory inventory) { this.inventory = inventory; }
-
         public GuiDefinition definition() { return definition; }
         public Inventory sellInventory() { return sellInventory; }
         public SellSlotMapper.WorthResult result() { return result; }

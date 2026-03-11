@@ -84,22 +84,30 @@ public final class BossbarUtil {
 
     public static void hideAll(@NotNull Player player) {
         Set<BossBar> bars = ACTIVE_BARS.remove(player.getUniqueId());
-        if (bars != null) {
-            scheduler.runEntityTask(player, () -> {
-                for (BossBar bar : bars) {
-                    player.hideBossBar(bar);
-                }
-            });
+        if (bars == null) return;
+
+        Runnable removeAction = () -> {
+            for (BossBar bar : bars) {
+                player.hideBossBar(bar);
+            }
+        };
+
+        if (!Bukkit.getPluginManager().isPluginEnabled(Bukkit.getPluginManager().getPlugin("AirCore"))) {
+            removeAction.run();
+        } else {
+            scheduler.runEntityTask(player, removeAction);
         }
     }
 
     public static void hideAll() {
-        for (UUID uuid : ACTIVE_BARS.keySet()) {
+        ACTIVE_BARS.forEach((uuid, bars) -> {
             Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                hideAll(player);
+            if (player != null && player.isOnline()) {
+                for (BossBar bar : bars) {
+                    player.hideBossBar(bar);
+                }
             }
-        }
+        });
         ACTIVE_BARS.clear();
     }
 

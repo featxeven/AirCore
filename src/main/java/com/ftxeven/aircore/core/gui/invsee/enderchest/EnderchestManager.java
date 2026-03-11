@@ -8,7 +8,6 @@ import com.ftxeven.aircore.database.dao.PlayerInventories;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -127,10 +126,18 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
         }
 
         event.setCancelled(true);
-        GuiDefinition.GuiItem item = EnderchestSlotMapper.findItem(definition, slot);
+
+        GuiDefinition.GuiItem item = null;
+        for (GuiDefinition.GuiItem guiItem : definition.items().values()) {
+            if (guiItem.slots().contains(slot)) {
+                item = guiItem;
+                break;
+            }
+        }
+
         if (item == null) return;
 
-        boolean dynamic = EnderchestSlotMapper.isDynamicSlot(definition, slot);
+        boolean dynamic = "enderchest-slots".equals(item.key());
         boolean filler = EnderchestSlotMapper.isCustomFillerAt(definition, slot, current);
 
         if (canModify && dynamic) {
@@ -144,7 +151,7 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
                 syncAndRefresh(top, viewer);
             }
         } else {
-            handleAction(viewer, holder, filler ? EnderchestSlotMapper.findCustomItemAt(definition, slot) : item, event.getClick());
+            handleAction(viewer, holder, item, event.getClick());
         }
     }
 
@@ -154,13 +161,14 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
             return;
         }
 
-        plugin.gui().cooldowns().applyCooldown(viewer, item);
-        List<String> actions = item.getActionsForClick(click);
-        if (actions != null && !actions.isEmpty()) {
-            Map<String, String> context = new HashMap<>();
-            context.put("player", viewer.getName());
-            context.put("target", ih.targetName());
+        Map<String, String> context = new HashMap<>();
+        context.put("player", viewer.getName());
+        context.put("target", ih.targetName());
 
+        List<String> actions = item.getActionsForClick(viewer, context, click);
+
+        plugin.gui().cooldowns().applyCooldown(viewer, item);
+        if (actions != null && !actions.isEmpty()) {
             itemAction.executeAll(actions, viewer, context);
         }
     }
@@ -240,10 +248,32 @@ public final class EnderchestManager implements GuiManager.CustomGuiManager {
     }
 
     private GuiDefinition.GuiItem createEmptyGroup(List<String> slots) {
-        return new GuiDefinition.GuiItem("enderchest-slots", GuiDefinition.parseSlots(slots), Material.AIR, null, Collections.emptyList(),
-                false, null, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                Collections.emptyList(), Collections.emptyList(), null, null, null, Collections.emptyMap(),
-                Collections.emptyList(), null, null, null, 0.0, null);
+        return new GuiDefinition.GuiItem(
+                "enderchest-slots",
+                GuiDefinition.parseSlots(slots),
+                "AIR",
+                null,
+                List.of(),
+                false,
+                null,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null,
+                null,
+                null,
+                Map.of(),
+                List.of(),
+                null,
+                null,
+                null,
+                0.0,
+                null,
+                new TreeMap<>()
+        );
     }
 
     @Override public void cleanup() { HandlerList.unregisterAll(targetListener); HandlerList.unregisterAll(viewerListener); }

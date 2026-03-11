@@ -6,6 +6,7 @@ import com.ftxeven.aircore.core.gui.GuiDefinition.GuiItem;
 import com.ftxeven.aircore.core.gui.ItemAction;
 import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
+import com.ftxeven.aircore.util.TimeUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,7 +37,6 @@ public final class ConfirmTargetManager implements Listener {
     private static final MiniMessage MM = MiniMessage.miniMessage();
     private GuiDefinition teleportDef;
     private GuiDefinition deleteDef;
-    private int[] homeSlots;
 
     public ConfirmTargetManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
@@ -52,11 +52,6 @@ public final class ConfirmTargetManager implements Listener {
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         this.teleportDef = loadSubSection(cfg.getConfigurationSection("teleport"), cfg);
         this.deleteDef = loadSubSection(cfg.getConfigurationSection("delete"), cfg);
-
-        File mainFile = new File(plugin.getDataFolder(), "guis/homes/homes-target.yml");
-        YamlConfiguration mainCfg = YamlConfiguration.loadConfiguration(mainFile);
-        this.homeSlots = GuiDefinition.parseSlots(mainCfg.getStringList("home-slots"))
-                .stream().mapToInt(Integer::intValue).toArray();
     }
 
     private GuiDefinition loadSubSection(ConfigurationSection sec, YamlConfiguration root) {
@@ -82,18 +77,14 @@ public final class ConfirmTargetManager implements Listener {
         UUID targetUUID = plugin.database().records().uuidFromName(targetName);
         if (targetUUID == null) return;
 
-        Location loc = plugin.home().homes().getHomes(targetUUID).get(homeName);
+        Location loc = plugin.home().homes().getHomes(targetUUID).get(homeName.toLowerCase());
         Map<String, Long> times = plugin.database().homes().loadTimestamps(targetUUID);
-        long timestamp = times.getOrDefault(homeName, 0L);
-
-        int totalHomes = plugin.database().homes().getHomeAmount(targetUUID);
-        int maxPages = Math.max(1, (int) Math.ceil((double) totalHomes / homeSlots.length));
+        long timestamp = times.getOrDefault(homeName.toLowerCase(), 0L);
 
         Map<String, String> ph = new HashMap<>();
         ph.put("target", targetName);
         ph.put("name", homeName);
         ph.put("page", page);
-        ph.put("pages", String.valueOf(maxPages));
 
         if (loc != null) {
             ph.put("world", loc.getWorld() != null ? loc.getWorld().getName() : "-");
@@ -102,46 +93,31 @@ public final class ConfirmTargetManager implements Listener {
             ph.put("z", String.valueOf(loc.getBlockZ()));
 
             LocalDateTime dt = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault());
-            ph.put("time", dt.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-            ph.put("date", dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            ph.put("time", dt.format(DateTimeFormatter.ofPattern("HH:mm")));
+            ph.put("date", TimeUtil.formatDate(plugin, timestamp * 1000L));
         }
 
         HomeConfirmTargetHolder holder = new HomeConfirmTargetHolder(targetName, def, page, sortType, filterType, ph);
+        Inventory inv = Bukkit.createInventory(holder, def.rows() * 9, MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, def.title(), ph)));
+        holder.setInventory(inv);
 
-        HomeTargetManager.CONSTRUCTION_CONTEXT.set(new HomeTargetManager.HomeTargetHolder(
-                targetName, Integer.parseInt(page), maxPages, new ArrayList<>(), sortType, filterType, times
-        ));
+        def.items().values().stream()
+                .filter(item -> !item.key().equals("confirm") && !item.key().equals("cancel"))
+                .forEach(item -> renderToInventory(inv, item, viewer, ph));
 
-        try {
-            Inventory inv = Bukkit.createInventory(holder, def.rows() * 9,
-                    MM.deserialize("<!italic>" + PlaceholderUtil.apply(viewer, def.title(), ph)));
-            holder.setInventory(inv);
+        def.items().values().stream()
+                .filter(item -> item.key().equals("confirm") || item.key().equals("cancel"))
+                .forEach(item -> renderToInventory(inv, item, viewer, ph));
 
-            def.items().values().stream()
-                    .filter(item -> !item.key().equals("confirm") && !item.key().equals("cancel"))
-                    .forEach(item -> {
-                        ItemStack stack = item.buildStack(viewer, ph, plugin);
-                        item.slots().forEach(slot -> {
-                            if (slot < inv.getSize()) inv.setItem(slot, stack);
-                        });
-                    });
-
-            renderButton(inv, def, "confirm", viewer, ph);
-            renderButton(inv, def, "cancel", viewer, ph);
-
-            viewer.openInventory(inv);
-        } finally {
-            HomeTargetManager.CONSTRUCTION_CONTEXT.remove();
-        }
+        viewer.openInventory(inv);
     }
 
-    private void renderButton(Inventory inv, GuiDefinition def, String key, Player p, Map<String, String> ph) {
-        GuiItem item = def.items().get(key);
-        if (item != null) {
-            ItemStack stack = item.buildStack(p, ph, plugin);
-            item.slots().forEach(slot -> {
-                if (slot < inv.getSize()) inv.setItem(slot, stack);
-            });
+    private void renderToInventory(Inventory inv, GuiItem item, Player viewer, Map<String, String> ph) {
+        ItemStack stack = item.buildStack(viewer, ph, plugin);
+        for (int slot : item.slots()) {
+            if (slot >= 0 && slot < inv.getSize()) {
+                inv.setItem(slot, stack);
+            }
         }
     }
 
@@ -151,126 +127,122 @@ public final class ConfirmTargetManager implements Listener {
         event.setCancelled(true);
 
         int slot = event.getSlot();
-        ItemStack current = event.getCurrentItem();
-        if (current == null || current.getType().isAir()) return;
-
         Player viewer = (Player) event.getWhoClicked();
 
-        GuiItem clickedItem = null;
-        for (GuiItem item : holder.getDef().items().values()) {
-            if (item.slots().contains(slot)) {
-                clickedItem = item;
-                if (item.key().equals("confirm") || item.key().equals("cancel")) break;
+        GuiItem actionItem = null;
+        for (String key : List.of("confirm", "cancel")) {
+            GuiItem item = holder.getDef().items().get(key);
+            if (item != null && item.slots().contains(slot)) {
+                actionItem = item;
+                break;
             }
         }
 
-        if (clickedItem == null) return;
-
-        if (plugin.gui().cooldowns().isOnCooldown(viewer, clickedItem)) {
-            plugin.gui().cooldowns().sendCooldownMessage(viewer, clickedItem);
+        if (actionItem != null) {
+            if (isOnCooldown(viewer, actionItem)) return;
+            handleConfirmOrCancel(viewer, actionItem, holder, event.getClick());
             return;
         }
-        plugin.gui().cooldowns().applyCooldown(viewer, clickedItem);
 
-        String key = clickedItem.key();
-        if (key.equals("confirm") || key.equals("cancel")) {
-            handleConfirmOrCancel(viewer, clickedItem, holder, event.getClick());
-        } else {
-            executeAction(clickedItem, viewer, event.getClick(), holder.getPlaceholders());
+        for (GuiItem item : holder.getDef().items().values()) {
+            if (item.slots().contains(slot)) {
+                if (isOnCooldown(viewer, item)) return;
+                executeAction(item, viewer, event.getClick(), holder.getPlaceholders());
+                return;
+            }
         }
     }
 
     private void handleConfirmOrCancel(Player viewer, GuiItem item, HomeConfirmTargetHolder holder, ClickType click) {
-        List<String> actions = item.getActionsForClick(click);
-        if (actions == null) return;
+        List<String> actions = item.getActionsForClick(viewer, holder.getPlaceholders(), click);
+        if (actions == null || actions.isEmpty()) return;
 
         String targetName = holder.getTargetName();
         String homeName = holder.getPlaceholders().get("name");
         UUID targetUUID = plugin.database().records().uuidFromName(targetName);
 
-        boolean isConfirm = item.key().equals("confirm");
-
-        if (isConfirm && targetUUID != null) {
+        if (item.key().equals("confirm") && targetUUID != null) {
             for (String action : actions) {
-                if (action.equalsIgnoreCase("[teleport]")) {
-                    Map<String, Location> targetHomes = plugin.home().homes().getHomes(targetUUID);
-                    if (targetHomes.isEmpty()) targetHomes = plugin.database().homes().load(targetUUID);
-
-                    Location loc = targetHomes.get(homeName.toLowerCase());
-                    if (loc != null) {
-                        plugin.core().teleports().startCountdown(viewer, viewer, () -> {
-                            plugin.core().teleports().teleport(viewer, loc);
-                            MessageUtil.send(viewer, "homes.teleport.success-other", Map.of("player", targetName, "name", homeName));
-                        }, reason -> MessageUtil.send(viewer, "homes.teleport.cancelled-other", Map.of("player", targetName, "name", homeName)));
-                    }
-                } else if (action.equalsIgnoreCase("[delete]")) {
-                    if (viewer.hasPermission("aircore.command.delhome.others")) {
-                        plugin.home().homes().deleteHome(targetUUID, homeName.toLowerCase());
-                        plugin.database().homes().delete(targetUUID, homeName.toLowerCase());
-
-                        MessageUtil.send(viewer, "homes.management.deleted-for", Map.of("player", targetName, "name", homeName));
-
-                        Player targetPlayer = Bukkit.getPlayer(targetUUID);
-                        if (targetPlayer != null && !targetPlayer.equals(viewer)) {
-                            MessageUtil.send(targetPlayer, "homes.management.deleted-by", Map.of("player", viewer.getName(), "name", homeName));
-                        }
-                    }
+                String lower = action.toLowerCase();
+                if (lower.contains("[teleport]")) {
+                    handleTeleport(viewer, targetUUID, targetName, homeName);
+                } else if (lower.contains("[delete]")) {
+                    handleDelete(viewer, targetUUID, targetName, homeName);
                 }
             }
         }
 
         executeAction(item, viewer, click, holder.getPlaceholders());
 
-        boolean hasClose = actions.stream().anyMatch(a -> a.toLowerCase().contains("[close]"));
-
-        if (hasClose) {
+        if (actions.stream().anyMatch(a -> a.equalsIgnoreCase("[close]"))) {
             viewer.closeInventory();
         } else {
-            plugin.scheduler().runEntityTaskDelayed(viewer, () -> {
-                if (viewer.isOnline()) {
-                    plugin.gui().openGui("homes-target", viewer, Map.of(
-                            "player", targetName,
-                            "page", holder.getPrevPage(),
-                            "sort", holder.getSortType(),
-                            "filter", holder.getFilterType()
-                    ));
-                }
-            }, 1L);
+            plugin.scheduler().runEntityTaskDelayed(viewer, () -> plugin.gui().openGui("homes-target", viewer, Map.of(
+                    "player", targetName,
+                    "page", holder.getPrevPage(),
+                    "sort", holder.getSortType(),
+                    "filter", holder.getFilterType()
+            )), 1L);
+        }
+    }
+
+    private void handleTeleport(Player viewer, UUID targetUUID, String targetName, String homeName) {
+        Map<String, Location> targetHomes = plugin.home().homes().getHomes(targetUUID);
+        if (targetHomes.isEmpty()) targetHomes = plugin.database().homes().load(targetUUID);
+
+        Location loc = targetHomes.get(homeName.toLowerCase());
+        if (loc != null) {
+            plugin.core().teleports().startCountdown(viewer, viewer, () -> {
+                plugin.core().teleports().teleport(viewer, loc);
+                MessageUtil.send(viewer, "homes.teleport.success-other", Map.of("player", targetName, "name", homeName));
+            }, reason -> MessageUtil.send(viewer, "homes.teleport.cancelled-other", Map.of("player", targetName, "name", homeName)));
+        }
+    }
+
+    private void handleDelete(Player viewer, UUID targetUUID, String targetName, String homeName) {
+        if (!viewer.hasPermission("aircore.command.delhome.others")) return;
+
+        plugin.home().homes().deleteHome(targetUUID, homeName.toLowerCase());
+        plugin.database().homes().delete(targetUUID, homeName.toLowerCase());
+        MessageUtil.send(viewer, "homes.management.deleted-for", Map.of("player", targetName, "name", homeName));
+
+        Player targetPlayer = Bukkit.getPlayer(targetUUID);
+        if (targetPlayer != null && !targetPlayer.equals(viewer)) {
+            MessageUtil.send(targetPlayer, "homes.management.deleted-by", Map.of("player", viewer.getName(), "name", homeName));
         }
     }
 
     private void executeAction(GuiItem item, Player viewer, ClickType click, Map<String, String> ph) {
-        List<String> actions = item.getActionsForClick(click);
-        if (actions != null && !actions.isEmpty()) {
+        List<String> actions = item.getActionsForClick(viewer, ph, click);
+        if (actions != null) {
             Map<String, String> fullPh = new HashMap<>(ph);
             fullPh.put("player", viewer.getName());
             itemAction.executeAll(actions, viewer, fullPh);
         }
     }
 
+    private boolean isOnCooldown(Player p, GuiItem item) {
+        if (plugin.gui().cooldowns().isOnCooldown(p, item)) {
+            plugin.gui().cooldowns().sendCooldownMessage(p, item);
+            return true;
+        }
+        plugin.gui().cooldowns().applyCooldown(p, item);
+        return false;
+    }
+
     public void cleanup() { HandlerList.unregisterAll(this); }
 
     public static final class HomeConfirmTargetHolder implements InventoryHolder {
-        private final String targetName;
+        private final String targetName, prevPage, sortType, filterType;
         private final GuiDefinition def;
-        private final String prevPage;
-        private final String sortType;
-        private final String filterType;
         private final Map<String, String> placeholders;
         private Inventory inventory;
 
         public HomeConfirmTargetHolder(String targetName, GuiDefinition def, String prevPage, String sortType, String filterType, Map<String, String> placeholders) {
-            this.targetName = targetName;
-            this.def = def;
-            this.prevPage = prevPage;
-            this.sortType = sortType;
-            this.filterType = filterType;
-            this.placeholders = placeholders;
+            this.targetName = targetName; this.def = def; this.prevPage = prevPage; this.sortType = sortType; this.filterType = filterType; this.placeholders = placeholders;
         }
-
         @Override public @NotNull Inventory getInventory() { return inventory; }
         public void setInventory(Inventory inventory) { this.inventory = inventory; }
-
         public String getTargetName() { return targetName; }
         public GuiDefinition getDef() { return def; }
         public String getPrevPage() { return prevPage; }

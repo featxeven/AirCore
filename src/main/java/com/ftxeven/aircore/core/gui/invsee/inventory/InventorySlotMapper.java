@@ -10,11 +10,13 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Set;
 
 public final class InventorySlotMapper {
 
-    private static final String[] DYNAMIC_GROUPS = {"hotbar-slots", "inventory-slots", "armor-slots", "offhand-slots"};
+    private static final Set<String> DYNAMIC_GROUPS = Set.of(
+            "hotbar-slots", "inventory-slots", "armor-slots", "offhand-slots"
+    );
 
     private InventorySlotMapper() {}
 
@@ -34,13 +36,14 @@ public final class InventorySlotMapper {
             if (mgr.isDynamicGroup(item.key())) continue;
 
             ItemStack stack = item.buildStack(viewer, ph, plugin);
-
-            item.slots().stream().filter(s -> s < inv.getSize()).forEach(slot -> {
-                ItemStack current = inv.getItem(slot);
-                if (current == null || !current.isSimilar(stack)) {
-                    inv.setItem(slot, stack);
+            for (int slot : item.slots()) {
+                if (slot < inv.getSize()) {
+                    ItemStack current = inv.getItem(slot);
+                    if (current == null || !current.isSimilar(stack)) {
+                        inv.setItem(slot, stack);
+                    }
                 }
-            });
+            }
         }
     }
 
@@ -48,15 +51,25 @@ public final class InventorySlotMapper {
         ItemStack[] contents = new ItemStack[36];
         ItemStack[] armor = new ItemStack[4];
 
-        extractToBuffer(inv, getSlots(def, "hotbar-slots"), contents, 0, def);
-        extractToBuffer(inv, getSlots(def, "inventory-slots"), contents, 9, def);
-        extractToBuffer(inv, getSlots(def, "armor-slots"), armor, 0, def);
+        mapToBuffer(inv, getSlots(def, "hotbar-slots"), contents, 0, def);
+        mapToBuffer(inv, getSlots(def, "inventory-slots"), contents, 9, def);
+        mapToBuffer(inv, getSlots(def, "armor-slots"), armor, 0, def);
 
         List<Integer> ohSlots = getSlots(def, "offhand-slots");
-        ItemStack offhand = (ohSlots != null && !ohSlots.isEmpty()) ?
-                getValidItem(inv, def, ohSlots.getFirst()) : null;
+        ItemStack offhand = (ohSlots != null && !ohSlots.isEmpty()) ? getValidItem(inv, def, ohSlots.getFirst()) : null;
 
         return new PlayerInventories.InventoryBundle(contents, armor, offhand, null);
+    }
+
+    private static void mapToBuffer(Inventory inv, List<Integer> slots, ItemStack[] buffer, int offset, GuiDefinition def) {
+        if (slots == null) return;
+        for (int i = 0; i < slots.size() && (i + offset) < buffer.length; i++) {
+            int guiSlot = slots.get(i);
+            if (guiSlot >= inv.getSize()) continue;
+
+            ItemStack item = inv.getItem(guiSlot);
+            buffer[i + offset] = isCustomFillerAt(def, guiSlot, item) ? null : item;
+        }
     }
 
     private static void mapToSlots(AirCore plugin, Inventory inv, GuiDefinition def, List<Integer> slots, ItemStack[] source, int offset, Player viewer, Map<String, String> ph) {
@@ -69,25 +82,18 @@ public final class InventorySlotMapper {
     private static void updateSlot(AirCore plugin, Inventory inv, GuiDefinition def, int slot, ItemStack newItem, Player viewer, Map<String, String> ph) {
         if (newItem != null && !newItem.getType().isAir()) {
             inv.setItem(slot, newItem);
-        } else {
-            GuiItem filler = findCustomItemAt(def, slot);
-            if (filler != null) {
-                ItemStack fillerStack = filler.buildStack(viewer, ph, plugin);
-
-                ItemStack current = inv.getItem(slot);
-                if (current == null || !current.isSimilar(fillerStack)) {
-                    inv.setItem(slot, fillerStack);
-                }
-            } else {
-                inv.setItem(slot, null);
-            }
+            return;
         }
-    }
 
-    private static void extractToBuffer(Inventory inv, List<Integer> slots, ItemStack[] buffer, int offset, GuiDefinition def) {
-        if (slots == null) return;
-        for (int i = 0; i < slots.size() && (i + offset) < buffer.length; i++) {
-            buffer[i + offset] = getValidItem(inv, def, slots.get(i));
+        GuiItem filler = findCustomItemAt(def, slot);
+        if (filler != null) {
+            ItemStack fillerStack = filler.buildStack(viewer, ph, plugin);
+            ItemStack current = inv.getItem(slot);
+            if (current == null || !current.isSimilar(fillerStack)) {
+                inv.setItem(slot, fillerStack);
+            }
+        } else {
+            inv.setItem(slot, null);
         }
     }
 
@@ -97,27 +103,33 @@ public final class InventorySlotMapper {
     }
 
     public static boolean isDynamicSlot(GuiDefinition def, int slot) {
-        return Stream.of(DYNAMIC_GROUPS)
-                .map(group -> def.items().get(group))
-                .anyMatch(item -> item != null && item.slots().contains(slot));
+        for (String group : DYNAMIC_GROUPS) {
+            GuiItem item = def.items().get(group);
+            if (item != null && item.slots().contains(slot)) return true;
+        }
+        return false;
     }
 
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, ItemStack current) {
         if (current == null || current.getType().isAir()) return false;
         GuiItem match = findCustomItemAt(def, slot);
-        return match != null && current.getType() == match.material();
+        return match != null && current.getType().name().equalsIgnoreCase(String.valueOf(match.material()));
     }
 
     public static GuiItem findCustomItemAt(GuiDefinition def, int slot) {
-        return def.items().values().stream()
-                .filter(i -> !i.key().endsWith("-slots") && i.slots().contains(slot))
-                .findFirst().orElse(null);
+        for (GuiItem item : def.items().values()) {
+            if (!item.key().endsWith("-slots") && item.slots().contains(slot)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public static GuiItem findItem(GuiDefinition def, int slot) {
-        return def.items().values().stream()
-                .filter(i -> i.slots().contains(slot))
-                .findFirst().orElse(null);
+        for (GuiItem item : def.items().values()) {
+            if (item.slots().contains(slot)) return item;
+        }
+        return null;
     }
 
     private static List<Integer> getSlots(GuiDefinition def, String key) {

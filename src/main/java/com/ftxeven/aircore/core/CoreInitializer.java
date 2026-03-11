@@ -141,9 +141,10 @@ public final class CoreInitializer {
 
         if (plugin.announcements() != null) plugin.announcements().shutdown();
         BossbarUtil.hideAll();
-        if (plugin.scheduler() != null) plugin.scheduler().cancelAll();
 
         handleDataShutdown();
+
+        if (plugin.scheduler() != null) plugin.scheduler().cancelAll();
 
         if (plugin.database() != null) {
             plugin.database().close();
@@ -151,20 +152,32 @@ public final class CoreInitializer {
     }
 
     private void handleDataShutdown() {
-        if (plugin.database() == null) return;
-        Map<UUID, PlayerInventories.InventorySnapshot> shutdownSnapshots = new HashMap<>();
+        if (plugin.database() == null || plugin.database().isClosed()) return;
 
+        Map<UUID, PlayerInventories.InventorySnapshot> shutdownSnapshots = new HashMap<>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             try {
                 shutdownSnapshots.put(player.getUniqueId(), plugin.database().inventories().createSnapshot(player));
             } catch (Exception e) {
-                plugin.getLogger().severe("Failed to snapshot " + player.getName() + " during shutdown!");
+                plugin.getLogger().severe("Failed to snapshot inventory for " + player.getName());
             }
         }
 
         if (!shutdownSnapshots.isEmpty()) {
-            plugin.getLogger().info("Saving " + shutdownSnapshots.size() + " player inventories...");
             plugin.database().inventories().saveAllSync(shutdownSnapshots);
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            UUID uuid = player.getUniqueId();
+            Map<String, org.bukkit.Location> homes = plugin.home().homes().getHomes(uuid);
+
+            homes.forEach((name, loc) -> {
+                try {
+                    plugin.database().homes().save(uuid, name, loc);
+                } catch (Exception e) {
+                    plugin.getLogger().severe("Failed to save home '" + name + "' for " + player.getName());
+                }
+            });
         }
     }
 

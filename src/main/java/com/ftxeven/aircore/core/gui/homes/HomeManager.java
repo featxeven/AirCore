@@ -17,7 +17,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -31,6 +30,8 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
     private int[] homeSlots;
     private boolean enabled;
     private final ConfirmManager confirmManager;
+
+    private final Set<String> buttonKeys = new HashSet<>();
 
     private static final String DEFAULT_SORT = "latest";
     private static final String DEFAULT_FILTER = "all";
@@ -56,9 +57,15 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         this.homeSlots = GuiDefinition.parseSlots(cfg.getStringList("home-slots"))
                 .stream().mapToInt(Integer::intValue).toArray();
 
+        this.buttonKeys.clear();
+        ConfigurationSection btnSec = cfg.getConfigurationSection("buttons");
+        if (btnSec != null) {
+            this.buttonKeys.addAll(btnSec.getKeys(false));
+        }
+
         Map<String, GuiItem> items = new LinkedHashMap<>();
         loadSection(cfg.getConfigurationSection("items"), items);
-        loadSection(cfg.getConfigurationSection("buttons"), items);
+        loadSection(btnSec, items);
 
         this.definition = new GuiDefinition(cfg.getString("title", "Homes"), cfg.getInt("rows", 5), items, cfg);
     }
@@ -127,8 +134,6 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         if (!(event.getInventory().getHolder() instanceof HomeHolder holder)) return;
 
         int slot = event.getSlot();
-        ItemStack current = event.getCurrentItem();
-        if (current == null || current.getType().isAir()) return;
 
         for (int i = 0; i < homeSlots.length; i++) {
             if (homeSlots[i] == slot) {
@@ -137,50 +142,53 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
                     handleHomeClick(holder.homes().get(actualIndex).getKey(), viewer, event.getClick(), holder);
                     return;
                 }
+                return;
             }
         }
 
-        GuiItem buttonItem = findItemBySection(slot, current, "buttons");
-        if (buttonItem != null) {
-            switch (buttonItem.key()) {
-                case "next-page" -> { handleNavigation(holder, viewer, 1); return; }
-                case "previous-page" -> { handleNavigation(holder, viewer, -1); return; }
-                case "sort-by" -> { handleSort(event, holder, viewer); return; }
-                case "filter-by" -> { handleFilter(event, holder, viewer); return; }
-            }
-        }
-
-        GuiItem genericItem = findItemBySection(slot, current, "items");
-        if (genericItem != null) {
-            handleGenericItem(genericItem, viewer, event.getClick());
-        }
-    }
-
-    private GuiItem findItemBySection(int slot, ItemStack stack, String section) {
-        ConfigurationSection sec = definition.config().getConfigurationSection(section);
-        if (sec == null) return null;
-
-        for (String key : sec.getKeys(false)) {
+        GuiItem clickedButton = null;
+        for (String key : buttonKeys) {
             GuiItem item = definition.items().get(key);
             if (item != null && item.slots().contains(slot)) {
-                if (item.material() != stack.getType()) continue;
-
-                if (item.rawName() == null) return item;
-
-                if (stack.hasItemMeta()) {
-                    net.kyori.adventure.text.Component clickedName = stack.getItemMeta().displayName();
-                    if (clickedName == null) continue;
-
-                    String clickedStr = MM.serialize(clickedName);
-                    String expectedStr = MM.serialize(MM.deserialize("<!italic>" + item.rawName()));
-
-                    if (clickedStr.equals(expectedStr) || clickedStr.contains(key)) {
-                        return item;
-                    }
+                if (isButtonActive(key, holder)) {
+                    clickedButton = item;
+                    break;
                 }
             }
         }
-        return null;
+
+        if (clickedButton != null) {
+            switch (clickedButton.key()) {
+                case "next-page" -> handleNavigation(holder, viewer, 1);
+                case "previous-page" -> handleNavigation(holder, viewer, -1);
+                case "sort-by" -> handleSort(event, holder, viewer);
+                case "filter-by" -> handleFilter(event, holder, viewer);
+                default -> handleGenericItem(clickedButton, viewer, event.getClick());
+            }
+            return;
+        }
+
+        GuiItem clickedCustomItem = null;
+        for (GuiItem item : definition.items().values()) {
+            if (!buttonKeys.contains(item.key()) && item.slots().contains(slot)) {
+                clickedCustomItem = item;
+                break;
+            }
+        }
+
+        if (clickedCustomItem != null) {
+            handleGenericItem(clickedCustomItem, viewer, event.getClick());
+        }
+    }
+
+    private boolean isButtonActive(String key, HomeHolder holder) {
+        if (definition.config().getBoolean("always-show-buttons", false)) return true;
+
+        return switch (key) {
+            case "next-page" -> holder.page() < holder.maxPages();
+            case "previous-page" -> holder.page() > 1;
+            default -> true;
+        };
     }
 
     private void handleSort(InventoryClickEvent event, HomeHolder holder, Player viewer) {
@@ -322,7 +330,7 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
     }
 
     public void handleAction(GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh) {
-        List<String> actions = item.getActionsForClick(click);
+        List<String> actions = item.getActionsForClick(viewer, extraPh, click);
         if (actions == null || actions.isEmpty()) return;
 
         Map<String, String> ph = new HashMap<>(extraPh);
@@ -332,7 +340,11 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
 
     private void handleGenericItem(GuiItem item, Player viewer, ClickType click) {
         if (isOnCooldown(viewer, item)) return;
-        handleAction(item, viewer, click, Collections.emptyMap());
+
+        Map<String, String> ph = new HashMap<>();
+        ph.put("player", viewer.getName());
+
+        handleAction(item, viewer, click, ph);
     }
 
     private String getDefaultSort() {
@@ -344,6 +356,7 @@ public final class HomeManager implements GuiManager.CustomGuiManager {
         ConfigurationSection types = definition.config().getConfigurationSection("buttons.filter-by.types");
         return (types != null) ? types.getKeys(false).stream().findFirst().orElse(DEFAULT_FILTER) : DEFAULT_FILTER;
     }
+
     private void applyFilter(String type, List<Map.Entry<String, Location>> list) {
         if (type.equalsIgnoreCase("all")) return;
         list.removeIf(entry -> {

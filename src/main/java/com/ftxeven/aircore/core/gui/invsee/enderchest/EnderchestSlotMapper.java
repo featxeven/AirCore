@@ -51,8 +51,10 @@ public final class EnderchestSlotMapper {
 
         List<Integer> slots = ecGroup.slots();
         for (int i = 0; i < Math.min(slots.size(), contents.length); i++) {
-            ItemStack stack = inv.getItem(slots.get(i));
-            contents[i] = isCustomFillerAt(def, slots.get(i), stack) ? null : stack;
+            int currentSlot = slots.get(i);
+            ItemStack stack = inv.getItem(currentSlot);
+
+            contents[i] = isCustomFillerAt(def, currentSlot, stack) ? null : stack;
         }
         return contents;
     }
@@ -64,19 +66,13 @@ public final class EnderchestSlotMapper {
 
     public static boolean isCustomFillerAt(GuiDefinition def, int slot, ItemStack current) {
         if (current == null || current.getType().isAir()) return false;
-        GuiItem match = findCustomItemAt(def, slot);
-        return match != null && current.getType() == match.material();
+
+        return findCustomItemAt(def, slot) != null;
     }
 
     public static GuiItem findCustomItemAt(GuiDefinition def, int slot) {
         return def.items().values().stream()
-                .filter(i -> !i.key().startsWith("enderchest-slots") && i.slots().contains(slot))
-                .findFirst().orElse(null);
-    }
-
-    public static GuiItem findItem(GuiDefinition def, int slot) {
-        return def.items().values().stream()
-                .filter(i -> i.slots().contains(slot))
+                .filter(i -> !i.key().equals("enderchest-slots") && i.slots().contains(slot))
                 .findFirst().orElse(null);
     }
 }

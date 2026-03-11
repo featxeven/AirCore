@@ -55,37 +55,82 @@ public final class DatabaseManager {
     private void createTables() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("""
-                CREATE TABLE IF NOT EXISTS player_records (
-                    join_index INTEGER PRIMARY KEY AUTOINCREMENT,
-                    uuid TEXT UNIQUE NOT NULL,
-                    name TEXT NOT NULL,
-                    updated_at INTEGER NOT NULL,
-                    balance REAL NOT NULL DEFAULT 0,
-                    walk_speed REAL NOT NULL DEFAULT 1.0,
-                    fly_speed REAL NOT NULL DEFAULT 1.0,
-                    chat_enabled INTEGER NOT NULL DEFAULT 1,
-                    mentions_enabled INTEGER NOT NULL DEFAULT 1,
-                    pm_enabled INTEGER NOT NULL DEFAULT 1,
-                    socialspy_enabled INTEGER NOT NULL DEFAULT 0,
-                    pay_enabled INTEGER NOT NULL DEFAULT 1,
-                    teleport_enabled INTEGER NOT NULL DEFAULT 1,
-                    announcements_enabled INTEGER NOT NULL DEFAULT 1,
-                    god_enabled INTEGER NOT NULL DEFAULT 0,
-                    fly_enabled INTEGER NOT NULL DEFAULT 0,
-                    world TEXT,
-                    x REAL,
-                    y REAL,
-                    z REAL,
-                    yaw REAL,
-                    pitch REAL
-                );
+            CREATE TABLE IF NOT EXISTS player_records (
+                join_index INTEGER PRIMARY KEY AUTOINCREMENT,
+                uuid TEXT UNIQUE NOT NULL,
+                name TEXT NOT NULL,
+                updated_at INTEGER NOT NULL,
+                balance REAL NOT NULL DEFAULT 0,
+                walk_speed REAL NOT NULL DEFAULT 1.0,
+                fly_speed REAL NOT NULL DEFAULT 1.0,
+                chat_enabled INTEGER NOT NULL DEFAULT 1,
+                mentions_enabled INTEGER NOT NULL DEFAULT 1,
+                pm_enabled INTEGER NOT NULL DEFAULT 1,
+                socialspy_enabled INTEGER NOT NULL DEFAULT 0,
+                pay_enabled INTEGER NOT NULL DEFAULT 1,
+                teleport_enabled INTEGER NOT NULL DEFAULT 1,
+                announcements_enabled INTEGER NOT NULL DEFAULT 1,
+                god_enabled INTEGER NOT NULL DEFAULT 0,
+                fly_enabled INTEGER NOT NULL DEFAULT 0,
+                world TEXT,
+                x REAL, y REAL, z REAL,
+                yaw REAL, pitch REAL
+            );
             """);
 
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_inventories (uuid TEXT PRIMARY KEY, contents BLOB, armor BLOB, offhand BLOB, enderchest BLOB);");
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_cooldowns (uuid TEXT NOT NULL, command TEXT NOT NULL, expiry INTEGER NOT NULL, PRIMARY KEY (uuid, command));");
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_blocks (uuid TEXT NOT NULL, blocked_uuid TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (uuid, blocked_uuid));");
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_homes (uuid TEXT NOT NULL, name TEXT NOT NULL, world TEXT NOT NULL, x REAL NOT NULL, y REAL NOT NULL, z REAL NOT NULL, yaw REAL NOT NULL, pitch REAL NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (uuid, name));");
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS player_kits (uuid TEXT NOT NULL, kit TEXT NOT NULL, last_claim INTEGER NOT NULL DEFAULT 0, one_time_claimed INTEGER NOT NULL DEFAULT 0, last_cooldown INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (uuid, kit));");
+            stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS player_inventories (
+                uuid TEXT PRIMARY KEY,
+                contents BLOB,
+                armor BLOB,
+                offhand BLOB,
+                enderchest BLOB
+            );
+            """);
+
+            stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS player_cooldowns (
+                uuid TEXT NOT NULL,
+                command TEXT NOT NULL,
+                expiry INTEGER NOT NULL,
+                PRIMARY KEY (uuid, command)
+            );
+            """);
+
+            stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS player_blocks (
+                uuid TEXT NOT NULL,
+                blocked_uuid TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                PRIMARY KEY (uuid, blocked_uuid)
+            );
+            """);
+
+            stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS player_homes (
+                uuid TEXT NOT NULL,
+                name TEXT NOT NULL,
+                world TEXT NOT NULL,
+                x REAL NOT NULL,
+                y REAL NOT NULL,
+                z REAL NOT NULL,
+                yaw REAL NOT NULL,
+                pitch REAL NOT NULL,
+                created_at INTEGER NOT NULL,
+                PRIMARY KEY (uuid, name)
+            );
+            """);
+
+            stmt.executeUpdate("""
+            CREATE TABLE IF NOT EXISTS player_kits (
+                uuid TEXT NOT NULL,
+                kit TEXT NOT NULL,
+                last_claim INTEGER NOT NULL DEFAULT 0,
+                one_time_claimed INTEGER NOT NULL DEFAULT 0,
+                last_cooldown INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (uuid, kit)
+            );
+            """);
         }
     }
 

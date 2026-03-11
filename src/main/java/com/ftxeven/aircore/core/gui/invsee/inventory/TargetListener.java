@@ -49,24 +49,28 @@ public final class TargetListener implements Listener {
 
     private void scheduleRefresh(Player target) {
         if (target == null || joinLock.contains(target.getUniqueId())) return;
-
         UUID targetUUID = target.getUniqueId();
-        List<Player> viewerList = viewers.get(targetUUID);
 
+        if (plugin.scheduler().isFoliaServer()) {
+            if (inventoryManager.isPending(targetUUID) || inventoryManager.hasActiveLocks(targetUUID)) return;
+        }
+
+        List<Player> viewerList = viewers.get(targetUUID);
         if (viewerList == null || viewerList.isEmpty()) return;
+
+        if (pendingRefreshes.contains(targetUUID)) return;
         if (!pendingRefreshes.add(targetUUID)) return;
 
         plugin.scheduler().runEntityTaskDelayed(target, () -> {
             try {
                 if (target.isOnline()) {
                     PlayerInventories.InventoryBundle bundle = createBundle(target);
-
                     for (Player viewer : viewerList) {
-                        Map<String, String> placeholders = Map.of(
-                                "player", viewer.getName(),
-                                "target", target.getName()
-                        );
-                        refreshViewers(targetUUID, bundle, viewer, placeholders);
+                        if (!(viewer.getOpenInventory().getTopInventory().getHolder() instanceof InventoryManager.InvseeHolder holder)
+                                || !holder.targetUUID().equals(targetUUID)) continue;
+
+                        Map<String, String> ph = Map.of("player", viewer.getName(), "target", target.getName());
+                        refreshViewers(targetUUID, bundle, viewer, ph);
                     }
                 }
             } finally {
@@ -112,6 +116,7 @@ public final class TargetListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onArmorChange(com.destroystokyo.paper.event.player.PlayerArmorChangeEvent e) {
+        if (pendingRefreshes.contains(e.getPlayer().getUniqueId())) return;
         scheduleRefresh(e.getPlayer());
     }
 
@@ -126,7 +131,10 @@ public final class TargetListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onInventoryChange(InventoryClickEvent e) { scheduleRefresh((Player) e.getWhoClicked()); }
+    public void onInventoryChange(InventoryClickEvent e) {
+        if (e.getInventory().getHolder() instanceof InventoryManager.InvseeHolder) return;
+        scheduleRefresh((Player) e.getWhoClicked());
+    }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent e) { scheduleRefresh((Player) e.getWhoClicked()); }

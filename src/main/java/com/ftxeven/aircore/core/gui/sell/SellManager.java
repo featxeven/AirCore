@@ -10,7 +10,6 @@ import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -38,10 +37,7 @@ public final class SellManager implements GuiManager.CustomGuiManager {
     private final ConfirmManager confirmManager;
 
     private GuiDefinition definition;
-    private GuiItem cachedConfirmItem;
     private Set<Integer> cachedSellSlots = Collections.emptySet();
-    private Set<Integer> cachedConfirmSlots = Collections.emptySet();
-    private boolean enabled;
 
     public SellManager(AirCore plugin, ItemAction itemAction) {
         this.plugin = plugin;
@@ -57,60 +53,46 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         if (!file.exists()) plugin.saveResource("guis/sell/sell.yml", false);
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
-        this.enabled = cfg.getBoolean("enabled", true);
 
         Map<String, GuiItem> items = new LinkedHashMap<>();
         List<Integer> sellList = GuiDefinition.parseSlots(cfg.getStringList("sell-slots"));
         this.cachedSellSlots = new HashSet<>(sellList);
         items.put("sell-slots", createEmptyGroup(sellList));
 
-        this.cachedConfirmSlots = new HashSet<>();
-        loadButton(cfg, items, "confirm", true);
-        loadButton(cfg, items, "confirm-all", false);
+        ConfigurationSection buttonsSec = cfg.getConfigurationSection("buttons");
+        if (buttonsSec != null) {
+            for (String key : buttonsSec.getKeys(false)) {
+                ConfigurationSection sub = buttonsSec.getConfigurationSection(key);
+                if (sub != null) items.put(key, GuiItem.fromSection(key, sub));
+            }
+        }
 
         ConfigurationSection itemsSec = cfg.getConfigurationSection("items");
         if (itemsSec != null) {
             for (String key : itemsSec.getKeys(false)) {
                 if (items.containsKey(key)) continue;
-                ConfigurationSection sec = itemsSec.getConfigurationSection(key);
-                if (sec != null) items.put(key, GuiItem.fromSection(key, sec));
+                ConfigurationSection sub = itemsSec.getConfigurationSection(key);
+                if (sub != null) items.put(key, GuiItem.fromSection(key, sub));
             }
         }
 
-        this.definition = new GuiDefinition(cfg.getString("title", "Place items here"), cfg.getInt("rows", 5), items, cfg);
+        this.definition = new GuiDefinition(cfg.getString("title", "Sell"), cfg.getInt("rows", 5), items, cfg);
         confirmManager.loadDefinition();
-    }
-
-    private void loadButton(YamlConfiguration cfg, Map<String, GuiItem> items, String key, boolean isConfirm) {
-        ConfigurationSection sec = cfg.getConfigurationSection("buttons." + key);
-        if (sec == null) return;
-        GuiItem item = GuiItem.fromSection(key, sec);
-        items.put(key, item);
-
-        this.cachedConfirmSlots.addAll(item.slots());
-
-        if (isConfirm) {
-            this.cachedConfirmItem = item;
-        }
     }
 
     @Override
     public Inventory build(Player viewer, Map<String, String> placeholders) {
-        Map<String, String> context = new HashMap<>(placeholders);
-        context.put("player", viewer.getName());
-        context.put("worth", "0");
-        context.put("worth-raw", "0");
-        context.put("worth-all", "0");
-        context.put("worth-all-raw", "0");
+        Map<String, String> ph = new HashMap<>(placeholders);
+        ph.put("player", viewer.getName());
+        ph.put("worth", "0");
+        ph.put("worth-all", "0");
 
-        String title = PlaceholderUtil.apply(viewer, definition.title().replace("%player%", viewer.getName()), context);
+        String title = PlaceholderUtil.apply(viewer, definition.title(), ph);
         Inventory inv = Bukkit.createInventory(new SellHolder(), definition.rows() * 9, mm.deserialize(title));
 
-        if (inv.getHolder() instanceof SellHolder holder) {
-            holder.setInventory(inv);
-        }
+        if (inv.getHolder() instanceof SellHolder holder) holder.setInventory(inv);
 
-        SellSlotMapper.fillCustom(plugin, inv, definition, viewer, context);
+        SellSlotMapper.fillCustom(plugin, inv, definition, viewer, ph);
         return inv;
     }
 
@@ -120,11 +102,10 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         Inventory clicked = event.getClickedInventory();
         if (clicked == null || event.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
 
-        ItemStack current = event.getCurrentItem();
         int slot = event.getSlot();
-        ClickType click = event.getClick();
 
         if (clicked.equals(event.getView().getBottomInventory())) {
+            ItemStack current = event.getCurrentItem();
             if (event.isShiftClick() && current != null && !current.getType().isAir()) {
                 event.setCancelled(true);
                 distributeToSlots(top, current, clicked, slot);
@@ -135,91 +116,78 @@ public final class SellManager implements GuiManager.CustomGuiManager {
 
         event.setCancelled(true);
 
-        if (cachedConfirmSlots.contains(slot)) {
-            boolean isAll = isConfirmAllSlot(slot);
-            String key = isAll ? "confirm-all" : "confirm";
-            GuiItem buttonDef = definition.items().get(key);
-
-            if (current != null && buttonDef != null && current.getType() == buttonDef.material()) {
-                handleButtonPress(viewer, top, isAll, click, slot);
-                return;
+        for (String key : List.of("confirm", "confirm-all")) {
+            GuiItem button = definition.items().get(key);
+            if (button != null && button.slots().contains(slot)) {
+                if (isButtonActive(key, top, viewer)) {
+                    handleButtonPress(viewer, top, button, event.getClick());
+                    return;
+                }
             }
-
-            handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);
-            return;
         }
 
         if (cachedSellSlots.contains(slot)) {
-            if (SellSlotMapper.isCustomFillerAt(definition, slot, current) && event.getCursor().getType().isAir()) {
-                handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);
-            } else {
-                event.setCancelled(false);
-                plugin.scheduler().runEntityTaskDelayed(viewer, () -> refreshConfirmButton(top, viewer), 1L);
+            event.setCancelled(false);
+            plugin.scheduler().runEntityTaskDelayed(viewer, () -> refreshConfirmButton(top, viewer), 1L);
+            return;
+        }
+
+        for (GuiItem item : definition.items().values()) {
+            if (item.slots().contains(slot)) {
+                if (item.key().equals("confirm") || item.key().equals("confirm-all")) continue;
+
+                handleAction(item, viewer, event.getClick(), Collections.emptyMap(), top);
+                return;
             }
-            return;
         }
-
-        handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);
     }
 
-    private boolean isConfirmAllSlot(int slot) {
-        GuiItem all = definition.items().get("confirm-all");
-        return all != null && all.slots().contains(slot);
+    private boolean isButtonActive(String key, Inventory inv, Player viewer) {
+        if (definition.config().getBoolean("always-show-buttons", false)) return true;
+
+        var worthSvc = plugin.economy().worth();
+        if (key.equals("confirm-all")) {
+            return SellSlotMapper.calculateWorthAll(inv, worthSvc, definition, viewer).total() > 0;
+        }
+        return SellSlotMapper.calculateWorth(inv, worthSvc, definition).total() > 0;
     }
 
-    private void handleButtonPress(Player viewer, Inventory top, boolean isAll, ClickType click, int slot) {
-        String key = isAll ? "confirm-all" : "confirm";
-        GuiItem button = definition.items().get(key);
-        if (button == null) return;
+    private void handleButtonPress(Player viewer, Inventory top, GuiItem button, ClickType click) {
+        if (isOnCooldown(viewer, button)) return;
 
-        var worthService = plugin.economy().worth();
+        boolean isAll = button.key().equals("confirm-all");
+        var worthSvc = plugin.economy().worth();
+
         SellSlotMapper.WorthResult result = isAll ?
-                SellSlotMapper.calculateWorthAll(top, worthService, definition, viewer) :
-                SellSlotMapper.calculateWorth(top, worthService, definition);
+                SellSlotMapper.calculateWorthAll(top, worthSvc, definition, viewer) :
+                SellSlotMapper.calculateWorth(top, worthSvc, definition);
 
-        boolean alwaysShow = definition.config().getBoolean("always-show-buttons", true);
-        if (!alwaysShow && result.total() <= 0) {
-            handleAction(findCustomItemAt(slot), viewer, click, Collections.emptyMap(), top);
-            return;
-        }
+        if (result.total() <= 0 && !definition.config().getBoolean("always-show-buttons", false)) return;
 
-        if (plugin.gui().cooldowns().isOnCooldown(viewer, button)) {
-            plugin.gui().cooldowns().sendCooldownMessage(viewer, button);
-            return;
-        }
-
-        String subKey = isAll ? "sell-all" : "sell";
-        String fullPath = "buttons." + key + ".apply-confirm." + subKey + ".enabled";
-
-        boolean shouldConfirm = definition.config().getBoolean(fullPath, false);
-
-        shouldConfirm = shouldConfirm && result.total() > 0 && !result.hasUnsupported();
+        String actionType = isAll ? "sell-all" : "sell";
+        String configPath = "buttons." + button.key() + ".apply-confirm." + actionType + ".enabled";
+        boolean confirmEnabled = definition.config().getBoolean(configPath, false);
 
         Map<String, String> ph = new HashMap<>();
-        ph.put("amount", plugin.economy().formats().formatAmount(result.total()));
-        ph.put("worth", plugin.economy().formats().formatAmount(result.total()));
-        ph.put("worth-all", plugin.economy().formats().formatAmount(result.total()));
+        String fmt = plugin.economy().formats().formatAmount(result.total());
+        ph.put("worth", fmt);
+        ph.put("worth-all", fmt);
+        ph.put("amount", fmt);
         ph.put("worth-raw", String.valueOf(result.total()));
         ph.put("player", viewer.getName());
 
-        plugin.gui().cooldowns().applyCooldown(viewer, button);
+        if (confirmEnabled && result.total() > 0) {
+            List<String> rawActions = button.getActionsForClick(viewer, ph, click);
+            if (rawActions != null && !rawActions.isEmpty()) {
+                List<String> aestheticActions = rawActions.stream()
+                        .filter(a -> !a.equalsIgnoreCase("[sell]") && !a.equalsIgnoreCase("[sell-all]"))
+                        .toList();
+                itemAction.executeAll(aestheticActions, viewer, ph);
+            }
 
-        if (shouldConfirm) {
-            executeNonSellActions(button, viewer, click, ph);
             confirmManager.open(viewer, top, result, isAll);
         } else {
             handleAction(button, viewer, click, ph, top);
-        }
-    }
-
-    private void executeNonSellActions(GuiItem item, Player viewer, ClickType click, Map<String, String> ph) {
-        List<String> actions = item.getActionsForClick(click);
-        if (actions == null) return;
-
-        for (String action : actions) {
-            String lower = action.toLowerCase();
-            if (lower.contains("[sell]") || lower.contains("[sell-all]")) continue;
-            itemAction.execute(action, viewer, ph);
         }
     }
 
@@ -229,93 +197,66 @@ public final class SellManager implements GuiManager.CustomGuiManager {
             return;
         }
 
-        double totalSale = result.total();
-        double rounded = plugin.economy().formats().round(totalSale);
+        double amt = plugin.economy().formats().round(result.total());
+        double max = plugin.config().economyMaxBalance();
 
-        double maxBalance = plugin.config().economyMaxBalance();
-        if (maxBalance > 0) {
-            double currentBalance = plugin.economy().balances().getBalance(viewer.getUniqueId());
-            if ((currentBalance + rounded) > maxBalance) {
-                MessageUtil.send(viewer, "economy.sell.error-max-balance", Map.of(
-                        "amount", plugin.economy().formats().formatAmount(maxBalance)
-                ));
-                return;
-            }
+        if (max > 0 && (plugin.economy().balances().getBalance(viewer.getUniqueId()) + amt) > max) {
+            MessageUtil.send(viewer, "economy.sell.error-max-balance", Map.of("amount", plugin.economy().formats().formatAmount(max)));
+            return;
         }
 
-        if (plugin.economy().transactions().deposit(viewer.getUniqueId(), rounded).type() == EconomyManager.ResultType.SUCCESS) {
+        if (plugin.economy().transactions().deposit(viewer.getUniqueId(), amt).type() == EconomyManager.ResultType.SUCCESS) {
             markSaleProcessed(viewer.getUniqueId());
-            MessageUtil.send(viewer, "economy.sell.success", Map.of("amount", plugin.economy().formats().formatAmount(rounded)));
-
-            if (definition.config().getBoolean("sell-logs-on-console", false)) {
-                plugin.getLogger().info(viewer.getName() + " sold items for $" + rounded);
-            }
+            MessageUtil.send(viewer, "economy.sell.success", Map.of("amount", plugin.economy().formats().formatAmount(amt)));
 
             clearSellSlots(top);
-            if (isAll) {
-                viewer.getInventory().clear();
-            }
+            if (isAll) viewer.getInventory().clear();
 
             if (!(viewer.getOpenInventory().getTopInventory().getHolder() instanceof ConfirmManager.ConfirmHolder)) {
                 refreshConfirmButton(top, viewer);
                 viewer.updateInventory();
             }
-        } else {
-            MessageUtil.send(viewer, "economy.sell.error-failed", Map.of());
         }
     }
 
     public void handleAction(GuiItem item, Player viewer, ClickType click, Map<String, String> extraPh, Inventory inv) {
         if (item == null) return;
-        List<String> actions = item.getActionsForClick(click);
+        List<String> actions = item.getActionsForClick(viewer, extraPh, click);
         if (actions == null || actions.isEmpty()) return;
-
-        Map<String, String> ph = new HashMap<>(extraPh);
-        ph.put("player", viewer.getName());
 
         for (String action : actions) {
             if (action.equalsIgnoreCase("[sell]")) {
-                var result = SellSlotMapper.calculateWorth(inv, plugin.economy().worth(), definition);
-                processSale(viewer, inv, result, false);
-                continue;
+                processSale(viewer, inv, SellSlotMapper.calculateWorth(inv, plugin.economy().worth(), definition), false);
+            } else if (action.equalsIgnoreCase("[sell-all]")) {
+                processSale(viewer, inv, SellSlotMapper.calculateWorthAll(inv, plugin.economy().worth(), definition, viewer), true);
+            } else {
+                itemAction.execute(action, viewer, extraPh);
             }
-            if (action.equalsIgnoreCase("[sell-all]")) {
-                var result = SellSlotMapper.calculateWorthAll(inv, plugin.economy().worth(), definition, viewer);
-                processSale(viewer, inv, result, true);
-                continue;
-            }
-            itemAction.execute(action, viewer, ph);
         }
     }
 
     public void refreshConfirmButton(Inventory inv, Player viewer) {
         if (!(inv.getHolder() instanceof SellHolder holder)) return;
 
-        var worthService = plugin.economy().worth();
-        double guiWorth = SellSlotMapper.calculateWorth(inv, worthService, definition).total();
-        double totalAll = SellSlotMapper.calculateWorthAll(inv, worthService, definition, viewer).total();
+        var worth = plugin.economy().worth();
+        double guiW = SellSlotMapper.calculateWorth(inv, worth, definition).total();
+        double allW = SellSlotMapper.calculateWorthAll(inv, worth, definition, viewer).total();
 
-        if (holder.lastWorth == (guiWorth + totalAll)) return;
-        holder.lastWorth = guiWorth + totalAll;
+        if (holder.lastWorth == (guiW + allW)) return;
+        holder.lastWorth = guiW + allW;
 
-        boolean alwaysShow = definition.config().getBoolean("always-show-buttons", true);
-        if (!alwaysShow) {
-            if (guiWorth <= 0 && cachedConfirmItem != null) cachedConfirmItem.slots().forEach(s -> inv.setItem(s, null));
-            GuiItem all = definition.items().get("confirm-all");
-            if (totalAll <= 0 && all != null) all.slots().forEach(s -> inv.setItem(s, null));
-        }
-
-        Map<String, String> context = new HashMap<>();
-        context.put("player", viewer.getName());
-        context.put("worth", plugin.economy().formats().formatAmount(guiWorth));
-        context.put("worth-raw", String.valueOf(guiWorth));
-        context.put("worth-all", plugin.economy().formats().formatAmount(totalAll));
-        context.put("worth-all-raw", String.valueOf(totalAll));
+        Map<String, String> context = Map.of(
+                "player", viewer.getName(),
+                "worth", plugin.economy().formats().formatAmount(guiW),
+                "worth-raw", String.valueOf(guiW),
+                "worth-all", plugin.economy().formats().formatAmount(allW),
+                "worth-all-raw", String.valueOf(allW)
+        );
 
         SellSlotMapper.fillCustom(plugin, inv, definition, viewer, context);
     }
 
-    private void distributeToSlots(Inventory top, ItemStack moving, Inventory sourceInv, int sourceSlot) {
+    private void distributeToSlots(Inventory top, ItemStack moving, Inventory src, int srcSlot) {
         for (int dest : cachedSellSlots) {
             ItemStack destItem = top.getItem(dest);
             if (destItem != null && destItem.isSimilar(moving)) {
@@ -327,46 +268,45 @@ public final class SellManager implements GuiManager.CustomGuiManager {
         }
         if (moving.getAmount() > 0) {
             for (int dest : cachedSellSlots) {
-                ItemStack item = top.getItem(dest);
-                if (item == null || item.getType().isAir()) {
+                if (top.getItem(dest) == null) {
                     top.setItem(dest, moving.clone());
                     moving.setAmount(0);
                     break;
                 }
             }
         }
-        if (moving.getAmount() <= 0) sourceInv.setItem(sourceSlot, null);
+        if (moving.getAmount() <= 0) src.setItem(srcSlot, null);
+    }
+
+    private boolean isOnCooldown(Player p, GuiItem item) {
+        if (plugin.gui().cooldowns().isOnCooldown(p, item)) {
+            plugin.gui().cooldowns().sendCooldownMessage(p, item);
+            return true;
+        }
+        plugin.gui().cooldowns().applyCooldown(p, item);
+        return false;
     }
 
     private GuiItem createEmptyGroup(List<Integer> slots) {
-        return new GuiItem("sell-slots", slots, Material.AIR, null, Collections.emptyList(), false, null,
-                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                Collections.emptyList(), Collections.emptyList(), null, null, null, Collections.emptyMap(),
-                Collections.emptyList(), null, null, null, 0.0, null);
+        return new GuiItem("sell-slots", slots, "AIR", null, List.of(), false, null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), null, null, null, Map.of(), List.of(), null, null, null, 0.0, null, new TreeMap<>());
     }
 
     public void returnItems(Player player, Inventory inv) {
         GuiItem sellSlotsItem = definition.items().get("sell-slots");
-        if (sellSlotsItem == null) return;
-
-        List<Integer> sellSlots = sellSlotsItem.slots();
-        listener.returnItemsToPlayer(player, inv, sellSlots);
+        if (sellSlotsItem != null) listener.returnItemsToPlayer(player, inv, sellSlotsItem.slots());
     }
 
-    private GuiItem findCustomItemAt(int slot) { return SellSlotMapper.findCustomItemAt(definition, slot); }
-    private void clearSellSlots(Inventory top) { for (int slot : cachedSellSlots) if (slot < top.getSize()) top.setItem(slot, null); }
-
-    public void markSaleProcessed(UUID player) { processedSales.add(player); plugin.scheduler().runDelayed(() -> processedSales.remove(player), 20L); }
-    public boolean consumeProcessedSale(UUID player) { return processedSales.remove(player); }
-    public void markTransitioning(UUID player) { transitioning.add(player); plugin.scheduler().runDelayed(() -> transitioning.remove(player), 2L); }
-    public boolean isTransitioning(UUID player) { return transitioning.contains(player); }
-    public boolean isEnabled() { return enabled; }
+    public void markSaleProcessed(UUID p) { processedSales.add(p); plugin.scheduler().runDelayed(() -> processedSales.remove(p), 20L); }
+    public boolean consumeProcessedSale(UUID p) { return processedSales.remove(p); }
+    public void markTransitioning(UUID p) { transitioning.add(p); plugin.scheduler().runDelayed(() -> transitioning.remove(p), 2L); }
+    public boolean isTransitioning(UUID p) { return transitioning.contains(p); }
     public ItemAction getActionProcessor() { return itemAction; }
 
     @Override public void cleanup() { HandlerList.unregisterAll(this.listener); confirmManager.cleanup(); }
     @Override public boolean owns(Inventory inv) { return inv.getHolder() instanceof SellHolder || inv.getHolder() instanceof ConfirmManager.ConfirmHolder; }
     @Override public void refresh(Inventory inv, Player v, Map<String, String> ph) { refreshConfirmButton(inv, v); }
     public GuiDefinition definition() { return definition; }
+    private void clearSellSlots(Inventory top) { for (int slot : cachedSellSlots) if (slot < top.getSize()) top.setItem(slot, null); }
 
     public static class SellHolder implements InventoryHolder {
         public double lastWorth = -1.0;
