@@ -17,6 +17,21 @@
       <option name="url" value="https://oss.sonatype.org/content/groups/public/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="itemsadder-repo" />
+      <option name="name" value="itemsadder-repo" />
+      <option name="url" value="https://maven.devs.beer/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="alessiodp-repo" />
+      <option name="name" value="alessiodp-repo" />
+      <option name="url" value="https://repo.alessiodp.com/releases/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexomc-repo" />
+      <option name="name" value="nexomc-repo" />
+      <option name="url" value="https://repo.nexomc.com/releases" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="papermc-repo" />
       <option name="name" value="papermc-repo" />
       <option name="url" value="https://repo.papermc.io/repository/maven-public/" />
@@ -25,6 +40,11 @@
       <option name="id" value="placeholderapi" />
       <option name="name" value="placeholderapi" />
       <option name="url" value="https://repo.extendedclip.com/content/repositories/placeholderapi/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="momirealms-repo" />
+      <option name="name" value="momirealms-repo" />
+      <option name="url" value="https://repo.momirealms.net/releases/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
