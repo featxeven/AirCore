@@ -79,7 +79,7 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
 
             return new GuiItem(
                     key, parseSlots(sec.getStringList("slots")),
-                    sec.getString("material", "STONE"),
+                    sec.getString("material"),
                     sec.getString("display-name"), sec.getStringList("lore"),
                     sec.getBoolean("glow", false), sec.getString("item-model"),
                     sec.getStringList("actions"), sec.getStringList("left-actions"), sec.getStringList("right-actions"),
@@ -132,7 +132,10 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
             }
 
             String rawMat = (match != null && match.material() != null) ? match.material() : this.material;
+            if (rawMat == null) return null;
+
             String appliedMat = PlaceholderUtil.apply(viewer, rawMat, placeholders);
+            if (appliedMat.isBlank()) return null;
 
             ItemComponent builder;
             String activeHead = null;
@@ -143,17 +146,15 @@ public record GuiDefinition(String title, int rows, Map<String, GuiItem> items, 
                 String id = split[1];
 
                 ItemStack hookedItem = plugin.hooks().getItem(id, prefix);
-                if (hookedItem != null) {
-                    builder = new ItemComponent(hookedItem);
-                } else {
-                    builder = new ItemComponent(Material.STONE);
-                }
+                if (hookedItem == null) return null;
+                builder = new ItemComponent(hookedItem);
             } else if (appliedMat.startsWith("head-")) {
                 builder = new ItemComponent(Material.PLAYER_HEAD);
                 activeHead = appliedMat.substring(5);
             } else {
                 Material m = Material.matchMaterial(appliedMat.toUpperCase());
-                builder = new ItemComponent(m != null ? m : Material.STONE);
+                if (m == null || m.isAir()) return null;
+                builder = new ItemComponent(m);
             }
 
             String activeName = (match != null && match.displayName() != null) ? match.displayName() : this.rawName;

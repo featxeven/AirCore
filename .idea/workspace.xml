@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added support for nexo, itemsadder and craftengine">
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="ver change">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,14 +54,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00001" summary="relog">
-      <option name="closed" value="true" />
-      <created>1771224820197</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1771224820197</updated>
     </task>
     <task id="LOCAL-00002" summary="bug fixes">
       <option name="closed" value="true" />
@@ -448,14 +439,21 @@
       <option name="project" value="LOCAL" />
       <updated>1773263060209</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="ver change">
+      <option name="closed" value="true" />
+      <created>1773265049733</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1773265049733</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="changed default config" />
     <MESSAGE value="execute actions first, then logic" />
     <MESSAGE value="added @a argument&#10;added @a permission&#10;added new message key" />
     <MESSAGE value="added validation for balance limit on sell" />
@@ -480,6 +478,7 @@
     <MESSAGE value="fixed message key" />
     <MESSAGE value="added item priority for GUIs&#10;prevent error during shutdown for bossbar&#10;fixed Folia item duplication for invsee" />
     <MESSAGE value="added support for nexo, itemsadder and craftengine" />
-    <option name="LAST_COMMIT_MESSAGE" value="added support for nexo, itemsadder and craftengine" />
+    <MESSAGE value="ver change" />
+    <option name="LAST_COMMIT_MESSAGE" value="ver change" />
   </component>
 </project>
