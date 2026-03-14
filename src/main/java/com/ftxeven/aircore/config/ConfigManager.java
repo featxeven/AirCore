@@ -1,23 +1,30 @@
 package com.ftxeven.aircore.config;
 
 import com.ftxeven.aircore.AirCore;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.permissions.Permission;
+
 import java.util.*;
 
 public final class ConfigManager {
     private final AirCore plugin;
     private FileConfiguration config;
+    private final Map<String, CooldownEntry> cooldownEntries = new HashMap<>();
+    public record CooldownEntry(String id, String matchKey, int seconds, boolean strict) {}
 
     public ConfigManager(AirCore plugin) {
         this.plugin = plugin;
         plugin.saveDefaultConfig();
         this.config = plugin.getConfig();
+        loadCooldowns();
     }
 
     public void reload() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
+        loadCooldowns();
     }
 
     private String s(String p, String d) { return config.getString(p, d); }
@@ -148,34 +155,43 @@ public final class ConfigManager {
 
     // Gameplay Limits
     public int blocksMaxBlocks() { return i("max-blocks", 20); }
-    public int commandCooldown(String cmd) {
-        String input = cmd.toLowerCase().trim();
+    private void loadCooldowns() {
+        cooldownEntries.clear();
+        ConfigurationSection section = config.getConfigurationSection("command-cooldowns");
+        if (section == null) return;
 
-        int bestCooldown = 0;
-        int bestMatchLength = -1;
+        var pm = Bukkit.getPluginManager();
 
-        for (Map<?, ?> entry : config.getMapList("command-cooldowns")) {
-            for (Map.Entry<?, ?> e : entry.entrySet()) {
-                String raw = e.getKey().toString().toLowerCase();
-                boolean strict = raw.startsWith("*");
-                String key = strict ? raw.substring(1) : raw;
+        for (String id : section.getKeys(false)) {
+            String matchKey = section.getString(id + ".key", id).toLowerCase();
+            int seconds = section.getInt(id + ".cooldown", 0);
+            boolean strict = section.getBoolean(id + ".strict", false);
 
-                boolean matches = strict
-                        ? input.equals(key)
-                        : (input.equals(key) || input.startsWith(key + " "));
+            cooldownEntries.put(id, new CooldownEntry(id, matchKey, seconds, strict));
 
-                if (matches) {
-                    int value = Integer.parseInt(e.getValue().toString());
+            String permNode = "aircore.bypass.command." + id;
+            if (pm.getPermission(permNode) == null) {
+                pm.addPermission(new Permission(permNode));
+            }
+        }
+    }
+    public CooldownEntry findCooldownEntry(String commandLine) {
+        if (cooldownEntries.isEmpty()) return null;
+        String input = commandLine.toLowerCase().trim();
 
-                    if (strict) return value;
+        CooldownEntry bestMatch = null;
+        for (CooldownEntry entry : cooldownEntries.values()) {
+            boolean matches = entry.strict()
+                    ? input.equals(entry.matchKey())
+                    : (input.equals(entry.matchKey()) || input.startsWith(entry.matchKey() + " "));
 
-                    if (key.length() > bestMatchLength) {
-                        bestMatchLength = key.length();
-                        bestCooldown = value;
-                    }
+            if (matches) {
+                if (entry.strict()) return entry;
+                if (bestMatch == null || entry.matchKey().length() > bestMatch.matchKey().length()) {
+                    bestMatch = entry;
                 }
             }
         }
-        return bestCooldown;
+        return bestMatch;
     }
 }

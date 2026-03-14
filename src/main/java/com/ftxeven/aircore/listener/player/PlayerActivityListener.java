@@ -112,31 +112,23 @@ public final class PlayerActivityListener implements Listener {
         String rawMessage = event.getMessage().substring(1);
         if (rawMessage.isEmpty()) return;
 
-        if (player.hasPermission("aircore.bypass.command.cooldown")) return;
+        if (player.hasPermission("aircore.bypass.command.*")) return;
 
-        int seconds = plugin.config().commandCooldown(rawMessage);
+        long remaining = plugin.core().commandCooldowns().getRemaining(player, rawMessage);
 
-        if (seconds > 0) {
-            var cooldowns = plugin.core().commandCooldowns();
-            String key = rawMessage.toLowerCase();
+        if (remaining > 0) {
+            event.setCancelled(true);
+            String formatted = TimeUtil.formatSeconds(plugin, remaining);
 
-            if (cooldowns.isOnCooldown(uuid, key)) {
-                long remaining = cooldowns.getRemaining(uuid, key);
-                String formatted = TimeUtil.formatSeconds(plugin, remaining);
-
-                scheduler.runLocationTask(player.getLocation(), () ->
-                        MessageUtil.send(player, "errors.command-cooldown", Map.of(
-                                "command", key,
-                                "time", formatted
-                        ))
-                );
-
-                event.setCancelled(true);
-                return;
-            }
-
-            cooldowns.apply(uuid, key, seconds);
+            scheduler.runLocationTask(player.getLocation(), () ->
+                    MessageUtil.send(player, "errors.command-cooldown", Map.of(
+                            "time", formatted
+                    ))
+            );
+            return;
         }
+
+        plugin.core().commandCooldowns().apply(uuid, rawMessage);
     }
 
     @EventHandler

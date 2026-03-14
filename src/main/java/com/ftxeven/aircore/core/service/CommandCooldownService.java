@@ -1,6 +1,10 @@
 package com.ftxeven.aircore.core.service;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.config.ConfigManager.CooldownEntry;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,48 +22,36 @@ public final class CommandCooldownService {
         cooldowns.put(uuid, plugin.database().cooldowns().load(uuid));
     }
 
-    public String getActiveCooldownKey(UUID uuid, String fullCommand) {
-        Map<String, Long> playerCooldowns = cooldowns.get(uuid);
-        if (playerCooldowns == null || playerCooldowns.isEmpty()) return null;
-
-        long now = System.currentTimeMillis();
-        String bestMatch = null;
-
-        for (Map.Entry<String, Long> entry : playerCooldowns.entrySet()) {
-            String activeKey = entry.getKey();
-            if (entry.getValue() <= now) continue;
-
-            if (fullCommand.equalsIgnoreCase(activeKey) || fullCommand.toLowerCase().startsWith(activeKey.toLowerCase() + " ")) {
-                if (bestMatch == null || activeKey.length() > bestMatch.length()) {
-                    bestMatch = activeKey;
-                }
-            }
-        }
-        return bestMatch;
+    public boolean isOnCooldown(Player player, String fullCommand) {
+        return getRemaining(player, fullCommand) > 0;
     }
 
-    public boolean isOnCooldown(UUID uuid, String fullCommand) {
-        return getActiveCooldownKey(uuid, fullCommand) != null;
+    public long getRemaining(Player player, String fullCommand) {
+        CooldownEntry entry = plugin.config().findCooldownEntry(fullCommand);
+        if (entry == null) return 0;
+
+        if (player.hasPermission("aircore.bypass.command." + entry.id())) return 0;
+
+        Map<String, Long> playerCooldowns = cooldowns.get(player.getUniqueId());
+        if (playerCooldowns == null) return 0;
+
+        long expiry = playerCooldowns.getOrDefault(entry.id(), 0L);
+        long remaining = (expiry - System.currentTimeMillis()) / 1000;
+
+        return Math.max(0, remaining);
     }
 
-    public long getRemaining(UUID uuid, String fullCommand) {
-        String key = getActiveCooldownKey(uuid, fullCommand);
-        if (key == null) return 0;
+    public void apply(UUID uuid, String fullCommand) {
+        CooldownEntry entry = plugin.config().findCooldownEntry(fullCommand);
+        if (entry == null || entry.seconds() <= 0) return;
 
-        long expiry = cooldowns.get(uuid).getOrDefault(key, 0L);
-        return Math.max(0, (expiry - System.currentTimeMillis()) / 1000);
+        long expiry = System.currentTimeMillis() + (entry.seconds() * 1000L);
+        cooldowns.computeIfAbsent(uuid, u -> new ConcurrentHashMap<>()).put(entry.id(), expiry);
+
+        plugin.database().cooldowns().save(uuid, entry.id(), expiry);
     }
 
-    public void apply(UUID uuid, String configKey, int seconds) {
-        if (seconds <= 0) return;
-
-        String cleanKey = configKey.startsWith("*") ? configKey.substring(1) : configKey;
-
-        long expiry = System.currentTimeMillis() + (seconds * 1000L);
-        cooldowns.computeIfAbsent(uuid, u -> new ConcurrentHashMap<>()).put(cleanKey, expiry);
-
-        plugin.database().cooldowns().save(uuid, cleanKey, expiry);
+    public void clear(UUID uuid) {
+        cooldowns.remove(uuid);
     }
-
-    public void clear(UUID uuid) { cooldowns.remove(uuid); }
 }

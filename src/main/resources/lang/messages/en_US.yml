@@ -38,11 +38,10 @@ general:
   <newline><gray>  • <yellow>/aircore reload [module]</yellow> <dark_gray>» <gray>Reload configurations</gray>
   <newline><gray>  • <yellow>/aircore version</yellow> <dark_gray>» <gray>Check versions</gray>"
   plugin-version: "%prefix% <white>Running version <gradient:#00ffcc:#0066ff>%version%</gradient></white>"
-  plugin-outdated: "%prefix% <gradient:#00ffcc:#0066ff><bold>UPDATE AVAILABLE</bold></gradient>
-  <newline><gray>Current: <red>%current%</red> <dark_gray>»</dark_gray> Latest: <green>%latest%</green>
-  <newline><gray>Download the latest version here:</gray>
-  <newline><yellow><underlined><click:open_url:'https://www.spigotmc.org/resources/130425/'>[ Click to Open SpigotMC ]</click></underlined></yellow>
-  <sound:block.note_block.bit:1:1.5>"
+  plugin-outdated: "%prefix% <red>A new update is available!</red>
+      <newline><gray>  • Current: <white>%current%</white>
+      <newline><gray>  • Latest: <green>%latest%</green>
+      <newline><gray>  • Download: <yellow><click:open_url:'https://www.spigotmc.org/resources/130425/'>[Click Here]</click></yellow>"
   plugin-reloaded: "%prefix% <gray>Module <white><bold>%module%</bold></white> has been <green>successfully reloaded</green>.</gray>
   <sound:entity.experience_orb.pickup:1:1.2>
   <actionbar:'<gradient:#00ffcc:#0066ff>Module %module% reloaded.</gradient>'>"

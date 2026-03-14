@@ -404,7 +404,7 @@ permissions:
   aircore.command.sell: {description: "Use /sell.", default: op}
   aircore.bypass.chat.cooldown: {description: "No chat CD.", default: op}
   aircore.bypass.chat.toggle: {description: "Bypass PM toggles.", default: op}
-  aircore.bypass.command.cooldown: {description: "No cmd CD.", default: op}
+  aircore.bypass.command.*: {description: "Bypass all CMD cooldowns.", default: op}
   aircore.bypass.block: {description: "Bypass blocks.", default: op}
   aircore.bypass.pay.toggle: {description: "Bypass pay toggle.", default: op}
   aircore.bypass.teleport.toggle: {description: "Bypass TP toggle.", default: op}

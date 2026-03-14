@@ -12,7 +12,6 @@ public final class DatabaseManager {
 
     private final AirCore plugin;
     private Connection connection;
-
     private PlayerRecords playerRecords;
     private PlayerBlocks playerBlocks;
     private PlayerHomes playerHomes;
