@@ -24,119 +24,86 @@ public final class KitCommand implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
-
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
-
         if (!player.hasPermission("aircore.command.kit")) {
             MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kit"));
             return true;
         }
-
         if (args.length < 1) {
             MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("kit", label)));
             return true;
         }
-
         if (plugin.config().errorOnExcessArgs() && args.length > 1) {
             MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("kit", label)));
             return true;
         }
-
         String kitName = args[0].toLowerCase();
         YamlConfiguration kitsConfig = plugin.kit().kits().getConfig();
-
         if (!kitsConfig.contains("kits." + kitName)) {
             MessageUtil.send(player, "kits.errors.not-found", Map.of());
             return true;
         }
-
         if (!player.hasPermission("aircore.command.kit.*") && !player.hasPermission("aircore.command.kit." + kitName)) {
             MessageUtil.send(player, "kits.usage.no-permission", Map.of("name", kitName));
             return true;
         }
-
         plugin.scheduler().runEntityTask(player, () -> {
-
             PlayerKits.KitData data = plugin.database().kits().load(player.getUniqueId(), kitName);
             long now = System.currentTimeMillis() / 1000;
             long configuredCooldown = kitsConfig.getLong("kits." + kitName + ".cooldown", 0);
             boolean oneTime = kitsConfig.getBoolean("kits." + kitName + ".one-time", false);
-
+            boolean autoEquip = kitsConfig.getBoolean("kits." + kitName + ".auto-equip", false);
             long activeCooldown = data.lastCooldown() > 0 ? data.lastCooldown() : configuredCooldown;
             if (activeCooldown > 0 && now - data.lastClaim() < activeCooldown) {
                 if (!player.hasPermission("aircore.bypass.kit.cooldown")) {
                     long remaining = activeCooldown - (now - data.lastClaim());
-                    MessageUtil.send(player, "kits.usage.cooldown",
-                            Map.of("name", kitName, "time", TimeUtil.formatSeconds(plugin, remaining)));
+                    MessageUtil.send(player, "kits.usage.cooldown", Map.of("name", kitName, "time", TimeUtil.formatSeconds(plugin, remaining)));
                     return;
                 }
             }
-
             if (oneTime && data.oneTimeClaimed() && !player.hasPermission("aircore.bypass.kit.onetime")) {
                 MessageUtil.send(player, "kits.errors.cannot-claim-again", Map.of("name", kitName));
                 return;
             }
-
             List<Map<?, ?>> serialized = kitsConfig.getMapList("kits." + kitName + ".items");
             List<ItemStack> items = new ArrayList<>();
-
             for (Map<?, ?> m : serialized) {
                 if (m == null) continue;
-
                 Map<String, Object> itemData = new HashMap<>();
                 for (Map.Entry<?, ?> entry : m.entrySet()) {
-                    if (entry.getKey() instanceof String key) {
-                        itemData.put(key, entry.getValue());
-                    }
+                    if (entry.getKey() instanceof String key) itemData.put(key, entry.getValue());
                 }
-
                 if (!itemData.isEmpty()) {
                     ItemStack stack = ItemStack.deserialize(itemData);
-                    if (!stack.getType().isAir() && stack.getAmount() > 0) {
-                        items.add(stack);
-                    }
+                    if (!stack.getType().isAir() && stack.getAmount() > 0) items.add(stack);
                 }
             }
-
-            boolean autoEquip = plugin.config().kitsAutoEquip();
             boolean dropWhenFull = plugin.config().kitsDropItemsWhenFull();
             if (!dropWhenFull && !canFitAll(player, items, autoEquip)) {
                 MessageUtil.send(player, "kits.usage.inventory-full", Map.of("name", kitName));
                 return;
             }
-
             for (ItemStack item : items) {
                 ItemStack toAdd = item.clone();
                 boolean equipped = false;
-
                 if (autoEquip) {
                     EquipmentSlot slot = resolveEquipmentSlot(toAdd);
                     equipped = tryEquip(player, slot, toAdd);
                 }
-
                 if (!equipped) {
                     Map<Integer, ItemStack> leftovers = player.getInventory().addItem(toAdd);
-
                     if (!leftovers.isEmpty() && dropWhenFull) {
-                        leftovers.values().forEach(l ->
-                                player.getWorld().dropItemNaturally(player.getLocation(), l)
-                        );
+                        leftovers.values().forEach(l -> player.getWorld().dropItemNaturally(player.getLocation(), l));
                     }
                 }
             }
-
             plugin.database().kits().save(player.getUniqueId(), kitName, now, oneTime, configuredCooldown);
-
             MessageUtil.send(player, "kits.usage.claimed", Map.of("name", kitName));
         });
-
         return true;
     }
 
@@ -167,13 +134,9 @@ public final class KitCommand implements TabExecutor {
     private boolean canFitAll(Player player, List<ItemStack> incoming, boolean autoEquip) {
         ItemStack[] contents = player.getInventory().getStorageContents();
         ItemStack[] simulated = new ItemStack[contents.length];
-        for (int i = 0; i < contents.length; i++) {
-            if (contents[i] != null) simulated[i] = contents[i].clone();
-        }
-
+        for (int i = 0; i < contents.length; i++) if (contents[i] != null) simulated[i] = contents[i].clone();
         for (ItemStack item : incoming) {
             ItemStack toAdd = item.clone();
-
             if (autoEquip) {
                 EquipmentSlot slot = resolveEquipmentSlot(toAdd);
                 if (slot == EquipmentSlot.HEAD && isEmpty(player.getInventory().getHelmet())) continue;
@@ -182,7 +145,6 @@ public final class KitCommand implements TabExecutor {
                 if (slot == EquipmentSlot.FEET && isEmpty(player.getInventory().getBoots())) continue;
                 if (slot == EquipmentSlot.OFF_HAND && isEmpty(player.getInventory().getItemInOffHand())) continue;
             }
-
             int remaining = toAdd.getAmount();
             for (ItemStack slot : simulated) {
                 if (slot != null && slot.isSimilar(toAdd)) {
@@ -200,7 +162,6 @@ public final class KitCommand implements TabExecutor {
                     if (remaining <= 0) break;
                 }
             }
-
             if (remaining > 0) return false;
         }
         return true;
