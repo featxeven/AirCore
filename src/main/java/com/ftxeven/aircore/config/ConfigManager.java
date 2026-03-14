@@ -135,7 +135,6 @@ public final class ConfigManager {
     public String homesNameValidationRegex() { return s("homes.name-validation-regex", "^[A-Za-z0-9]+$"); }
     public int homesMaxNameLength() { return i("homes.max-home-name-length", 16); }
     public String kitsFirstJoinKit() { return s("kits.first-join-kit", ""); }
-    public boolean kitsAutoEquip() { return b("kits.auto-equip", false); }
     public boolean kitsDropItemsWhenFull() { return b("kits.drop-items-when-full", false); }
 
     // Join/Leave & Death

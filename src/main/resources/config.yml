@@ -169,7 +169,6 @@ homes:
 # -----------------------------
 kits:
   first-join-kit: ""           # Kit granted automatically on first join ("" = none)
-  auto-equip: false            # Auto-equip items if slots free
   drop-items-when-full: false  # Drop extra items if inventory full (false = kit fails)
 
 # -----------------------------
