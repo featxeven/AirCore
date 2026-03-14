@@ -21,7 +21,7 @@ public final class MessageUtil {
     private static final Map<String, String> LANG_RAW_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Component> STATIC_MINI_CACHE = new ConcurrentHashMap<>();
     private static final Tag EMPTY_TAG = Tag.inserting(Component.empty());
-
+    private static final ThreadLocal<Boolean> PROCESSING = ThreadLocal.withInitial(() -> false);
     private static AirCore plugin;
     private static String PREFIX;
     private static boolean papiEnabled;
@@ -45,21 +45,27 @@ public final class MessageUtil {
     public static Component mini(Player player, String raw, Map<String, String> placeholders, boolean usePapi) {
         if (raw == null || raw.isBlank()) return Component.empty();
 
-        if ((placeholders == null || placeholders.isEmpty()) && !raw.contains("%") && !raw.contains("<")) {
-            return STATIC_MINI_CACHE.computeIfAbsent(raw, MM::deserialize);
+        if (PROCESSING.get()) return MM.deserialize(apply(raw, player, placeholders, usePapi));
+
+        PROCESSING.set(true);
+        try {
+            if ((placeholders == null || placeholders.isEmpty()) && !raw.contains("%") && !raw.contains("<")) {
+                return STATIC_MINI_CACHE.computeIfAbsent(raw, MM::deserialize);
+            }
+
+            String applied = apply(raw, player, placeholders, usePapi);
+            TitleState titleState = new TitleState();
+            Component result = MM.deserialize(applied, new InlineTagResolver(player, placeholders, titleState));
+
+            if (titleState.hasAny()) {
+                TitleUtil.sendComponents(player, titleState.main, titleState.sub,
+                        titleState.fadeIn, titleState.stay, titleState.fadeOut);
+            }
+
+            return result;
+        } finally {
+            PROCESSING.set(false);
         }
-
-        String applied = apply(raw, player, placeholders, usePapi);
-
-        TitleState titleState = new TitleState();
-        Component result = MM.deserialize(applied, new InlineTagResolver(player, placeholders, titleState));
-
-        if (titleState.hasAny()) {
-            TitleUtil.sendComponents(player, titleState.main, titleState.sub,
-                    titleState.fadeIn, titleState.stay, titleState.fadeOut);
-        }
-
-        return result;
     }
 
     public static Component mini(Player player, String raw, Map<String, String> placeholders) {

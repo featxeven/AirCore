@@ -19,6 +19,7 @@ public final class BossbarUtil {
 
     private static final Map<UUID, Set<BossBar>> ACTIVE_BARS = new ConcurrentHashMap<>();
     private static SchedulerUtil scheduler;
+    private static final Map<UUID, Long> TICK_LOCK = new ConcurrentHashMap<>();
 
     private BossbarUtil() {}
 
@@ -37,6 +38,11 @@ public final class BossbarUtil {
 
         if (message.isBlank()) return;
 
+        long currentTick = Bukkit.getCurrentTick();
+        UUID uuid = player.getUniqueId();
+        if (TICK_LOCK.getOrDefault(uuid, -1L) == currentTick) return;
+        TICK_LOCK.put(uuid, currentTick);
+
         Component comp = MessageUtil.mini(player, message, placeholders);
         if (comp == null) return;
 
@@ -49,7 +55,7 @@ public final class BossbarUtil {
                 overlay
         );
 
-        ACTIVE_BARS.computeIfAbsent(player.getUniqueId(), k -> ConcurrentHashMap.newKeySet()).add(bar);
+        ACTIVE_BARS.computeIfAbsent(uuid, k -> ConcurrentHashMap.newKeySet()).add(bar);
         scheduler.runEntityTask(player, () -> player.showBossBar(bar));
 
         if (duration <= 0) return;
