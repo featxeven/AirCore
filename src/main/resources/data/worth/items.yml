@@ -1410,7 +1410,7 @@ red_sandstone_slab: 0.5
 red_sandstone_wall: 1
 chiseled_red_sandstone: 1.2
 
-brick_block: 1.5
+bricks: 1.5
 brick_stairs: 1.5
 brick_slab: 0.7
 brick_wall: 1.5
@@ -1566,7 +1566,6 @@ waxed_weathered_copper_chain: 1.5
 waxed_oxidized_copper_chain: 1.5
 
 # Decorative / Special Blocks
-bricks: 3.5
 obsidian: 5
 crying_obsidian: 6
 packed_mud: 1
