@@ -201,11 +201,23 @@ death-messages:
 # COMMANDS, COOLDOWNS & LIMITS
 # -----------------------------
 command-cooldowns:
-  # Use "*" to match commands strictly.
-  - "*repair": 60
-  - "*repair all": 120
-  - heal: 120
-  - feed: 60
+  # 'strict: true' to match commands strictly.
+  repair:
+    key: "repair"
+    cooldown: 60
+    strict: true
+  # repairall:
+  #   key: "repair all"
+  #   cooldown: 120
+  #   strict: true
+  heal:
+    key: "heal"
+    cooldown: 120
+    strict: false
+  # feed:
+  #   key: "feed"
+  #   cooldown: 60
+  #   strict: false
 
 max-blocks: 20   # Max players a player may block (bypass with aircore.bypass.block.limit.<#>)
 
