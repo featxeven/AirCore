@@ -31,8 +31,8 @@ public final class HomeSlotMapper {
 
         List<String> processed = new ArrayList<>();
         for (String line : rawLore) {
-            if (line.startsWith("permission:")) {
-                if (hasDeletePerm) processed.add(line.substring("permission:".length()).trim());
+            if (line.startsWith("delhome:")) {
+                if (hasDeletePerm) processed.add(line.substring("delhome:".length()).trim());
                 continue;
             }
             processed.add(line);

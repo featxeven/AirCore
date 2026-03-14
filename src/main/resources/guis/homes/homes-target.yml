@@ -34,7 +34,7 @@ home-item:
     - ""
     - "<#5efce8>Click</#5efce8> <gray>to teleport to this home</gray>"
     # This line will appear if player has aircore.command.delhome.others
-    - permission: "<#ff5f6d>Shift-Click</#ff5f6d> <gray>to delete this home</gray>"
+    - "delhome: <#ff5f6d>Shift-Click</#ff5f6d> <gray>to delete this home</gray>"
   actions:
     - "[sound] entity.enderman.teleport 1 1.2"
     - "[teleport]"
