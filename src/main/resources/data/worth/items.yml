@@ -902,7 +902,6 @@ acacia_sapling: 0.6
 dark_oak_sapling: 0.7
 cherry_sapling: 1
 mangrove_propagule: 0.8
-bamboo_sapling: 0.6
 
 # Coral & Sea Life
 tube_coral_block: 1
@@ -1418,7 +1417,7 @@ brick_wall: 1.5
 # Resin block family
 resin_block: 1.2
 resin_bricks: 1.2
-resin_chiseled: 1.2
+chiseled_resin_blocks: 1.2
 resin_slab: 0.6
 resin_brick_slab: 0.6
 resin_stairs: 1.2
