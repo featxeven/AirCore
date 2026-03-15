@@ -100,8 +100,8 @@ public final class GamemodeCommand implements TabExecutor {
 
         plugin.scheduler().runEntityTask(target, () -> target.setGameMode(mode));
 
-        String modeName = plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase());
-        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
+        String modeName = String.valueOf(plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase()));
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         if (sender instanceof Player p) {
             if (target.equals(p)) {

@@ -38,7 +38,7 @@ public final class DelHomeCommand implements TabExecutor {
             OfflinePlayer target = resolve(sender, args[0]);
             if (target == null) return true;
 
-            handleDelete(sender, target, args[1], plugin.lang().get("general.console-name"), true);
+            handleDelete(sender, target, args[1], String.valueOf(plugin.lang().get("general.console-name")), true);
             return true;
         }
 

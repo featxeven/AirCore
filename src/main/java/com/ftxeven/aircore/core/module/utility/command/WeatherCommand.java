@@ -94,7 +94,7 @@ public final class WeatherCommand implements TabExecutor {
 
         final World finalWorld = targetWorld;
         setWeather(finalWorld, type, () -> plugin.scheduler().runEntityTask(player, () -> {
-            String typeDisplay = plugin.lang().get("utilities.weather.placeholders." + type);
+            String typeDisplay = String.valueOf(plugin.lang().get("utilities.weather.placeholders." + type));
             if (args.length == 2) {
                 MessageUtil.send(player, "utilities.weather.set-in", Map.of("type", typeDisplay, "world", finalWorld.getName()));
             } else {

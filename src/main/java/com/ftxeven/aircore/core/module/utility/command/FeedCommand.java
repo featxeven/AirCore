@@ -77,7 +77,7 @@ public final class FeedCommand implements TabExecutor {
     }
 
     private void handleFeed(CommandSender sender, String targetName) {
-        String consoleName = plugin.lang().get("general.console-name");
+        String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
         String senderName = (sender instanceof Player p) ? p.getName() : consoleName;
 
         if (targetName.equalsIgnoreCase("@a")) {

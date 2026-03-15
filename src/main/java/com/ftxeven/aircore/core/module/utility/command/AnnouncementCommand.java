@@ -94,9 +94,7 @@ public final class AnnouncementCommand implements TabExecutor {
                         String langKey = "utilities.announcement." + (enable ? "already-enabled" : "already-disabled");
                         MessageUtil.send(player, langKey, Map.of("name", key));
                     }
-                    case NOT_FOUND -> {
-                        MessageUtil.send(player, "utilities.announcement.not-found", Map.of("name", key));
-                    }
+                    case NOT_FOUND -> MessageUtil.send(player, "utilities.announcement.not-found", Map.of("name", key));
                 }
             }
 

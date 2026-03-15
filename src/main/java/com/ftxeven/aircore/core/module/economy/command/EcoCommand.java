@@ -184,7 +184,7 @@ public final class EcoCommand implements TabExecutor {
     }
 
     private String consoleName(Player sender) {
-        return (sender != null) ? sender.getName() : plugin.lang().get("general.console-name");
+        return (sender != null) ? sender.getName() : String.valueOf(plugin.lang().get("general.console-name"));
     }
 
     private void handleGive(Player sender, Scope scope, OfflinePlayer target, String targetArg, double amount) {

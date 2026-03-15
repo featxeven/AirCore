@@ -138,7 +138,7 @@ public final class SpeedCommand implements TabExecutor {
         if (resolved == null) return;
 
         String realName = plugin.database().records().getRealName(targetName);
-        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         if (resolved.isOnline() && resolved.getPlayer() != null) {
             Player targetPlayer = resolved.getPlayer();
@@ -207,8 +207,8 @@ public final class SpeedCommand implements TabExecutor {
     }
 
     private String formatType(String type) {
-        if (type == null) return plugin.lang().get("utilities.speed.placeholders.both");
-        return type.equals("flying") ? plugin.lang().get("utilities.speed.placeholders.flying") : plugin.lang().get("utilities.speed.placeholders.walking");
+        if (type == null) return String.valueOf(plugin.lang().get("utilities.speed.placeholders.both"));
+        return type.equals("flying") ? String.valueOf(plugin.lang().get("utilities.speed.placeholders.flying")) : String.valueOf(plugin.lang().get("utilities.speed.placeholders.walking"));
     }
 
     private void applySpeedToOffline(UUID uuid, String type, double value) {

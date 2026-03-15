@@ -85,11 +85,13 @@ public final class LangManager {
         MessageUtil.init(plugin);
     }
 
-    public String get(String key) {
-        return lang.getString(key, "<red>Missing lang key: " + key + "</red>");
+    public Object get(String key) {
+        Object val = lang.get(key);
+        return val != null ? val : "<red>Missing lang key: " + key + "</red>";
     }
 
-    public String get(String key, String fallback) {
-        return lang.getString(key, fallback);
+    public Object get(String key, Object fallback) {
+        Object val = lang.get(key);
+        return val != null ? val : fallback;
     }
 }

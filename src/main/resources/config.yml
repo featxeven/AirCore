@@ -176,12 +176,23 @@ kits:
 # -----------------------------
 player-join-leave:
   # Message shown only on a player's first join.
-  motd-first-join: "<newline><green>Welcome <yellow>%player%</yellow> for the very first time!</green><newline><gray>We're excited to have you here.</gray><newline>"
+  motd-first-join:
+    - " "
+    - "<green>Welcome <yellow>%player%</yellow> for the very first time!</green>"
+    - "<gray>We're excited to have you here.</gray>"
+    - " "
 
   # Per-group join messages. _DEFAULT_ used when no group matches.
   motd-join:
-    _DEFAULT_: "<newline><green>Welcome back <yellow>%player%</yellow> to the server!</green><newline><gray>Glad to see you again.</gray><newline>"
-    # vip: "<newline><aqua>Welcome back VIP <yellow>%player%</yellow>!</aqua><newline>"
+    _DEFAULT_:
+      - " "
+      - "<green>Welcome back <yellow>%player%</yellow> to the server!</green>"
+      - "<gray>Glad to see you again.</gray>"
+      - " "
+    # vip:
+    #   - " "
+    #   - "<aqua>Welcome back VIP <yellow>%player%</yellow>!</aqua>"
+    #   - " "
 
   broadcast-first-join: "<green>[+] <yellow>%player%</yellow> joined for the first time! Member <yellow>#%unique%</yellow>.</green>"
 
@@ -201,6 +212,7 @@ death-messages:
 # COMMANDS, COOLDOWNS & LIMITS
 # -----------------------------
 command-cooldowns:
+  # You can add or remove commands as you like (bypass with aircore.bypass.command.<name> or *)
   # 'strict: true' to match commands strictly.
   repair:
     key: "repair"

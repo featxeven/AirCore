@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added per command cooldown bypass&#10;refactor command cooldown structure" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="fixed item names">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/hook/HookManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/hook/HookManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/hook/impl/CraftEngineHook.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/announcements/example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/announcements/example.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/data/worth/items.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/worth/items.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -52,22 +61,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00007" summary="bug fixes">
-      <option name="closed" value="true" />
-      <created>1771604690749</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1771604690749</updated>
-    </task>
-    <task id="LOCAL-00008" summary="bug fixes">
-      <option name="closed" value="true" />
-      <created>1771604696113</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1771604696113</updated>
     </task>
     <task id="LOCAL-00009" summary="bug fixes">
       <option name="closed" value="true" />
@@ -445,15 +438,29 @@
       <option name="project" value="LOCAL" />
       <updated>1773515212978</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="removed unknown item name">
+      <option name="closed" value="true" />
+      <created>1773526575784</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1773526575784</updated>
+    </task>
+    <task id="LOCAL-00057" summary="fixed item names">
+      <option name="closed" value="true" />
+      <created>1773527013563</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1773527013563</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="fixed: items returned on sell" />
-    <MESSAGE value="refactor" />
     <MESSAGE value="added block api" />
     <MESSAGE value="api changes" />
     <MESSAGE value="gui refactor" />
@@ -477,6 +484,8 @@
     <MESSAGE value="changed permission: to delhome: for consistency" />
     <MESSAGE value="refactor command cooldown" />
     <MESSAGE value="added per command cooldown bypass&#10;refactor command cooldown structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="added per command cooldown bypass&#10;refactor command cooldown structure" />
+    <MESSAGE value="removed unknown item name" />
+    <MESSAGE value="fixed item names" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed item names" />
   </component>
 </project>

@@ -80,12 +80,8 @@ public final class MessageService {
     }
 
     private void sendSafePM(Player viewer, String key, Map<String, String> ph, Component messageComp) {
-        Component base = MessageUtil.format(viewer, key, ph);
-        if (base == null) return;
-
-        Component finalComp = base.replaceText(b -> b.matchLiteral("%message%").replacement(messageComp));
-
-        plugin.scheduler().runEntityTask(viewer, () -> viewer.sendMessage(finalComp));
+        Object messageObj = plugin.lang().get(key);
+        MessageUtil.sendSmart(viewer, messageObj, ph, messageComp);
     }
 
     public void sendPrivateMessage(Player sender, Player target, String rawMessage) {

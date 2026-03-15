@@ -64,7 +64,7 @@ public final class BackCommand implements TabExecutor {
             return;
         }
 
-        final String consoleName = plugin.lang().get("general.console-name");
+        final String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
         boolean useCountdown = args.length > 1 && args[1].equalsIgnoreCase("-countdown");
 
         if (useCountdown) {

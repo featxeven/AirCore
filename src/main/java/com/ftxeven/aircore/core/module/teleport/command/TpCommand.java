@@ -39,7 +39,7 @@ public final class TpCommand implements TabExecutor {
                 return true;
             }
 
-            String consoleName = plugin.lang().get("general.console-name");
+            String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
             plugin.core().teleports().teleport(target, other.getLocation());
 
             sender.sendMessage("Teleported " + target.getName() + " to " + other.getName() + ".");

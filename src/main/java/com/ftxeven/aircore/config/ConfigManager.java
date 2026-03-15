@@ -145,11 +145,16 @@ public final class ConfigManager {
     public boolean kitsDropItemsWhenFull() { return b("kits.drop-items-when-full", false); }
 
     // Join/Leave & Death
-    public String motdFirstJoin() { return s("player-join-leave.motd-first-join", null); }
-    public String motdJoin(String g) { return getGroupedValue("player-join-leave.motd-join", g); }
-    public String broadcastFirstJoin() { return s("player-join-leave.broadcast-first-join", null); }
-    public String broadcastJoinFormat(String g) { return getGroupedValue("player-join-leave.broadcast-join", g); }
-    public String broadcastLeaveFormat(String g) { return getGroupedValue("player-join-leave.broadcast-leave", g); }
+    private Object getGroupedObject(String path, String group) {
+        String specific = path + "." + group;
+        return config.contains(specific) ? config.get(specific) : config.get(path + "._DEFAULT_");
+    }
+
+    public Object motdFirstJoin() { return config.get("player-join-leave.motd-first-join"); }
+    public Object motdJoin(String g) { return getGroupedObject("player-join-leave.motd-join", g); }
+    public Object broadcastFirstJoin() { return config.get("player-join-leave.broadcast-first-join"); }
+    public Object broadcastJoinFormat(String g) { return getGroupedObject("player-join-leave.broadcast-join", g); }
+    public Object broadcastLeaveFormat(String g) { return getGroupedObject("player-join-leave.broadcast-leave", g); }
     public boolean deathMessagesEnabled() { return b("death-messages.enabled", true); }
     public List<String> deathMessagesDisabledWorlds() { return sl("death-messages.disabled-worlds"); }
 

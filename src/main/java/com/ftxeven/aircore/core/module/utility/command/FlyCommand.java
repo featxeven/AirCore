@@ -70,7 +70,7 @@ public final class FlyCommand implements TabExecutor {
 
         UUID uuid = resolved.getUniqueId();
         String finalName = plugin.database().records().getRealName(targetArg);
-        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         boolean currentState = resolved.isOnline() && resolved.getPlayer() != null
                 ? resolved.getPlayer().getAllowFlight()

@@ -30,7 +30,7 @@ public final class MsgCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            String consoleName = plugin.lang().get("general.console-name");
+            String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
 
             if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player|@a> <message>");

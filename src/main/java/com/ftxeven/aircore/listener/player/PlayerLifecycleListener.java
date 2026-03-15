@@ -278,23 +278,30 @@ public final class PlayerLifecycleListener implements Listener {
         var ph = Map.of("player", p.getName(), "unique", String.valueOf(idx));
 
         if (!joinedBefore) {
-            String motd = plugin.config().motdFirstJoin(), br = plugin.config().broadcastFirstJoin();
-            if (motd != null && !motd.isEmpty()) p.sendMessage(MessageUtil.mini(p, motd, ph));
-            if (br != null && !br.isEmpty()) Bukkit.broadcast(MessageUtil.mini(p, br, ph));
+            MessageUtil.sendRaw(p, plugin.config().motdFirstJoin(), ph);
+
+            Object br = plugin.config().broadcastFirstJoin();
+            if (br != null) {
+                for (Player online : Bukkit.getOnlinePlayers()) MessageUtil.sendRaw(online, br, ph);
+            }
         } else {
             String group = fetchVaultGroup(p);
-            String motd = plugin.config().motdJoin(group), br = plugin.config().broadcastJoinFormat(group);
+            MessageUtil.sendRaw(p, plugin.config().motdJoin(group), ph);
 
-            if (motd != null && !motd.isEmpty()) p.sendMessage(MessageUtil.mini(p, motd, ph));
-            if (br != null && !br.isEmpty()) Bukkit.broadcast(MessageUtil.mini(p, br, ph));
+            Object br = plugin.config().broadcastJoinFormat(group);
+            if (br != null) {
+                for (Player online : Bukkit.getOnlinePlayers()) MessageUtil.sendRaw(online, br, ph);
+            }
         }
     }
 
     private void handleBroadcastOnQuit(Player p) {
         String group = fetchVaultGroup(p);
-        String br = plugin.config().broadcastLeaveFormat(group);
-        if (br != null && !br.isEmpty()) {
-            Bukkit.broadcast(MessageUtil.mini(p, br, Map.of("player", p.getName())));
+        Object br = plugin.config().broadcastLeaveFormat(group);
+        if (br != null) {
+            for (Player online : Bukkit.getOnlinePlayers()) {
+                MessageUtil.sendRaw(online, br, Map.of("player", p.getName()));
+            }
         }
     }
 

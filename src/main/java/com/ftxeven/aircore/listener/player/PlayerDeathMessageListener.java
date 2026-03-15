@@ -137,7 +137,7 @@ public final class PlayerDeathMessageListener implements Listener {
             }
         }
 
-        final String finalRaw = plugin.lang().get(keyStr);
+        final String finalRaw = String.valueOf(plugin.lang().get(keyStr));
         event.deathMessage(null);
 
         plugin.scheduler().runTask(() -> {
@@ -148,12 +148,12 @@ public final class PlayerDeathMessageListener implements Listener {
 
     private String getLocalizedMobName(EntityType type) {
         String path = "death.entity-names.mobs." + type.name();
-        return plugin.lang().get(path);
+        return String.valueOf(plugin.lang().get(path));
     }
 
     private String getLocalizedProjectileName(EntityType type) {
         String path = "death.entity-names.projectiles." + type.name();
-        return plugin.lang().get(path);
+        return String.valueOf(plugin.lang().get(path));
     }
 
     private record DamageInfo(EntityDamageEvent.DamageCause cause, Entity damager) {}

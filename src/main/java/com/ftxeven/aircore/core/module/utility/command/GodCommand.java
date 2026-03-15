@@ -71,7 +71,7 @@ public final class GodCommand implements TabExecutor {
 
         UUID uuid = resolved.getUniqueId();
         String realName = plugin.database().records().getRealName(targetName);
-        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         boolean newState = !plugin.core().toggles().isEnabled(uuid, ToggleService.Toggle.GOD);
 

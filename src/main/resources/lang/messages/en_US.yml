@@ -26,6 +26,15 @@
 #       overlay   = Appearance (PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20).
 #       progress  = Initial fill (0.0 to 1.0).
 #       countdown = If true, the bar animates from the 'progress' value down to 0 over the duration.
+#
+# Flexible Tag Logic:
+#  - Inline tags (sound, actionbar, etc.) can be placed on the same line as text or on their own separate line in a list.
+#  - If a line ONLY contains tags, it will execute the action but will not send an empty line to chat.
+#  - To force an empty line (a spacer), add a single space: " "
+#
+# Best Practices:
+#  - Use lists [-] for multi-line messages to keep functional tags separate.
+#  - Separating sounds/actionbars onto their own lines makes the config easier to read.
 
 # -----------------------------
 # GENERAL
@@ -34,17 +43,20 @@ general:
   prefix: "<gray>[<gradient:#00ffcc:#0066ff>AirCore</gradient>]"
   console-name: "@Console"
 
-  plugin-usage: "%prefix% <white>Available commands:</white>
-  <newline><gray>  • <yellow>/aircore reload [module]</yellow> <dark_gray>» <gray>Reload configurations</gray>
-  <newline><gray>  • <yellow>/aircore version</yellow> <dark_gray>» <gray>Check versions</gray>"
+  plugin-usage:
+    - "%prefix% <white>Available commands:</white>"
+    - "<gray>  • <yellow>/aircore reload [module]</yellow> <dark_gray>» <gray>Reload configurations</gray>"
+    - "<gray>  • <yellow>/aircore version</yellow> <dark_gray>» <gray>Check versions</gray>"
   plugin-version: "%prefix% <white>Running version <gradient:#00ffcc:#0066ff>%version%</gradient></white>"
-  plugin-outdated: "%prefix% <red>A new update is available!</red>
-      <newline><gray>  • Current: <white>%current%</white>
-      <newline><gray>  • Latest: <green>%latest%</green>
-      <newline><gray>  • Download: <yellow><click:open_url:'https://www.spigotmc.org/resources/130425/'>[Click Here]</click></yellow>"
-  plugin-reloaded: "%prefix% <gray>Module <white><bold>%module%</bold></white> has been <green>successfully reloaded</green>.</gray>
-  <sound:entity.experience_orb.pickup:1:1.2>
-  <actionbar:'<gradient:#00ffcc:#0066ff>Module %module% reloaded.</gradient>'>"
+  plugin-outdated:
+    - "%prefix% <red>A new update is available!</red>"
+    - "<gray>  • Current: <white>%current%</white>"
+    - "<gray>  • Latest: <green>%latest%</green>"
+    - "<gray>  • Download: <yellow><click:open_url:'https://www.spigotmc.org/resources/130425/'>[Click Here]</click></yellow>"
+  plugin-reloaded:
+    - "%prefix% <gray>Module <white><bold>%module%</bold></white> has been <green>successfully reloaded</green>.</gray>"
+    - "<sound:entity.experience_orb.pickup:1:1.2>"
+    - "<actionbar:'<gradient:#00ffcc:#0066ff>Module %module% reloaded.</gradient>'>"
 
   module:
     all: "All"
@@ -62,7 +74,9 @@ chat:
 
   private-messages:
     to: "<gold>[MSG] <yellow>%player%</yellow> → <yellow>%target%</yellow>: %message%</gold>"
-    from: "<sound:entity.chicken.egg:1:2><gold>[MSG] <yellow>%player%</yellow> → <yellow>%target%</yellow>: %message%</gold>"
+    from:
+      - "<gold>[MSG] <yellow>%player%</yellow> → <yellow>%target%</yellow>: %message%</gold>"
+      - "<sound:entity.chicken.egg:1:2>"
     everyone: "<gold>[MSG] <yellow>%player%</yellow> → <yellow>everyone</yellow>: %message%</gold>"
     error-nobody: "%prefix% <red>There's no one to reply to.</red>"
     error-self: "%prefix% <red>You can't message yourself.</red>"
@@ -224,7 +238,9 @@ teleport:
     no-request-from: "%prefix% <red>No pending request from <yellow>%player%</yellow>.</red>"
     location-not-found: "%prefix% <red>No last location stored for <yellow>%player%</yellow>.</red>"
 
-  countdown: "<sound:entity.experience_orb.pickup:0.8:2.0>%prefix% <green>Teleporting in %time%...</green>"
+  countdown:
+    - "%prefix% <green>Teleporting in %time%...</green>"
+    - "<sound:entity.experience_orb.pickup:0.8:2.0>"
 
 # -----------------------------
 # HOMES

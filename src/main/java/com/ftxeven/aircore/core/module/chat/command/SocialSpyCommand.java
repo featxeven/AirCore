@@ -34,7 +34,7 @@ public final class SocialSpyCommand implements TabExecutor {
                 sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-            handleToggle(sender, args[0], plugin.lang().get("general.console-name"), true);
+            handleToggle(sender, args[0], String.valueOf(plugin.lang().get("general.console-name")), true);
             return true;
         }
 

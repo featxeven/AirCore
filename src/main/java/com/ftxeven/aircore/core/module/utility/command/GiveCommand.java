@@ -147,7 +147,7 @@ public final class GiveCommand implements TabExecutor {
         assert material != null;
         ItemStack stack = new ItemStack(material, Math.max(1, amount));
         String itemName = plugin.core().itemTranslations().translate(material);
-        String senderName = (sender instanceof Player p) ? p.getName() : plugin.lang().get("general.console-name");
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         if (targetArg == null) {
             if (!(sender instanceof Player p)) {
