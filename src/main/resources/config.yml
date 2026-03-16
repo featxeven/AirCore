@@ -30,9 +30,15 @@ date-format: "dd/MM/yy"
 
 # Disabled commands (main names only, do not list aliases)
 # Requires restart to reflect changes
-disabled-commands: []
-# - msg
-# - socialspy
+disabled-commands:
+  # Commands overriding vanilla commands are disabled by default for convenience
+  # You can remove them from the list if you want to use the custom commands the plugin provides
+  - give
+  - kill
+  - weather
+  - time
+  # - tpa
+  # - msg
 
 # -----------------------------
 # CHAT
@@ -139,7 +145,7 @@ teleport:
     command: false              # Cancel if player runs a command
     interact: false             # Cancel on interaction (e.g., opening chest)
 
-  apply-immunity-after-teleport: 3  # Seconds of damage/teleport immunity after teleport
+  apply-immunity-after-teleport: 3   # Seconds of damage/teleport immunity after teleport
 
   # Request-specific options
   teleport-request-cooldown: 5       # Seconds between requests to same player
@@ -204,7 +210,7 @@ player-join-leave:
     _DEFAULT_: "<red>[-] <yellow>%player%</yellow> left the game.</red>"
 
 death-messages:
-  enabled: true       # If disabled, use vanilla death messages.
+  enabled: true       # If disabled, it'll use vanilla death messages.
   disabled-worlds:    # Worlds where death messages are disabled.
     - "disabledworld"
 

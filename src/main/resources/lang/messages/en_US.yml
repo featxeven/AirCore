@@ -54,7 +54,7 @@ general:
     - "<gray>  • Latest: <green>%latest%</green>"
     - "<gray>  • Download: <yellow><click:open_url:'https://www.spigotmc.org/resources/130425/'>[Click Here]</click></yellow>"
   plugin-reloaded:
-    - "%prefix% <gray>Module <white><bold>%module%</bold></white> has been <green>successfully reloaded</green>.</gray>"
+    - "%prefix% <gray>Module <white>'%module%'</white> has been <green>successfully reloaded</green>.</gray>"
     - "<sound:entity.experience_orb.pickup:1:1.2>"
     - "<actionbar:'<gradient:#00ffcc:#0066ff>Module %module% reloaded.</gradient>'>"
 

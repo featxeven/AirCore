@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="fixed item names">
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="refactor: added multi-line support for messages">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/hook/HookManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/hook/HookManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/hook/impl/CraftEngineHook.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/announcements/example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/announcements/example.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/worth/items.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/worth/items.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/placeholders/example.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,14 +57,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00009" summary="bug fixes">
-      <option name="closed" value="true" />
-      <created>1771635104022</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1771635104022</updated>
     </task>
     <task id="LOCAL-00010" summary="bug fixes">
       <option name="closed" value="true" />
@@ -454,14 +442,21 @@
       <option name="project" value="LOCAL" />
       <updated>1773527013563</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="refactor: added multi-line support for messages">
+      <option name="closed" value="true" />
+      <created>1773599865684</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1773599865684</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="added block api" />
     <MESSAGE value="api changes" />
     <MESSAGE value="gui refactor" />
     <MESSAGE value="gui changes" />
@@ -486,6 +481,7 @@
     <MESSAGE value="added per command cooldown bypass&#10;refactor command cooldown structure" />
     <MESSAGE value="removed unknown item name" />
     <MESSAGE value="fixed item names" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed item names" />
+    <MESSAGE value="refactor: added multi-line support for messages" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor: added multi-line support for messages" />
   </component>
 </project>
