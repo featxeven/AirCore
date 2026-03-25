@@ -1,0 +1,288 @@
+# -------------------------------------------------------------------
+# AirCore Command Configuration
+# -------------------------------------------------------------------
+
+# Commands that will be completely unregistered from the server.
+# Requires a server restart to take effect.
+disabled-commands:
+  - give
+  - kill
+  - weather
+  - time
+
+# Global cooldown settings. Bypass with aircore.bypass.command.<id>
+# 'strict: true' to match the exact command string.
+command-cooldowns:
+  repair:
+    key: "repair"
+    cooldown: 60
+    strict: true
+  # repairall:
+  #   key: "repair all"
+  #   cooldown: 120
+  #   strict: true
+  heal:
+    key: "heal"
+    cooldown: 120
+    strict: false
+  # feed:
+  #   key: "feed"
+  #   cooldown: 60
+  #   strict: false
+
+# Universal selectors used across multiple commands.
+# Command-specific selectors (defined below) will override these.
+global-selectors:
+  all: "@a"
+  server: "@s"
+  player: "@p"
+
+# -------------------------------------------------------------------
+# COMMAND SETTINGS
+# -------------------------------------------------------------------
+# Define cooldowns, aliases, usages, and custom selectors here.
+# Cooldowns: bypass with aircore.bypass.command.<id>
+# -------------------------------------------------------------------
+commands:
+  # --- CHAT & MESSAGING ---
+  msg:
+    aliases: [pm, tell, whisper]
+    usage: "/%label% <player> <message>"
+  reply:
+    aliases: [r]
+    usage: "/%label% <message>"
+  msgtoggle:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  mentiontoggle:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  socialspy:
+    aliases: [msgspy]
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  chattoggle:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+
+  # Economy
+  eco:
+    aliases: [economy]
+    usage: "/%label% <type> <player> [amount]"
+    usage-give: "/%label% give <player> <amount>"
+    usage-take: "/%label% take <player> <amount>"
+    usage-set: "/%label% set <player> <amount>"
+    usage-reset: "/%label% reset <player>"
+  pay:
+    aliases: []
+    usage: "/%label% <player> <amount>"
+  paytoggle:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  balance:
+    aliases: [bal, money]
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  sell:
+    aliases: []
+    usage: "/%label%"
+
+  # Teleportation
+  tpa:
+    aliases: [tpask]
+    usage: "/%label% <player>"
+  tpahere:
+    aliases: []
+    usage: "/%label% <player>"
+  tpaccept:
+    aliases: [tpyes]
+    usage: "/%label% [player]"
+  tpdeny:
+    aliases: [tpno]
+    usage: "/%label% [player]"
+  tptoggle:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  tp:
+    aliases: []
+    usage: "/%label% <player>"
+    usage-others: "/%label% <player> [player]"
+  tphere:
+    aliases: []
+    usage: "/%label% <player>"
+  tppos:
+    aliases: [tpcoords]
+    usage: "/%label% <x> <y> <z>"
+  tpoffline:
+    aliases: [tpoff]
+    usage: "/%label% <player>"
+  back:
+    aliases: []
+    usage: "/%label%"
+
+  # Homes & Warps
+  home:
+    aliases: [homes]
+    usage: "/%label% [homename]"
+    usage-others: "/%label% @p <player> [homename]"
+  sethome:
+    aliases: [createhome]
+    usage: "/%label% <homename>"
+  delhome:
+    aliases: [deletehome, removehome]
+    usage: "/%label% <homename>"
+    usage-others: "/%label% @p <player> <homename>"
+  spawn:
+    aliases: []
+    usage: "/%label%"
+  setspawn:
+    aliases: []
+    usage: "/%label%"
+  warp:
+    aliases: [warps]
+    usage: "/%label% <warpname>"
+  setwarp:
+    aliases: [createwarp]
+    usage: "/%label% <warpname>"
+  delwarp:
+    aliases: [deletewarp, removewarp]
+    usage: "/%label% <warpname>"
+
+  # Kits
+  kit:
+    aliases: [kits]
+    usage: "/%label% <kitname>"
+  createkit:
+    aliases: []
+    usage: "/%label% <kitname> [parameters] [cooldown]"
+  editkit:
+    aliases: []
+    usage: "/%label% <kitname> [parameters] [cooldown]"
+  delkit:
+    aliases: [deletekit]
+    usage: "/%label% <kitname>"
+
+  # Utils
+  repair:
+    aliases: [fix]
+    usage: "/%label%"
+    usage-all: "/%label% all"
+    selectors:
+      all: "all"
+  heal:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  feed:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  fly:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  god:
+    aliases: [godmode]
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  speed:
+    aliases: []
+    usage: "/%label% <speed> [type]"
+    usage-others: "/%label% <speed> [type] [player]"
+    selectors:
+      flying: "@f"
+      walking: "@w"
+  clearinventory:
+    aliases: [clear, clearinv]
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  invsee:
+    aliases: [inventorysee]
+    usage: "/%label% <player>"
+  enderchest:
+    aliases: [ec]
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+  afk:
+    aliases: []
+    usage: "/%label%"
+
+  # Management
+  gamemode:
+    aliases: [gm]
+    usage: "/%label% <mode>"
+    usage-others: "/%label% <mode> [player]"
+    selectors:
+      survival: "survival"
+      adventure: "adventure"
+      creative: "creative"
+      spectator: "spectator"
+  time:
+    aliases: []
+    usage: "/%label% <type> <time> [world]"
+    usage-set: "/%label% set <time> [world]"
+    usage-add: "/%label% add <time> [world]"
+    selectors:
+      set: "set"
+      add: "add"
+  weather:
+    aliases: []
+    usage: "/%label% <type> [world]"
+    selectors:
+      thunder: "thunder"
+      rain: "rain"
+      clear: "clear"
+  pweather:
+    aliases: []
+    usage: "/%label% <type> [world]"
+    usage-others: "/%label% <type> [world] [player]"
+    selectors:
+      thunder: "thunder"
+      clear: "clear"
+      reset: "reset"
+  announcement:
+    aliases: [announcements]
+    usage: "/%label% <option> <key>"
+    usage-trigger: "/%label% trigger <key> [args]"
+    usage-enable: "/%label% enable <key>"
+    usage-disable: "/%label% disable <key>"
+  announcetoggle:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
+
+  # Inventory shortcuts
+  craftingtable:
+    aliases: [craft]
+    usage: "/%label%"
+  anvil:
+    aliases: []
+    usage: "/%label%"
+  cartography:
+    aliases: []
+    usage: "/%label%"
+  loom:
+    aliases: []
+    usage: "/%label%"
+  smithingtable:
+    aliases: []
+    usage: "/%label%"
+  stonecutter:
+    aliases: []
+    usage: "/%label%"
+  grindstone:
+    aliases: []
+    usage: "/%label%"
+
+  # Social
+  block:
+    aliases: [ignore]
+    usage: "/%label% <player>"
+  unblock:
+    aliases: [unignore]
+    usage: "/%label% <player>"
