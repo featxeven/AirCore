@@ -39,39 +39,38 @@ public final class PlayerChatListener implements Listener {
             cd.apply(sender, plugin.config().chatCooldown());
         }
 
-        String plain = PlainTextComponentSerializer.plainText().serialize(event.message());
-        Component formatted = plugin.chat().formats().format(sender, plain);
+        String raw = PlainTextComponentSerializer.plainText().serialize(event.message());
 
-        if (formatted == null) {
+        if (!plugin.config().groupFormatEnabled()) {
+            Component processedMsg = plugin.chat().formats().processMessageOnly(sender, raw);
+            event.message(processedMsg);
+
             return;
         }
 
-        if (formatted.equals(Component.empty())) {
+        Component formatted = plugin.chat().formats().formatFull(sender, raw);
+
+        if (formatted == null || formatted.equals(Component.empty())) {
             event.setCancelled(true);
             return;
         }
 
         event.setCancelled(true);
+        broadcastManually(sender, formatted);
+    }
 
+    private void broadcastManually(Player sender, Component formatted) {
         final UUID senderId = sender.getUniqueId();
-
         plugin.getServer().getConsoleSender().sendMessage(formatted);
 
         for (Player recipient : plugin.getServer().getOnlinePlayers()) {
-            UUID recipientId = recipient.getUniqueId();
-
-            if (recipientId.equals(senderId)) {
+            UUID recId = recipient.getUniqueId();
+            if (recId.equals(senderId)) {
                 recipient.sendMessage(formatted);
                 continue;
             }
-
-            if (!plugin.core().toggles().isEnabled(recipientId, ToggleService.Toggle.CHAT)) {
-                continue;
-            }
-
-            if (plugin.core().blocks().isBlocked(recipientId, senderId)) {
-                continue;
-            }
+            if (!plugin.core().toggles().isEnabled(recId, ToggleService.Toggle.CHAT)) continue;
+            if (plugin.core().blocks().isBlocked(recId, senderId)) continue;
 
             recipient.sendMessage(formatted);
         }
