@@ -4,10 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="ver change">
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="decoupled group formatting from message processing">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/PlayerTimeCommand.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dependency-reduced-pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/PlayerWeatherCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/PlayerWeatherCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/commands.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/commands.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,14 +64,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00016" summary="fix homes removed after reload">
-      <option name="closed" value="true" />
-      <created>1772400236111</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1772400236111</updated>
     </task>
     <task id="LOCAL-00017" summary="added sequence: for announcements with interval">
       <option name="closed" value="true" />
@@ -452,14 +449,21 @@
       <option name="project" value="LOCAL" />
       <updated>1774742930882</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="decoupled group formatting from message processing">
+      <option name="closed" value="true" />
+      <created>1774743668878</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1774743668878</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="refactor: added ListenerManager and organized packages" />
     <MESSAGE value="Fixed %aircore_player_block_by_&lt;player&gt;% placeholder" />
     <MESSAGE value="refactor &amp; fixed placeholder" />
     <MESSAGE value="improved default messages" />
@@ -484,6 +488,7 @@
     <MESSAGE value="major command refactor" />
     <MESSAGE value="refactor message keys" />
     <MESSAGE value="ver change" />
-    <option name="LAST_COMMIT_MESSAGE" value="ver change" />
+    <MESSAGE value="decoupled group formatting from message processing" />
+    <option name="LAST_COMMIT_MESSAGE" value="decoupled group formatting from message processing" />
   </component>
 </project>

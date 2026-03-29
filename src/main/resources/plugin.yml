@@ -251,8 +251,12 @@ commands:
     permission: aircore.command.announcetoggle
   pweather:
     description: Changes the weather for a player.
-    usage: /pweather <type> [player]
+    usage: /pweather <type> [world] [player]
     permission: aircore.command.pweather
+  ptime:
+    description: Changes the time for a player.
+    usage: /ptime <set|add> <time> [world] [player]
+    permission: aircore.command.ptime
 
 permissions:
   aircore.command.admin: {description: "Admin command.", default: op}
@@ -370,6 +374,8 @@ permissions:
   aircore.command.weather: {description: "Use /weather.", default: op}
   aircore.command.pweather: {description: "Use /pweather.", default: op}
   aircore.command.pweather.others: {description: "Set others' /pweather.", default: op}
+  aircore.command.ptime: { description: "Use /ptime.", default: op }
+  aircore.command.ptime.others: { description: "Set others' /ptime.", default: op }
   aircore.command.virtual.*:
     description: Access to all virtual workstations.
     default: op

@@ -5,7 +5,6 @@ import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.WeatherType;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -29,24 +28,13 @@ public final class PlayerWeatherCommand implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command command,
-                             @NotNull String label,
-                             String @NotNull [] args) {
-
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (sender instanceof Player p && !p.hasPermission(PERMISSION)) {
             MessageUtil.send(p, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
-        boolean isConsole = !(sender instanceof Player);
-        boolean hasOthers = sender.hasPermission(PERMISSION_OTHERS) || isConsole;
-
-        int maxArgs = hasOthers ? 3 : 2;
-        if (args.length > maxArgs) {
-            sendError(sender, label, hasOthers, "too-many-arguments");
-            return true;
-        }
+        boolean hasOthers = sender.hasPermission(PERMISSION_OTHERS) || !(sender instanceof Player);
 
         if (args.length == 0) {
             sendError(sender, label, hasOthers, "incorrect-usage");
@@ -54,76 +42,49 @@ public final class PlayerWeatherCommand implements TabExecutor {
         }
 
         String clearSel = plugin.commandConfig().getSelector("pweather", "clear");
+        String rainSel = plugin.commandConfig().getSelector("pweather", "rain");
         String thunderSel = plugin.commandConfig().getSelector("pweather", "thunder");
         String resetSel = plugin.commandConfig().getSelector("pweather", "reset");
 
-        String inputType = args[0].toLowerCase();
-        String type;
-
-        if (inputType.equals(clearSel)) type = "clear";
-        else if (inputType.equals(thunderSel)) type = "thunder";
-        else if (inputType.equals(resetSel)) type = "reset";
-        else {
+        String type = getWeatherType(args[0], clearSel, rainSel, thunderSel, resetSel);
+        if (type == null) {
             sendError(sender, label, hasOthers, "incorrect-usage");
             return true;
         }
 
-        if (isConsole && args.length != 3) {
-            sender.sendMessage("Usage: /" + label + " <type> <world> <player>");
+        int maxArgs = hasOthers ? 2 : 1;
+        if (args.length > maxArgs) {
+            sendError(sender, label, hasOthers, "too-many-arguments");
             return true;
         }
 
         OfflinePlayer target;
-        World world;
-        boolean worldWasSpecified = false;
-
-        if (args.length == 1) {
-            target = (Player) sender;
-            world = ((Player) sender).getWorld();
-        } else if (args.length == 2) {
-            world = Bukkit.getWorld(args[1]);
-            if (world != null) {
-                worldWasSpecified = true;
-                target = (Player) sender;
-            } else {
-                if (hasOthers) {
-                    target = resolve(sender, args[1]);
-                    if (target == null) return true;
-                    world = ((Player) sender).getWorld();
-                } else {
-                    MessageUtil.send((Player) sender, "errors.world-not-found", Map.of());
-                    return true;
-                }
-            }
+        if (args.length > 1) {
+            target = resolve(sender, args[1]);
         } else {
-            world = Bukkit.getWorld(args[1]);
-            if (world == null) {
-                if (sender instanceof Player p) MessageUtil.send(p, "errors.world-not-found", Map.of());
-                else sender.sendMessage("World not found");
+            if (!(sender instanceof Player p)) {
+                sender.sendMessage("Console must specify a player.");
                 return true;
             }
-            target = resolve(sender, args[2]);
-            if (target == null) return true;
-            worldWasSpecified = true;
+            target = p;
         }
 
-        applyPlayerWeather(sender, target, type, world, worldWasSpecified);
+        if (target == null) return true;
+        applyPlayerWeather(sender, target, type);
         return true;
     }
 
-    private void sendError(CommandSender sender, String label, boolean hasOthers, String key) {
-        if (sender instanceof Player p) {
-            String usage = plugin.commandConfig().getUsage("pweather", hasOthers ? "others" : null, label);
-            MessageUtil.send(p, "errors." + key, Map.of("usage", usage));
-        } else {
-            sender.sendMessage("Usage: /" + label + " <type> <world> <player>");
-        }
+    private String getWeatherType(String input, String clear, String rain, String thunder, String reset) {
+        if (input.equalsIgnoreCase(clear)) return "clear";
+        if (input.equalsIgnoreCase(rain)) return "rain";
+        if (input.equalsIgnoreCase(thunder)) return "thunder";
+        if (input.equalsIgnoreCase(reset)) return "reset";
+        return null;
     }
 
-    private void applyPlayerWeather(CommandSender sender, OfflinePlayer target, String type, World world, boolean isWorldSpecific) {
+    private void applyPlayerWeather(CommandSender sender, OfflinePlayer target, String type) {
         String typeDisplay = String.valueOf(plugin.lang().get("utilities.weather.placeholders." + type));
         UUID uuid = target.getUniqueId();
-        String worldName = world != null ? world.getName() : "Unknown";
 
         plugin.database().records().setPlayerWeather(uuid, type);
 
@@ -139,20 +100,28 @@ public final class PlayerWeatherCommand implements TabExecutor {
         String targetName = target.getName() != null ? target.getName() : "Unknown";
 
         if (sender instanceof Player p) {
-            if (uuid.equals(p.getUniqueId())) {
-                String key = "utilities.weather." + (isWorldSpecific ? "player-set-in" : "player-set");
-                MessageUtil.send(p, key, Map.of("type", typeDisplay, "world", worldName));
-            } else {
-                String key = isWorldSpecific ? "utilities.weather.player-set-in-for" : "utilities.weather.player-set-for";
-                MessageUtil.send(p, key, Map.of("type", typeDisplay, "player", targetName, "world", worldName));
+            boolean isSelf = uuid.equals(p.getUniqueId());
+            String action = type.equals("reset") ? "reset" : "set";
+            String path = "utilities.weather.player." + action + (isSelf ? "" : "-for");
 
-                if (target.isOnline() && target.getPlayer() != null) {
-                    String targetKey = isWorldSpecific ? "utilities.weather.player-set-in-by" : "utilities.weather.player-set-by";
-                    MessageUtil.send(target.getPlayer(), targetKey, Map.of("type", typeDisplay, "player", senderName, "world", worldName));
-                }
+            if (!isSelf && target.isOnline() && target.getPlayer() != null) {
+                MessageUtil.send(target.getPlayer(), "utilities.weather.player." + action + "-by", Map.of(
+                        "type", typeDisplay,
+                        "player", senderName
+                ));
             }
+            MessageUtil.send(p, path, Map.of("type", typeDisplay, "player", targetName));
         } else {
-            sender.sendMessage("Set " + type + " weather for " + targetName + (isWorldSpecific ? " in " + worldName : ""));
+            sender.sendMessage("Set player-weather " + type + " for " + targetName);
+        }
+    }
+
+    private void sendError(CommandSender sender, String label, boolean hasOthers, String key) {
+        if (sender instanceof Player p) {
+            String usage = plugin.commandConfig().getUsage("pweather", hasOthers ? "others" : null, label);
+            MessageUtil.send(p, "errors." + key, Map.of("usage", usage));
+        } else {
+            sender.sendMessage("Usage: /" + label + " <type> [player]");
         }
     }
 
@@ -161,44 +130,27 @@ public final class PlayerWeatherCommand implements TabExecutor {
         if (online != null) return online;
         UUID uuid = plugin.database().records().uuidFromName(name);
         if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
-
-        if (sender instanceof Player p) {
-            MessageUtil.send(p, "errors.player-never-joined", Map.of());
-        } else {
-            sender.sendMessage("Player not found");
-        }
+        if (sender instanceof Player p) MessageUtil.send(p, "errors.player-never-joined", Map.of());
         return null;
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String @NotNull [] args) {
         if (sender instanceof Player p && !p.hasPermission(PERMISSION)) return Collections.emptyList();
-
         String input = args[args.length - 1].toLowerCase();
-        boolean hasOthers = sender.hasPermission(PERMISSION_OTHERS);
 
         if (args.length == 1) {
             return Stream.of(
                     plugin.commandConfig().getSelector("pweather", "clear"),
+                    plugin.commandConfig().getSelector("pweather", "rain"),
                     plugin.commandConfig().getSelector("pweather", "thunder"),
                     plugin.commandConfig().getSelector("pweather", "reset")
             ).filter(s -> s.toLowerCase().startsWith(input)).toList();
         }
 
-        if (args.length == 2) {
-            Stream<String> worlds = Bukkit.getWorlds().stream().map(World::getName);
-            if (hasOthers) {
-                Stream<String> players = Bukkit.getOnlinePlayers().stream().map(Player::getName);
-                return Stream.concat(worlds, players).filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
-            }
-            return worlds.filter(s -> s.toLowerCase().startsWith(input)).toList();
-        }
-
-        if (args.length == 3 && hasOthers) {
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(s -> s.toLowerCase().startsWith(input))
-                    .limit(20).toList();
+        if (args.length == 2 && sender.hasPermission(PERMISSION_OTHERS)) {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                    .filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
         }
 
         return Collections.emptyList();

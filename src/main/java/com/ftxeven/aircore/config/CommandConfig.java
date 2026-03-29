@@ -101,7 +101,8 @@ public final class CommandConfig {
         String processed = usage.replace("%label%", label);
 
         if (variant != null && processed.contains("%sublabel%")) {
-            String selector = getSelector(command, variant);
+            String selectorKey = variant.contains("-") ? variant.split("-")[0] : variant;
+            String selector = getSelector(command, selectorKey);
             processed = processed.replace("%sublabel%", selector);
         }
 

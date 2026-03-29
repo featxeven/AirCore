@@ -234,6 +234,18 @@ commands:
     selectors:
       set: "set"
       add: "add"
+  ptime:
+    aliases: []
+    usage: "/%label% <type> [<time>]"
+    usage-set: "/%label% %sublabel% <time>"
+    usage-add: "/%label% %sublabel% <time>"
+    usage-others: "/%label% <type> [<time>] [player]"
+    usage-set-others: "/%label% %sublabel% <time> [player]"
+    usage-add-others: "/%label% %sublabel% <time> [player]"
+    selectors:
+      set: "set"
+      add: "add"
+      reset: "reset"
   weather:
     aliases: []
     usage: "/%label% <type> [world]"
@@ -243,8 +255,8 @@ commands:
       clear: "clear"
   pweather:
     aliases: []
-    usage: "/%label% <type> [world]"
-    usage-others: "/%label% <type> [world] [player]"
+    usage: "/%label% <type>"
+    usage-others: "/%label% <type> [player]"
     selectors:
       thunder: "thunder"
       clear: "clear"

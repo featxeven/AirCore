@@ -338,12 +338,23 @@ utilities:
   weather:
     set: "%prefix% <green>Weather set to <yellow>%type%</yellow>.</green>"
     set-in: "%prefix% <green>Weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
-    player-set: "%prefix% <green>Player weather set to <yellow>%type%</yellow>.</green>"
-    player-set-in: "%prefix% <green>Player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
-    player-set-for: "%prefix% <green>Player weather set to <yellow>%type%</yellow> for <yellow>%player%</yellow>.</green>"
-    player-set-in-for: "%prefix% <green>Player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow> for <yellow>%player%</yellow>.</green>"
-    player-set-by: "%prefix% <yellow>%player%</yellow> <green>set your player weather to <yellow>%type%</yellow>.</green>"
-    player-set-in-by: "%prefix% <yellow>%player%</yellow> <green>set your player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
+
+    player:
+      set: "%prefix% <green>Player weather set to <yellow>%type%</yellow>.</green>"
+      set-for: "%prefix% <green>Player weather set to <yellow>%type%</yellow> for <yellow>%player%</yellow>.</green>"
+      set-by: "%prefix% <yellow>%player%</yellow> <green>set your player weather to <yellow>%type%</yellow>.</green>"
+
+      set-in: "%prefix% <green>Player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
+      set-in-for: "%prefix% <green>Player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow> for <yellow>%player%</yellow>.</green>"
+      set-in-by: "%prefix% <yellow>%player%</yellow> <green>set your player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
+
+      reset: "%prefix% <green>Your weather is now synced with the server.</green>"
+      reset-for: "%prefix% <green>Reset weather for <yellow>%player%</yellow>.</green>"
+      reset-by: "%prefix% <yellow>%player%</yellow> <green>reset your weather to server sync.</green>"
+
+      reset-in: "%prefix% <green>Reset your weather in <yellow>%world%</yellow>.</green>"
+      reset-in-for: "%prefix% <green>Reset weather for <yellow>%player%</yellow> in <yellow>%world%</yellow>.</green>"
+      reset-in-by: "%prefix% <yellow>%player%</yellow> <green>reset your weather to server sync in <yellow>%world%</yellow>.</green>"
 
     placeholders:
       clear: "clear"
@@ -357,6 +368,31 @@ utilities:
     add: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time.</green>"
     set-in: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow>.</green>"
     add-in: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time in <yellow>%world%</yellow>.</green>"
+
+    player:
+      set: "%prefix% <green>Player time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>).</green>"
+      set-for: "%prefix% <green>Player time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) for <yellow>%player%</yellow>.</green>"
+      set-by: "%prefix% <yellow>%player%</yellow> <green>set your player time to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>).</green>"
+
+      set-in: "%prefix% <green>Player time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow>.</green>"
+      set-in-for: "%prefix% <green>Player time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow> for <yellow>%player%</yellow>.</green>"
+      set-in-by: "%prefix% <yellow>%player%</yellow> <green>set your player time to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow>.</green>"
+
+      add: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to player time.</green>"
+      add-for: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to player time for <yellow>%player%</yellow>.</green>"
+      add-by: "%prefix% <yellow>%player%</yellow> <green>added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to your player time.</green>"
+
+      add-in: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to player time in <yellow>%world%</yellow>.</green>"
+      add-in-for: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to player time in <yellow>%world%</yellow> for <yellow>%player%</yellow>.</green>"
+      add-in-by: "%prefix% <yellow>%player%</yellow> <green>added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to your player time in <yellow>%world%</yellow>.</green>"
+
+      reset: "%prefix% <green>Your time is now synced with the server.</green>"
+      reset-for: "%prefix% <green>Reset time for <yellow>%player%</yellow>.</green>"
+      reset-by: "%prefix% <yellow>%player%</yellow> <green>reset your time to server sync.</green>"
+
+      reset-in: "%prefix% <green>Reset your time in <yellow>%world%</yellow>.</green>"
+      reset-in-for: "%prefix% <green>Reset time for <yellow>%player%</yellow> in <yellow>%world%</yellow>.</green>"
+      reset-in-by: "%prefix% <yellow>%player%</yellow> <green>reset your time to server sync in <yellow>%world%</yellow>.</green>"
 
   heal:
     self: "%prefix% <green>You healed yourself.</green>"
