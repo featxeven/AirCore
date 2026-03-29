@@ -1,6 +1,6 @@
-# -------------------------------
+# -------------------------------------------------------------------
 # AirCore Language Configuration
-# -------------------------------
+# -------------------------------------------------------------------
 # General Notes:
 # - Set a message to "" to hide it.
 # - All messages support full MiniMessage formatting.
@@ -36,9 +36,9 @@
 #  - Use lists [-] for multi-line messages to keep functional tags separate.
 #  - Separating sounds/actionbars onto their own lines makes the config easier to read.
 
-# -----------------------------
+# -------------------------------------------------------------------
 # GENERAL
-# -----------------------------
+# -------------------------------------------------------------------
 general:
   prefix: "<gray>[<gradient:#00ffcc:#0066ff>AirCore</gradient>]"
   console-name: "@Console"
@@ -66,9 +66,23 @@ general:
     placeholders: "Placeholders"
     announcements: "Announcements"
 
-# -----------------------------
+# -------------------------------------------------------------------
+# TIME PLACEHOLDERS
+# -------------------------------------------------------------------
+placeholders:
+  ticks: " ticks"
+  second: " second"
+  seconds: " seconds"
+  minute: " minute"
+  minutes: " minutes"
+  hour: " hour"
+  hours: " hours"
+  day: " day"
+  days: " days"
+
+# -------------------------------------------------------------------
 # CHAT & MESSAGING
-# -----------------------------
+# -------------------------------------------------------------------
 chat:
   cooldown: "%prefix% <red>Please wait <yellow>%time%</yellow> before chatting again.</red>"
 
@@ -118,9 +132,9 @@ chat:
     enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled social spy for you.</green>"
     disabled-by: "%prefix% <green><yellow>%player%</yellow> disabled social spy for you.</green>"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # ECONOMY
-# -----------------------------
+# -------------------------------------------------------------------
 economy:
   give:
     self: "%prefix% <green>$%amount% has been added to your balance.</green>"
@@ -184,9 +198,9 @@ economy:
     error-invalid: "%prefix% <red>You need to sell at least one item.</red>"
     error-max-balance: "%prefix% <red>You cannot sell these items because your balance would exceed the limit of <yellow>$%amount%</yellow>.</red>"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # TELEPORT
-# -----------------------------
+# -------------------------------------------------------------------
 teleport:
   requests:
     tpa-to: "%prefix% <green>Teleport request sent to <yellow>%player%</yellow>.</green>"
@@ -242,9 +256,9 @@ teleport:
     - "%prefix% <green>Teleporting in %time%...</green>"
     - "<sound:entity.experience_orb.pickup:0.8:2.0>"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # HOMES
-# -----------------------------
+# -------------------------------------------------------------------
 homes:
   management:
     created: "%prefix% <green>Home <yellow>%name%</yellow> has been created.</green>"
@@ -271,9 +285,9 @@ homes:
     none-yet: "%prefix% <red>You don't have any homes yet. Create one first!</red>"
     none-yet-for: "%prefix% <red>%player% doesn't have any homes yet.</red>"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # KITS
-# -----------------------------
+# -------------------------------------------------------------------
 kits:
   management:
     created: "%prefix% <green>Kit <yellow>%name%</yellow> has been created.</green>"
@@ -291,28 +305,10 @@ kits:
     not-found: "%prefix% <red>Kit not found.</red>"
     cannot-claim-again: "%prefix% <red>You cannot claim kit <yellow>%name%</yellow> again.</red>"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # UTILITIES
-# -----------------------------
+# -------------------------------------------------------------------
 utilities:
-  time:
-    get: "%prefix% <green>Time is <yellow>%time-formatted%</yellow> or <yellow>%ticks%</yellow> ticks.</green>"
-    set: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>).</green>"
-    add: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time.</green>"
-    set-in: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow>.</green>"
-    add-in: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time in <yellow>%world%</yellow>.</green>"
-
-    placeholders:
-      ticks: " ticks"
-      second: " second"
-      seconds: " seconds"
-      minute: " minute"
-      minutes: " minutes"
-      hour: " hour"
-      hours: " hours"
-      day: " day"
-      days: " days"
-
   gamemode:
     set: "%prefix% <green>Gamemode set to <yellow>%gamemode%</yellow>.</green>"
     set-for: "%prefix% <green>Gamemode set to <yellow>%gamemode%</yellow> for <yellow>%player%</yellow>.</green>"
@@ -342,11 +338,25 @@ utilities:
   weather:
     set: "%prefix% <green>Weather set to <yellow>%type%</yellow>.</green>"
     set-in: "%prefix% <green>Weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
+    player-set: "%prefix% <green>Player weather set to <yellow>%type%</yellow>.</green>"
+    player-set-in: "%prefix% <green>Player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
+    player-set-for: "%prefix% <green>Player weather set to <yellow>%type%</yellow> for <yellow>%player%</yellow>.</green>"
+    player-set-in-for: "%prefix% <green>Player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow> for <yellow>%player%</yellow>.</green>"
+    player-set-by: "%prefix% <yellow>%player%</yellow> <green>set your player weather to <yellow>%type%</yellow>.</green>"
+    player-set-in-by: "%prefix% <yellow>%player%</yellow> <green>set your player weather set to <yellow>%type%</yellow> in world <yellow>%world%</yellow>.</green>"
 
     placeholders:
       clear: "clear"
       rain: "rain"
       thunder: "thunder"
+      reset: "reset"
+
+  time:
+    get: "%prefix% <green>Time is <yellow>%time-formatted%</yellow> or <yellow>%ticks%</yellow> ticks.</green>"
+    set: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>).</green>"
+    add: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time.</green>"
+    set-in: "%prefix% <green>Time set to <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) in <yellow>%world%</yellow>.</green>"
+    add-in: "%prefix% <green>Added <yellow>%ticks%</yellow> ticks (<yellow>%time-formatted%</yellow>) to time in <yellow>%world%</yellow>.</green>"
 
   heal:
     self: "%prefix% <green>You healed yourself.</green>"
@@ -417,7 +427,8 @@ utilities:
     placeholders:
       walking: "walking"
       flying: "flying"
-      both: "walking/flying" # Triggers when player is offline (when no type is specified)
+      # Triggers when player is offline (when no type is specified)
+      both: "walking/flying"
 
   repair:
     item: "%prefix% <green>Item repaired successfully.</green>"
@@ -456,9 +467,9 @@ utilities:
   errors:
     invsee-self: "%prefix% <red>You can only view other players' inventory.</red>"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # DEATH MESSAGES
-# -----------------------------
+# -------------------------------------------------------------------
 death:
   generic: "<red>☠ %player% has died.</red>"
   by-player: "<red>☠ %player% was slain by %killer%.</red>"
@@ -557,9 +568,9 @@ death:
       WIND_CHARGE: "Wind Charge"
       BREEZE_WIND_CHARGE: "Breeze Wind Charge"
 
-# -----------------------------
+# -------------------------------------------------------------------
 # GENERAL ERRORS
-# -----------------------------
+# -------------------------------------------------------------------
 errors:
   no-permission: "%prefix% <red>You need <dark_red>%permission%</dark_red> to do that.</red>"
   incorrect-usage: "%prefix% <red>Correct usage: <dark_red>%usage%</dark_red></red>"

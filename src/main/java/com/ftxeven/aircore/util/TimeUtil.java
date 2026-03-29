@@ -86,14 +86,14 @@ public final class TimeUtil {
         long minutes = seconds / 60;
         seconds %= 60;
 
-        String day = String.valueOf(plugin.lang().get("utilities.time.placeholders.day"));
-        String daysStr = String.valueOf(plugin.lang().get("utilities.time.placeholders.days"));
-        String hour = String.valueOf(plugin.lang().get("utilities.time.placeholders.hour"));
-        String hoursStr = String.valueOf(plugin.lang().get("utilities.time.placeholders.hours"));
-        String minute = String.valueOf(plugin.lang().get("utilities.time.placeholders.minute"));
-        String minutesStr = String.valueOf(plugin.lang().get("utilities.time.placeholders.minutes"));
-        String second = String.valueOf(plugin.lang().get("utilities.time.placeholders.second"));
-        String secondsStr = String.valueOf(plugin.lang().get("utilities.time.placeholders.seconds"));
+        String day = String.valueOf(plugin.lang().get("placeholders.day"));
+        String daysStr = String.valueOf(plugin.lang().get("placeholders.days"));
+        String hour = String.valueOf(plugin.lang().get("placeholders.hour"));
+        String hoursStr = String.valueOf(plugin.lang().get("placeholders.hours"));
+        String minute = String.valueOf(plugin.lang().get("placeholders.minute"));
+        String minutesStr = String.valueOf(plugin.lang().get("placeholders.minutes"));
+        String second = String.valueOf(plugin.lang().get("placeholders.second"));
+        String secondsStr = String.valueOf(plugin.lang().get("placeholders.seconds"));
 
         String mode = plugin.config().timeFormatMode();
         int granularity = plugin.config().timeFormatGranularity();
