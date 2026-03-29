@@ -4,15 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="decoupled group formatting from message processing">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/PlayerTimeCommand.java" afterDir="false" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added ptime command">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/PlayerWeatherCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/PlayerWeatherCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/commands.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/commands.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,14 +58,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00017" summary="added sequence: for announcements with interval">
-      <option name="closed" value="true" />
-      <created>1772472824650</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1772472824650</updated>
     </task>
     <task id="LOCAL-00018" summary="ver update">
       <option name="closed" value="true" />
@@ -457,14 +443,21 @@
       <option name="project" value="LOCAL" />
       <updated>1774743668878</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="added ptime command">
+      <option name="closed" value="true" />
+      <created>1774802968557</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1774802968558</updated>
+    </task>
+    <option name="localTasksCounter" value="67" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="Fixed %aircore_player_block_by_&lt;player&gt;% placeholder" />
     <MESSAGE value="refactor &amp; fixed placeholder" />
     <MESSAGE value="improved default messages" />
     <MESSAGE value="small config changes &amp; MessageUtil InlineTags method refactor" />
@@ -489,6 +482,7 @@
     <MESSAGE value="refactor message keys" />
     <MESSAGE value="ver change" />
     <MESSAGE value="decoupled group formatting from message processing" />
-    <option name="LAST_COMMIT_MESSAGE" value="decoupled group formatting from message processing" />
+    <MESSAGE value="added ptime command" />
+    <option name="LAST_COMMIT_MESSAGE" value="added ptime command" />
   </component>
 </project>

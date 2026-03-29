@@ -28,6 +28,8 @@ import com.ftxeven.aircore.util.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -54,6 +56,11 @@ public final class CoreInitializer {
     public void initialize() {
         plugin.setSchedulerUtil(new SchedulerUtil(plugin));
         logServerType();
+
+        Metrics metrics = new Metrics(plugin, 130425);
+        metrics.addCustomChart(new SimplePie("server_type", () ->
+                plugin.scheduler().isFoliaServer() ? "Folia" : "Standard"
+        ));
 
         plugin.setConfigManager(new ConfigManager(plugin));
         plugin.setCommandConfig(new CommandConfig(plugin));
