@@ -87,13 +87,25 @@ public final class CommandConfig {
         return config.getString("global-selectors." + selectorKey, selectorKey);
     }
 
-    public String getUsage(String command, String label) { return getUsage(command, null, label); }
+    public String getUsage(String command, String label) {
+        return getUsage(command, null, label);
+    }
+
     public String getUsage(String command, String variant, String label) {
-        String key = variant == null ? "usage" : "usage-" + variant;
+        String key = (variant == null) ? "usage" : "usage-" + variant;
         String path = "commands." + command + "." + key;
         String usage = config.getString(path);
-        if (usage == null) throw new IllegalArgumentException("Usage not found for: " + command);
-        return usage.replace("%label%", label);
+
+        if (usage == null) throw new IllegalArgumentException("Usage not found for: " + command + " (variant: " + variant + ")");
+
+        String processed = usage.replace("%label%", label);
+
+        if (variant != null && processed.contains("%sublabel%")) {
+            String selector = getSelector(command, variant);
+            processed = processed.replace("%sublabel%", selector);
+        }
+
+        return processed;
     }
 
     public List<String> getAliases(String command) { return sl("commands." + command + ".aliases"); }

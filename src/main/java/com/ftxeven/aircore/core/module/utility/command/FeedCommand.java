@@ -17,6 +17,9 @@ import java.util.Map;
 public final class FeedCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.feed";
+    private static final String PERM_OTHERS = "aircore.command.feed.others";
+    private static final String PERM_ALL = "aircore.command.feed.all";
 
     public FeedCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -27,100 +30,87 @@ public final class FeedCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
+        String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
 
         if (!(sender instanceof Player player)) {
             if (args.length < 1) {
-                sender.sendMessage("Usage: /" + label + " <player|@a>");
+                sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-            handleFeed(sender, args[0]);
+            handleFeed(sender, args[0], selectorAll);
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.feed")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.feed"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
+        boolean hasAll = player.hasPermission(PERM_ALL);
+        boolean hasExtended = hasOthers || hasAll;
 
         if (args.length == 0) {
-            handleFeed(player, player.getName());
+            handleFeed(player, player.getName(), selectorAll);
             return true;
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.feed.others");
-        boolean hasAll = player.hasPermission("aircore.command.feed.all");
+        if (!hasExtended || args.length > 1) {
+            sendError(player, label, hasExtended);
+            return true;
+        }
+
         String targetArg = args[0];
-
-        if (targetArg.equalsIgnoreCase("@a")) {
+        if (targetArg.equalsIgnoreCase(selectorAll)) {
             if (!hasAll) {
-                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.feed.all"));
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_ALL));
                 return true;
             }
-        } else if (!targetArg.equalsIgnoreCase(player.getName())) {
+        } else {
             if (!hasOthers) {
-                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.feed.others"));
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_OTHERS));
                 return true;
             }
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            String usage = (hasOthers || hasAll)
-                    ? plugin.config().getUsage("feed", "others", label)
-                    : plugin.config().getUsage("feed", label);
-
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
-            return true;
-        }
-
-        handleFeed(player, targetArg);
+        handleFeed(player, targetArg, selectorAll);
         return true;
     }
 
-    private void handleFeed(CommandSender sender, String targetName) {
-        String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
-        String senderName = (sender instanceof Player p) ? p.getName() : consoleName;
+    private void handleFeed(CommandSender sender, String targetArg, String selectorAll) {
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        boolean feedbackEnabled = plugin.config().consoleToPlayerFeedback();
 
-        if (targetName.equalsIgnoreCase("@a")) {
+        if (targetArg.equalsIgnoreCase(selectorAll)) {
             for (Player target : Bukkit.getOnlinePlayers()) {
                 performFeed(target);
                 if (!target.equals(sender)) {
-                    if (sender instanceof Player || plugin.config().consoleToPlayerFeedback()) {
-                        MessageUtil.send(target, "utilities.feed.by", Map.of("player", senderName));
-                    }
+                    MessageUtil.send(target, "utilities.feed.by", Map.of("player", senderName));
                 }
             }
-
-            if (sender instanceof Player p) {
-                MessageUtil.send(p, "utilities.feed.everyone", Map.of());
-            } else {
-                sender.sendMessage("All players have been fed.");
-            }
+            if (sender instanceof Player p) MessageUtil.send(p, "utilities.feed.everyone", Map.of());
+            else sender.sendMessage("All players fed.");
             return;
         }
 
-        Player target = Bukkit.getPlayerExact(targetName);
+        Player target = Bukkit.getPlayerExact(targetArg);
         if (target == null) {
-            if (sender instanceof Player p) {
-                MessageUtil.send(p, "errors.player-not-found", Map.of("player", targetName));
-            } else {
-                sender.sendMessage("Player not found.");
-            }
+            if (sender instanceof Player p) MessageUtil.send(p, "errors.player-not-found", Map.of("player", targetArg));
+            else sender.sendMessage("Player not found.");
             return;
         }
 
         performFeed(target);
-
         if (sender instanceof Player p) {
-            if (target.equals(p)) {
-                MessageUtil.send(p, "utilities.feed.self", Map.of());
-            } else {
+            if (target.equals(p)) MessageUtil.send(p, "utilities.feed.self", Map.of());
+            else {
                 MessageUtil.send(p, "utilities.feed.for", Map.of("player", target.getName()));
                 MessageUtil.send(target, "utilities.feed.by", Map.of("player", p.getName()));
             }
         } else {
             sender.sendMessage("Fed " + target.getName());
-            if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target, "utilities.feed.by", Map.of("player", consoleName));
+            if (feedbackEnabled) {
+                MessageUtil.send(target, "utilities.feed.by", Map.of("player", senderName));
             }
         }
     }
@@ -132,6 +122,11 @@ public final class FeedCommand implements TabExecutor {
         });
     }
 
+    private void sendError(Player player, String label, boolean hasOthers) {
+        String usage = plugin.commandConfig().getUsage("feed", hasOthers ? "others" : null, label);
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command cmd,
@@ -140,30 +135,32 @@ public final class FeedCommand implements TabExecutor {
         if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
+        String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
-        if (!(sender instanceof Player player)) {
-            if ("@a".startsWith(input)) suggestions.add("@a");
+        if (sender instanceof Player player) {
+            if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+
+            if (player.hasPermission(PERM_OTHERS)) {
+                Bukkit.getOnlinePlayers().stream()
+                        .map(Player::getName)
+                        .filter(n -> n.toLowerCase().startsWith(input))
+                        .limit(20)
+                        .forEach(suggestions::add);
+            }
+            if (player.hasPermission(PERM_ALL) && selectorAll.toLowerCase().startsWith(input)) {
+                suggestions.add(selectorAll);
+            }
+        } else {
             Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .filter(n -> n.toLowerCase().startsWith(input))
                     .limit(20)
                     .forEach(suggestions::add);
-            return suggestions;
-        }
 
-        if (!player.hasPermission("aircore.command.feed")) return Collections.emptyList();
-
-        if (player.hasPermission("aircore.command.feed.others")) {
-            Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(input))
-                    .limit(20)
-                    .forEach(suggestions::add);
-        }
-
-        if (player.hasPermission("aircore.command.feed.all") && "@a".startsWith(input)) {
-            if (!suggestions.contains("@a")) suggestions.add("@a");
+            if (selectorAll.toLowerCase().startsWith(input)) {
+                suggestions.add(selectorAll);
+            }
         }
 
         return suggestions;

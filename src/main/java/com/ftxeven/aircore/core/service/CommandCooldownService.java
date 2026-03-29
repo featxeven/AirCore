@@ -1,8 +1,7 @@
 package com.ftxeven.aircore.core.service;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.config.ConfigManager.CooldownEntry;
-import org.bukkit.Bukkit;
+import com.ftxeven.aircore.config.CommandConfig.CooldownEntry;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -27,7 +26,7 @@ public final class CommandCooldownService {
     }
 
     public long getRemaining(Player player, String fullCommand) {
-        CooldownEntry entry = plugin.config().findCooldownEntry(fullCommand);
+        CooldownEntry entry = plugin.commandConfig().findCooldownEntry(fullCommand);
         if (entry == null) return 0;
 
         if (player.hasPermission("aircore.bypass.command." + entry.id())) return 0;
@@ -42,7 +41,7 @@ public final class CommandCooldownService {
     }
 
     public void apply(UUID uuid, String fullCommand) {
-        CooldownEntry entry = plugin.config().findCooldownEntry(fullCommand);
+        CooldownEntry entry = plugin.commandConfig().findCooldownEntry(fullCommand);
         if (entry == null || entry.seconds() <= 0) return;
 
         long expiry = System.currentTimeMillis() + (entry.seconds() * 1000L);

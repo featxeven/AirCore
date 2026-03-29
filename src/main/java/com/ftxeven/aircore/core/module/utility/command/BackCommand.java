@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 public final class BackCommand implements TabExecutor {
+
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.back";
 
     public BackCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -28,87 +30,70 @@ public final class BackCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            handleConsole(sender, label, args);
+            if (args.length < 1) {
+                sender.sendMessage("Usage: /" + label + " <player> [-countdown]");
+                return true;
+            }
+            handleBack(sender, args[0], args.length > 1 && args[1].equalsIgnoreCase("-countdown"));
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.back")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.back"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("back", label)));
+        if (args.length > 0) {
+            String usage = plugin.commandConfig().getUsage("back", null, label);
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
-        return teleportSelf(player);
+        handleBack(player, player.getName(), true);
+        return true;
     }
 
-    private void handleConsole(CommandSender sender, String label, String[] args) {
-        if (args.length < 1) {
-            sender.sendMessage("Usage: /" + label + " <player> [-countdown]");
-            return;
-        }
+    private void handleBack(CommandSender sender, String targetName, boolean useCountdown) {
+        Player target = Bukkit.getPlayerExact(targetName);
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
-        Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) {
-            sender.sendMessage("Player not found.");
+            if (!(sender instanceof Player)) sender.sendMessage("Player not found.");
             return;
         }
 
         Location deathLoc = plugin.utility().back().getLastDeath(target.getUniqueId());
         if (deathLoc == null) {
-            sender.sendMessage(target.getName() + " has no previous death location.");
+            if (sender instanceof Player p) MessageUtil.send(p, "utilities.back.no-location", Map.of());
+            else sender.sendMessage(target.getName() + " has no previous death location.");
             return;
         }
 
-        final String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
-        boolean useCountdown = args.length > 1 && args[1].equalsIgnoreCase("-countdown");
-
         if (useCountdown) {
-            plugin.core().teleports().startCountdown(
-                    target,
-                    target,
-                    () -> {
-                        plugin.core().teleports().teleport(target, deathLoc);
-                        plugin.utility().back().clearLastDeath(target.getUniqueId());
-                        MessageUtil.send(target, "utilities.back.success-by", Map.of("player", consoleName));
-                    },
-                    cancelReason -> MessageUtil.send(target, "utilities.back.cancelled", Map.of())
-            );
-            sender.sendMessage("Countdown started for " + target.getName() + " to teleport to last death location.");
-        } else {
-            plugin.core().teleports().teleport(target, deathLoc);
-            plugin.utility().back().clearLastDeath(target.getUniqueId());
+            plugin.core().teleports().startCountdown(target, target, () -> {
+                executeTeleport(sender, target, deathLoc, senderName);
+            }, cancelReason -> MessageUtil.send(target, "utilities.back.cancelled", Map.of()));
 
-            sender.sendMessage("Teleported " + target.getName() + " to their last death location.");
-            if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target, "utilities.back.success-by", Map.of("player", consoleName));
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Countdown started for " + target.getName());
             }
+        } else {
+            executeTeleport(sender, target, deathLoc, senderName);
         }
     }
 
-    private boolean teleportSelf(Player player) {
-        Location deathLoc = plugin.utility().back().getLastDeath(player.getUniqueId());
-        if (deathLoc == null) {
-            MessageUtil.send(player, "utilities.back.no-location", Map.of());
-            return true;
+    private void executeTeleport(CommandSender sender, Player target, Location loc, String senderName) {
+        plugin.core().teleports().teleport(target, loc);
+        plugin.utility().back().clearLastDeath(target.getUniqueId());
+
+        if (sender instanceof Player p) {
+            MessageUtil.send(p, "utilities.back.success", Map.of());
+        } else {
+            sender.sendMessage("Teleported " + target.getName() + " to death location.");
+            if (plugin.config().consoleToPlayerFeedback()) {
+                MessageUtil.send(target, "utilities.back.success-by", Map.of("player", senderName));
+            }
         }
-
-        plugin.core().teleports().startCountdown(
-                player,
-                player,
-                () -> {
-                    plugin.core().teleports().teleport(player, deathLoc);
-                    plugin.utility().back().clearLastDeath(player.getUniqueId());
-                    MessageUtil.send(player, "utilities.back.success", Map.of());
-                },
-                cancelReason -> MessageUtil.send(player, "utilities.back.cancelled", Map.of())
-        );
-
-        return true;
     }
 
     @Override
@@ -116,16 +101,13 @@ public final class BackCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-
-        if (sender instanceof Player) {
-            return Collections.emptyList();
-        }
+        if (sender instanceof Player) return Collections.emptyList();
 
         if (args.length == 1) {
             String input = args[0].toLowerCase();
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
-                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .filter(n -> n.toLowerCase().startsWith(input))
                     .limit(20)
                     .toList();
         }

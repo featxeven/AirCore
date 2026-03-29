@@ -15,6 +15,7 @@ import java.util.Map;
 public final class DelWarpCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.delwarp";
 
     public DelWarpCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -25,27 +26,23 @@ public final class DelWarpCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.delwarp")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.delwarp"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
         if (args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("delwarp", label)));
+            sendError(player, label, "incorrect-usage");
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("delwarp", label)));
+        if (args.length > 1) {
+            sendError(player, label, "too-many-arguments");
             return true;
         }
 
@@ -60,13 +57,19 @@ public final class DelWarpCommand implements TabExecutor {
         return true;
     }
 
+    private void sendError(Player player, String label, String key) {
+        String usage = plugin.commandConfig().getUsage("delwarp", null, label);
+        MessageUtil.send(player, "errors." + key, Map.of("usage", usage));
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission("aircore.command.delwarp")) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1 || !player.hasPermission(PERMISSION)) {
+            return Collections.emptyList();
+        }
 
         var section = plugin.utility().warps().getConfig().getConfigurationSection("warps");
         if (section == null) return Collections.emptyList();

@@ -16,6 +16,7 @@ import java.util.Map;
 public final class SpawnCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.spawn";
 
     public SpawnCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -32,15 +33,13 @@ public final class SpawnCommand implements TabExecutor {
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.spawn")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.spawn"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("spawn", label)));
+        if (args.length > 0) {
+            sendError(player, label);
             return true;
         }
 
@@ -61,6 +60,11 @@ public final class SpawnCommand implements TabExecutor {
         );
 
         return true;
+    }
+
+    private void sendError(Player player, String label) {
+        String usage = plugin.commandConfig().getUsage("spawn", null, label);
+        MessageUtil.send(player, "errors." + "too-many-arguments", Map.of("usage", usage));
     }
 
     @Override

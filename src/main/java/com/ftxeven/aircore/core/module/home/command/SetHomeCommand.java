@@ -9,40 +9,40 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public final class SetHomeCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.sethome";
 
     public SetHomeCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
-
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.sethome")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.sethome"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
+        String usage = plugin.commandConfig().getUsage("sethome", label);
+
         if (plugin.config().homesAllowNames() && args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("sethome", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", usage));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("sethome", label)));
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
@@ -61,17 +61,13 @@ public final class SetHomeCommand implements TabExecutor {
                     Map.of("name", result.homeName()));
             case LIMIT_REACHED -> MessageUtil.send(player, "homes.validation.limit-reached",
                     Map.of("limit", String.valueOf(plugin.home().homes().getLimit(player.getUniqueId()))));
-            default -> {}
         }
 
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        return List.of();
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        return Collections.emptyList();
     }
 }

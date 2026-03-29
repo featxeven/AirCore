@@ -1,30 +1,24 @@
 package com.ftxeven.aircore.config;
 
 import com.ftxeven.aircore.AirCore;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.permissions.Permission;
 
 import java.util.*;
 
 public final class ConfigManager {
     private final AirCore plugin;
     private FileConfiguration config;
-    private final Map<String, CooldownEntry> cooldownEntries = new HashMap<>();
-    public record CooldownEntry(String id, String matchKey, int seconds, boolean strict) {}
 
     public ConfigManager(AirCore plugin) {
         this.plugin = plugin;
         plugin.saveDefaultConfig();
         this.config = plugin.getConfig();
-        loadCooldowns();
     }
 
     public void reload() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
-        loadCooldowns();
     }
 
     private String s(String p, String d) { return config.getString(p, d); }
@@ -33,16 +27,10 @@ public final class ConfigManager {
     private double d(String p, double d) { return config.getDouble(p, d); }
     private List<String> sl(String p) { return config.getStringList(p); }
 
-    private String getGroupedValue(String path, String group) {
-        String specific = path + "." + group;
-        return config.contains(specific) ? config.getString(specific) : config.getString(path + "._DEFAULT_", "");
-    }
-
     // General & Chat
     public boolean notifyUpdates() { return b("notify-updates", true); }
     public String getLocale() { return s("lang", "en_US"); }
     public boolean consoleToPlayerFeedback() { return b("console-to-player-feedback", true); }
-    public List<String> disabledCommands() { return sl("disabled-commands"); }
     public boolean errorOnExcessArgs() { return b("error-on-excess-args", true); }
     public String timeFormatMode() { return s("time-format.mode", "DETAILED").toUpperCase(); }
     public int timeFormatGranularity() { return i("time-format.granularity", 4); }
@@ -54,15 +42,6 @@ public final class ConfigManager {
     public boolean pmApplyUrlFormatting() { return b("chat.apply-url-formatting", true); }
     public boolean pmApplyDisplayTags() { return b("chat.apply-display-tags", true); }
     public boolean pmAllowSelfMessage() { return b("chat.allow-self-message", false); }
-
-    // Commands
-    public String getUsage(String cmd, String label) { return getUsage(cmd, null, label); }
-    public String getUsage(String cmd, String variant, String label) {
-        String path = "command-usages." + cmd + (variant == null ? ".usage" : ".usage-" + variant);
-        String usage = config.getString(path);
-        if (usage == null) throw new IllegalArgumentException("No usage: " + cmd + (variant == null ? "" : " " + variant));
-        return usage.replace("%label%", label);
-    }
 
     // Group Formatting
     public boolean groupFormatEnabled() {
@@ -158,45 +137,6 @@ public final class ConfigManager {
     public boolean deathMessagesEnabled() { return b("death-messages.enabled", true); }
     public List<String> deathMessagesDisabledWorlds() { return sl("death-messages.disabled-worlds"); }
 
-    // Gameplay Limits
+    // Misc
     public int blocksMaxBlocks() { return i("max-blocks", 20); }
-    private void loadCooldowns() {
-        cooldownEntries.clear();
-        ConfigurationSection section = config.getConfigurationSection("command-cooldowns");
-        if (section == null) return;
-
-        var pm = Bukkit.getPluginManager();
-
-        for (String id : section.getKeys(false)) {
-            String matchKey = section.getString(id + ".key", id).toLowerCase();
-            int seconds = section.getInt(id + ".cooldown", 0);
-            boolean strict = section.getBoolean(id + ".strict", false);
-
-            cooldownEntries.put(id, new CooldownEntry(id, matchKey, seconds, strict));
-
-            String permNode = "aircore.bypass.command." + id;
-            if (pm.getPermission(permNode) == null) {
-                pm.addPermission(new Permission(permNode));
-            }
-        }
-    }
-    public CooldownEntry findCooldownEntry(String commandLine) {
-        if (cooldownEntries.isEmpty()) return null;
-        String input = commandLine.toLowerCase().trim();
-
-        CooldownEntry bestMatch = null;
-        for (CooldownEntry entry : cooldownEntries.values()) {
-            boolean matches = entry.strict()
-                    ? input.equals(entry.matchKey())
-                    : (input.equals(entry.matchKey()) || input.startsWith(entry.matchKey() + " "));
-
-            if (matches) {
-                if (entry.strict()) return entry;
-                if (bestMatch == null || entry.matchKey().length() > bestMatch.matchKey().length()) {
-                    bestMatch = entry;
-                }
-            }
-        }
-        return bestMatch;
-    }
 }

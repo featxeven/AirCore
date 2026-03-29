@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.io.File;
 import java.io.IOException;
@@ -169,4 +170,24 @@ public final class KitService {
     }
 
     public boolean exists(String kitName) { return kitName != null && kitCache.containsKey(kitName.toLowerCase()); }
+
+    public boolean tryEquipExternal(Player player, ItemStack item) {
+        return tryEquip(player, resolveEquipmentSlot(item), item);
+    }
+
+    public EquipmentSlot resolveEquipmentSlotExternal(ItemStack item) {
+        return resolveEquipmentSlot(item);
+    }
+
+    public boolean isSlotEmptyExternal(Player player, EquipmentSlot slot) {
+        PlayerInventory inv = player.getInventory();
+        return switch (slot) {
+            case HEAD -> isEmpty(inv.getHelmet());
+            case CHEST -> isEmpty(inv.getChestplate());
+            case LEGS -> isEmpty(inv.getLeggings());
+            case FEET -> isEmpty(inv.getBoots());
+            case OFF_HAND -> isEmpty(inv.getItemInOffHand());
+            default -> false;
+        };
+    }
 }

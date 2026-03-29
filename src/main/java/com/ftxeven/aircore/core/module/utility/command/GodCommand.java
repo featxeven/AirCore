@@ -19,6 +19,8 @@ import java.util.UUID;
 public final class GodCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.god";
+    private static final String PERM_OTHERS = "aircore.command.god.others";
 
     public GodCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -39,25 +41,25 @@ public final class GodCommand implements TabExecutor {
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.god")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.god"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
 
         if (args.length == 0) {
             handleGod(player, player.getName());
             return true;
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.god.others");
         if (!hasOthers) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.god.others"));
+            sendError(player, label, false);
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("god", "others", label)));
+        if (args.length > 1) {
+            sendError(player, label, true);
             return true;
         }
 
@@ -70,7 +72,7 @@ public final class GodCommand implements TabExecutor {
         if (resolved == null) return;
 
         UUID uuid = resolved.getUniqueId();
-        String realName = plugin.database().records().getRealName(targetName);
+        String realName = resolved.getName() != null ? resolved.getName() : targetName;
         String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         boolean newState = !plugin.core().toggles().isEnabled(uuid, ToggleService.Toggle.GOD);
@@ -84,8 +86,7 @@ public final class GodCommand implements TabExecutor {
                     if (uuid.equals(p.getUniqueId())) {
                         MessageUtil.send(p, newState ? "utilities.godmode.enabled" : "utilities.godmode.disabled", Map.of());
                     } else {
-                        MessageUtil.send(p, newState ? "utilities.godmode.enabled-for" : "utilities.godmode.disabled-for",
-                                Map.of("player", realName));
+                        MessageUtil.send(p, newState ? "utilities.godmode.enabled-for" : "utilities.godmode.disabled-for", Map.of("player", realName));
                     }
                 } else {
                     sender.sendMessage("God mode for " + realName + " -> " + (newState ? "enabled" : "disabled"));
@@ -94,14 +95,17 @@ public final class GodCommand implements TabExecutor {
                 if (resolved.isOnline() && resolved.getPlayer() != null) {
                     Player onlineTarget = resolved.getPlayer();
                     if (sender instanceof Player p && onlineTarget.equals(p)) return;
-
                     if (!(sender instanceof Player) && !plugin.config().consoleToPlayerFeedback()) return;
 
-                    MessageUtil.send(onlineTarget, newState ? "utilities.godmode.enabled-by" : "utilities.godmode.disabled-by",
-                            Map.of("player", senderName));
+                    MessageUtil.send(onlineTarget, newState ? "utilities.godmode.enabled-by" : "utilities.godmode.disabled-by", Map.of("player", senderName));
                 }
             });
         });
+    }
+
+    private void sendError(Player player, String label, boolean hasOthers) {
+        String usage = plugin.commandConfig().getUsage("god", hasOthers ? "others" : null, label);
+        MessageUtil.send(player, "errors." + "too-many-arguments", Map.of("usage", usage));
     }
 
     private OfflinePlayer resolve(CommandSender sender, String name) {
@@ -109,14 +113,12 @@ public final class GodCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
-            sender.sendMessage("Player not found in database.");
+            sender.sendMessage("Player not found");
         }
         return null;
     }
@@ -128,12 +130,11 @@ public final class GodCommand implements TabExecutor {
                                       String @NotNull [] args) {
         if (args.length != 1) return Collections.emptyList();
 
-        String input = args[0].toLowerCase();
-
-        if (sender instanceof Player player && !player.hasPermission("aircore.command.god.others")) {
+        if (sender instanceof Player player && !player.hasPermission(PERM_OTHERS)) {
             return Collections.emptyList();
         }
 
+        String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))

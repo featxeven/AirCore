@@ -18,144 +18,137 @@ import java.util.stream.Stream;
 public final class AnnouncementCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.announcement";
 
     public AnnouncementCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        String selTrigger = plugin.commandConfig().getSelector("announcement", "trigger");
+        String selEnable = plugin.commandConfig().getSelector("announcement", "enable");
+        String selDisable = plugin.commandConfig().getSelector("announcement", "disable");
 
         if (!(sender instanceof Player player)) {
-            if (args.length == 0) {
-                sender.sendMessage("Usage: /" + label + " <trigger|enable|disable> <key> [args]");
+            if (args.length < 2) {
+                sender.sendMessage("Usage: /" + label + " <" + selTrigger + "|" + selEnable + "|" + selDisable + "> <key> [args]");
                 return true;
             }
-            handleConsoleCommand(sender, label, args);
+            handleExecute(sender, label, args, selTrigger, selEnable, selDisable);
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.announcement")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.announcement"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
         if (args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("announcement", label)));
+            sendError(player, label, null);
             return true;
         }
 
-        String sub = args[0].toLowerCase();
-
-        switch (sub) {
-            case "trigger" -> {
-                if (args.length < 2) {
-                    MessageUtil.send(player, "errors.incorrect-usage",
-                            Map.of("usage", plugin.config().getUsage("announcement", "trigger", label)));
-                    return true;
-                }
-
-                String key = args[1].toLowerCase();
-                if (plugin.announcements().getAnnouncement(key) == null) {
-                    MessageUtil.send(player, "utilities.announcement.not-found", Map.of("name", key));
-                    return true;
-                }
-
-                String triggerArgs = args.length > 2
-                        ? String.join(" ", Arrays.copyOfRange(args, 2, args.length))
-                        : null;
-
-                plugin.announcements().trigger(key, triggerArgs);
-                MessageUtil.send(player, "utilities.announcement.triggered", Map.of("name", key));
-            }
-
-            case "enable", "disable" -> {
-                if (args.length < 2) {
-                    MessageUtil.send(player, "errors.incorrect-usage",
-                            Map.of("usage", plugin.config().getUsage("announcement", sub, label)));
-                    return true;
-                }
-
-                boolean enable = sub.equals("enable");
-                String key = args[1].toLowerCase();
-
-                AnnouncementManager.ToggleResult result = plugin.announcements().setEnabled(key, enable);
-
-                switch (result) {
-                    case SUCCESS -> {
-                        String langKey = "utilities.announcement." + (enable ? "enabled" : "disabled");
-                        MessageUtil.send(player, langKey, Map.of("name", key));
-                    }
-                    case ALREADY_SET -> {
-                        String langKey = "utilities.announcement." + (enable ? "already-enabled" : "already-disabled");
-                        MessageUtil.send(player, langKey, Map.of("name", key));
-                    }
-                    case NOT_FOUND -> MessageUtil.send(player, "utilities.announcement.not-found", Map.of("name", key));
-                }
-            }
-
-            default -> MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("announcement", label)));
-        }
-
+        handleExecute(player, label, args, selTrigger, selEnable, selDisable);
         return true;
     }
 
-    private void handleConsoleCommand(CommandSender sender, String label, String[] args) {
+    private void handleExecute(CommandSender sender, String label, String[] args, String selTrigger, String selEnable, String selDisable) {
         String sub = args[0].toLowerCase();
 
-        if (sub.equals("trigger")) {
-            if (args.length < 2) {
-                sender.sendMessage("Usage: /" + label + " trigger <key> [args]");
-                return;
-            }
-            String triggerArgs = args.length > 2 ? String.join(" ", Arrays.copyOfRange(args, 2, args.length)) : null;
-            plugin.announcements().trigger(args[1], triggerArgs);
-            sender.sendMessage("Triggered announcement: " + args[1]);
-        } else if (sub.equals("enable") || sub.equals("disable")) {
-            if (args.length < 2) {
+        String variant;
+        if (sub.equalsIgnoreCase(selTrigger)) variant = "trigger";
+        else if (sub.equalsIgnoreCase(selEnable)) variant = "enable";
+        else if (sub.equalsIgnoreCase(selDisable)) variant = "disable";
+        else variant = null;
+
+        if (variant == null) {
+            if (sender instanceof Player p) sendError(p, label, null);
+            else sender.sendMessage("Unknown sub-command");
+            return;
+        }
+
+        if (args.length < 2) {
+            if (sender instanceof Player p) {
+                sendError(p, label, variant);
+            } else {
                 sender.sendMessage("Usage: /" + label + " " + sub + " <key>");
+            }
+            return;
+        }
+
+        String key = args[1].toLowerCase();
+
+        if (variant.equals("trigger")) {
+            String triggerArgs = args.length > 2 ? String.join(" ", Arrays.copyOfRange(args, 2, args.length)) : null;
+
+            if (plugin.announcements().getAnnouncement(key) == null) {
+                if (sender instanceof Player p) MessageUtil.send(p, "utilities.announcement.not-found", Map.of("name", key));
+                else sender.sendMessage("Announcement not found: " + key);
                 return;
             }
-            boolean enable = sub.equals("enable");
-            String key = args[1];
+
+            plugin.announcements().trigger(key, triggerArgs);
+            if (sender instanceof Player p) MessageUtil.send(p, "utilities.announcement.triggered", Map.of("name", key));
+            else sender.sendMessage("Triggered announcement: " + key);
+
+        } else {
+            boolean enable = variant.equals("enable");
             AnnouncementManager.ToggleResult result = plugin.announcements().setEnabled(key, enable);
 
-            switch (result) {
-                case SUCCESS -> sender.sendMessage((enable ? "Enabled" : "Disabled") + " announcement: " + key);
-                case ALREADY_SET -> sender.sendMessage("Announcement " + key + " is already " + (enable ? "enabled" : "disabled") + ".");
-                case NOT_FOUND -> sender.sendMessage("Announcement not found: " + key);
+            if (sender instanceof Player p) {
+                handleToggleResultPlayer(p, key, enable, result);
+            } else {
+                handleToggleResultConsole(sender, key, enable, result);
             }
         }
     }
 
-    @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-
-        if (!(sender instanceof Player player) || !player.hasPermission("aircore.command.announcement")) {
-            return Collections.emptyList();
+    private void handleToggleResultPlayer(Player player, String key, boolean enable, AnnouncementManager.ToggleResult result) {
+        switch (result) {
+            case SUCCESS -> MessageUtil.send(player, "utilities.announcement." + (enable ? "enabled" : "disabled"), Map.of("name", key));
+            case ALREADY_SET -> MessageUtil.send(player, "utilities.announcement." + (enable ? "already-enabled" : "already-disabled"), Map.of("name", key));
+            case NOT_FOUND -> MessageUtil.send(player, "utilities.announcement.not-found", Map.of("name", key));
         }
+    }
+
+    private void handleToggleResultConsole(CommandSender sender, String key, boolean enable, AnnouncementManager.ToggleResult result) {
+        switch (result) {
+            case SUCCESS -> sender.sendMessage((enable ? "Enabled" : "Disabled") + " announcement: " + key);
+            case ALREADY_SET -> sender.sendMessage("Announcement " + key + " is already " + (enable ? "enabled" : "disabled") + ".");
+            case NOT_FOUND -> sender.sendMessage("Announcement not found");
+        }
+    }
+
+    private void sendError(Player player, String label, String sub) {
+        String usage = plugin.commandConfig().getUsage("announcement", sub, label);
+        MessageUtil.send(player, "errors." + "incorrect-usage", Map.of("usage", usage));
+    }
+
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (sender instanceof Player p && !p.hasPermission(PERMISSION)) return Collections.emptyList();
+
+        String selTrigger = plugin.commandConfig().getSelector("announcement", "trigger");
+        String selEnable = plugin.commandConfig().getSelector("announcement", "enable");
+        String selDisable = plugin.commandConfig().getSelector("announcement", "disable");
 
         String input = args[args.length - 1].toLowerCase();
 
         if (args.length == 1) {
-            return Stream.of("trigger", "enable", "disable")
-                    .filter(s -> s.startsWith(input))
+            return Stream.of(selTrigger, selEnable, selDisable)
+                    .filter(s -> s.toLowerCase().startsWith(input))
                     .toList();
         }
 
         if (args.length == 2) {
-            return plugin.announcements().getRegistry().keySet().stream()
-                    .filter(name -> name.startsWith(input))
-                    .limit(20)
-                    .toList();
+            String sub = args[0].toLowerCase();
+            if (sub.equals(selTrigger) || sub.equals(selEnable) || sub.equals(selDisable)) {
+                return plugin.announcements().getRegistry().keySet().stream()
+                        .filter(name -> name.toLowerCase().startsWith(input))
+                        .limit(20)
+                        .toList();
+            }
         }
 
         return Collections.emptyList();

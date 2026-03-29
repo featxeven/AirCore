@@ -22,31 +22,69 @@ public final class HomeCommand implements TabExecutor {
     private final AirCore plugin;
     private final GuiManager guiManager;
 
+    private static final String PERM_BASE = "aircore.command.home";
+    private static final String PERM_OTHERS = "aircore.command.home.others";
+
     public HomeCommand(AirCore plugin, GuiManager guiManager) {
         this.plugin = plugin;
         this.guiManager = guiManager;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
-
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.home")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.home"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
+            return true;
+        }
+
+        String otherSelector = plugin.commandConfig().getSelector("home", "player");
+        boolean isAttemptingOthers = args.length > 0 && args[0].equalsIgnoreCase(otherSelector);
+
+        if (isAttemptingOthers && player.hasPermission(PERM_OTHERS)) {
+            if (args.length < 2) {
+                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.commandConfig().getUsage("home", "others", label)));
+                return true;
+            }
+
+            OfflinePlayer target = resolve(player, args[1]);
+            if (target == null) return true;
+
+            String realName = plugin.database().records().getRealName(args[1]);
+
+            if (args.length == 2) {
+                if (target.getUniqueId().equals(player.getUniqueId())) {
+                    guiManager.openGui("homes", player, Map.of("page", "1", "player", player.getName()));
+                } else {
+                    var targetHomes = plugin.home().homes().getHomes(target.getUniqueId());
+                    if (targetHomes.isEmpty()) {
+                        targetHomes = plugin.database().homes().load(target.getUniqueId());
+                    }
+
+                    var mgr = guiManager.getManager("homes-target");
+                    boolean allowEmpty = (mgr instanceof HomeTargetManager htm) && htm.definition().config().getBoolean("allow-empty-gui", true);
+
+                    if (targetHomes.isEmpty() && !allowEmpty) {
+                        MessageUtil.send(player, "homes.errors.none-yet-for", Map.of("player", realName));
+                        return true;
+                    }
+
+                    guiManager.openGui("homes-target", player, Map.of("player", realName, "page", "1"));
+                }
+                return true;
+            }
+
+            handleTeleport(player, target, args[2]);
             return true;
         }
 
         if (args.length == 0) {
             var mgr = guiManager.getManager("homes");
             if (mgr instanceof HomeManager guiHome && guiHome.isEnabled()) {
-
                 var cachedHomes = plugin.home().homes().getHomes(player.getUniqueId());
                 boolean allowEmpty = guiHome.definition().config().getBoolean("allow-empty-gui", true);
 
@@ -60,67 +98,9 @@ public final class HomeCommand implements TabExecutor {
             }
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.home.others");
-        boolean isTargetingOthers = args.length > 0 && args[0].equalsIgnoreCase("@p");
-
-        if (isTargetingOthers) {
-            if (!hasOthers) {
-                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.home.others"));
-                return true;
-            }
-
-            if (args.length < 2) {
-                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("home", "others", label)));
-                return true;
-            }
-
-            OfflinePlayer target = resolve(player, args[1]);
-            if (target == null) return true;
-
-            String realName = plugin.database().records().getRealName(args[1]);
-
-            if (target.getUniqueId().equals(player.getUniqueId()) && args.length == 2) {
-                var mgr = guiManager.getManager("homes");
-                if (mgr instanceof HomeManager guiHome && guiHome.isEnabled()) {
-                    guiManager.openGui("homes", player, Map.of("page", "1", "player", player.getName()));
-                    return true;
-                }
-            } else if (args.length == 2) {
-                var targetHomes = plugin.home().homes().getHomes(target.getUniqueId());
-                if (targetHomes.isEmpty()) {
-                    targetHomes = plugin.database().homes().load(target.getUniqueId());
-                }
-
-                var mgr = guiManager.getManager("homes-target");
-                boolean allowEmpty = true;
-
-                if (mgr instanceof HomeTargetManager htm) {
-                    allowEmpty = htm.definition().config().getBoolean("allow-empty-gui", true);
-                }
-
-                if (targetHomes.isEmpty() && !allowEmpty) {
-                    MessageUtil.send(player, "homes.errors.none-yet-for", Map.of("player", realName));
-                    return true;
-                }
-
-                guiManager.openGui("homes-target", player, Map.of("player", realName, "page", "1"));
-                return true;
-            }
-
-            if (args.length < 3) {
-                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("home", "others", label)));
-                return true;
-            }
-
-            handleTeleport(player, target, args[2]);
+        if (args.length > 1 && plugin.config().errorOnExcessArgs()) {
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.commandConfig().getUsage("home", label)));
             return true;
-        }
-
-        if (args.length > 1) {
-            if (plugin.config().errorOnExcessArgs()) {
-                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("home", label)));
-                return true;
-            }
         }
 
         var homes = plugin.home().homes().getHomes(player.getUniqueId());
@@ -129,7 +109,6 @@ public final class HomeCommand implements TabExecutor {
                 var loaded = plugin.database().homes().load(player.getUniqueId());
                 plugin.home().homes().loadFromDatabase(player.getUniqueId(), loaded);
                 var reloadedHomes = plugin.home().homes().getHomes(player.getUniqueId());
-
                 plugin.scheduler().runEntityTask(player, () -> processSelfTeleport(player, reloadedHomes, args, label));
             });
             return true;
@@ -150,7 +129,7 @@ public final class HomeCommand implements TabExecutor {
             if (homes.size() == 1) {
                 homeName = homes.keySet().iterator().next();
             } else {
-                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("home", label)));
+                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.commandConfig().getUsage("home", label)));
                 return;
             }
         } else {
@@ -176,27 +155,21 @@ public final class HomeCommand implements TabExecutor {
             final Map<String, Location> finalHomes = homes;
             plugin.scheduler().runEntityTask(player, () -> {
                 if (!finalHomes.containsKey(nameLower)) {
-                    if (uuid.equals(player.getUniqueId())) {
-                        MessageUtil.send(player, "homes.errors.not-found", Map.of("name", homeName));
-                    } else {
-                        MessageUtil.send(player, "homes.errors.not-found-for", Map.of("player", realName, "name", homeName));
-                    }
+                    String msgKey = uuid.equals(player.getUniqueId()) ? "homes.errors.not-found" : "homes.errors.not-found-for";
+                    MessageUtil.send(player, msgKey, Map.of("player", realName, "name", homeName));
                     return;
                 }
 
                 Location loc = finalHomes.get(nameLower);
 
-                if (uuid.equals(player.getUniqueId())) {
-                    plugin.core().teleports().startCountdown(player, player, () -> {
-                        plugin.core().teleports().teleport(player, loc);
-                        MessageUtil.send(player, "homes.teleport.success", Map.of("name", homeName));
-                    }, reason -> MessageUtil.send(player, "homes.teleport.cancelled", Map.of("name", homeName)));
-                } else {
-                    plugin.core().teleports().startCountdown(player, player, () -> {
-                        plugin.core().teleports().teleport(player, loc);
-                        MessageUtil.send(player, "homes.teleport.success-other", Map.of("player", realName, "name", homeName));
-                    }, reason -> MessageUtil.send(player, "homes.teleport.cancelled-other", Map.of("player", realName, "name", homeName)));
-                }
+                plugin.core().teleports().startCountdown(player, player, () -> {
+                    plugin.core().teleports().teleport(player, loc);
+                    String successKey = uuid.equals(player.getUniqueId()) ? "homes.teleport.success" : "homes.teleport.success-other";
+                    MessageUtil.send(player, successKey, Map.of("player", realName, "name", homeName));
+                }, reason -> {
+                    String cancelKey = uuid.equals(player.getUniqueId()) ? "homes.teleport.cancelled" : "homes.teleport.cancelled-other";
+                    MessageUtil.send(player, cancelKey, Map.of("player", realName, "name", homeName));
+                });
             });
         });
     }
@@ -205,20 +178,21 @@ public final class HomeCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) return Collections.emptyList();
         String input = args[args.length - 1].toLowerCase();
+        String otherSelector = plugin.commandConfig().getSelector("home", "player");
 
         if (args.length == 1) {
             Stream<String> homes = plugin.home().homes().getHomes(player.getUniqueId()).keySet().stream();
-            if (player.hasPermission("aircore.command.home.others")) {
-                homes = Stream.concat(homes, Stream.of("@p"));
+            if (player.hasPermission(PERM_OTHERS)) {
+                homes = Stream.concat(homes, Stream.of(otherSelector));
             }
             return homes.filter(n -> n.toLowerCase().startsWith(input)).toList();
         }
 
-        if (args.length == 2 && args[0].equalsIgnoreCase("@p") && player.hasPermission("aircore.command.home.others")) {
+        if (args.length == 2 && args[0].equalsIgnoreCase(otherSelector) && player.hasPermission(PERM_OTHERS)) {
             return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
         }
 
-        if (args.length == 3 && args[0].equalsIgnoreCase("@p") && player.hasPermission("aircore.command.home.others")) {
+        if (args.length == 3 && args[0].equalsIgnoreCase(otherSelector) && player.hasPermission(PERM_OTHERS)) {
             return getHomeCompletions(args[1], input);
         }
 
@@ -236,9 +210,7 @@ public final class HomeCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;

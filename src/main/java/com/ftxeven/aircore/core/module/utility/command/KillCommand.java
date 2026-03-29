@@ -20,6 +20,9 @@ public final class KillCommand implements TabExecutor {
 
     private final AirCore plugin;
     private final NamespacedKey deathReasonKey;
+    private static final String PERM_BASE = "aircore.command.kill";
+    private static final String PERM_OTHERS = "aircore.command.kill.others";
+    private static final String PERM_ALL = "aircore.command.kill.all";
 
     public KillCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -27,160 +30,140 @@ public final class KillCommand implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
 
         if (!(sender instanceof Player player)) {
-            String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
-
             if (args.length < 1) {
-                sender.sendMessage("Usage: /" + label + " <player|@a>");
+                sender.sendMessage("Usage: /" + label + " <player>");
                 return true;
             }
-
-            if (args[0].equalsIgnoreCase("@a")) {
-                for (Player target : Bukkit.getOnlinePlayers()) {
-                    killPlayer(target, consoleName);
-                }
-                sender.sendMessage("All players have been killed.");
-                return true;
-            }
-
-            Player target = Bukkit.getPlayerExact(args[0]);
-            if (target == null) {
-                sender.sendMessage("Player not found in database.");
-                return true;
-            }
-
-            killPlayer(target, consoleName);
-            sender.sendMessage("Killed " + target.getName());
+            handleKill(sender, args[0], selectorAll);
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.kill")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kill"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
+        boolean hasAll = player.hasPermission(PERM_ALL);
+        boolean hasExtended = hasOthers || hasAll;
 
         if (args.length == 0) {
-            killPlayer(player, null);
-            MessageUtil.send(player, "utilities.kill.self", Map.of());
+            handleKill(player, player.getName(), selectorAll);
             return true;
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.kill.others");
-        boolean hasAll = player.hasPermission("aircore.command.kill.all");
+        if (!hasExtended || args.length > 1) {
+            sendError(player, label, hasExtended);
+            return true;
+        }
+
         String targetArg = args[0];
 
-        if (targetArg.equalsIgnoreCase("@a")) {
+        if (targetArg.equalsIgnoreCase(selectorAll)) {
             if (!hasAll) {
-                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kill.all"));
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_ALL));
                 return true;
             }
-        } else if (!targetArg.equalsIgnoreCase(player.getName())) {
+        } else {
             if (!hasOthers) {
-                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.kill.others"));
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_OTHERS));
                 return true;
             }
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            String usage = (hasOthers || hasAll)
-                    ? plugin.config().getUsage("kill", "others", label)
-                    : plugin.config().getUsage("kill", label);
-
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
-            return true;
-        }
-
-        handleKill(player, targetArg);
+        handleKill(player, targetArg, selectorAll);
         return true;
     }
 
-    private void handleKill(Player sender, String targetArg) {
-        if (targetArg.equalsIgnoreCase("@a")) {
+    private void handleKill(CommandSender sender, String targetArg, String selectorAll) {
+        String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
+        String senderName = (sender instanceof Player p) ? p.getName() : consoleName;
+        boolean feedbackEnabled = plugin.config().consoleToPlayerFeedback();
+
+        if (targetArg.equalsIgnoreCase(selectorAll)) {
             for (Player target : Bukkit.getOnlinePlayers()) {
+                performKillAction(target);
                 if (!target.equals(sender)) {
-                    killPlayerByPlayer(target, sender);
-                } else {
-                    killPlayer(target, null);
+                    MessageUtil.send(target, "utilities.kill.by", Map.of("player", senderName));
                 }
             }
-            MessageUtil.send(sender, "utilities.kill.everyone", Map.of());
+            if (sender instanceof Player p) MessageUtil.send(p, "utilities.kill.everyone", Map.of());
+            else sender.sendMessage("All players have been killed.");
             return;
         }
 
         Player target = Bukkit.getPlayerExact(targetArg);
         if (target == null) {
-            MessageUtil.send(sender, "errors.player-not-found", Map.of("player", targetArg));
+            if (sender instanceof Player p) MessageUtil.send(p, "errors.player-not-found", Map.of("player", targetArg));
+            else sender.sendMessage("Player not found");
             return;
         }
 
-        if (target.equals(sender)) {
-            killPlayer(sender, null);
-            MessageUtil.send(sender, "utilities.kill.self", Map.of());
-            return;
-        }
+        performKillAction(target);
 
-        killPlayerByPlayer(target, sender);
-        MessageUtil.send(sender, "utilities.kill.other", Map.of("player", target.getName()));
-    }
-
-    private void killPlayer(Player player, String killerName) {
-        plugin.scheduler().runEntityTask(player, () -> {
-            markForcedDeath(player);
-            player.setHealth(0.0);
-            if (killerName != null && plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(player, "utilities.kill.by", Map.of("player", killerName));
+        if (sender instanceof Player p) {
+            if (target.equals(p)) {
+                MessageUtil.send(p, "utilities.kill.self", Map.of());
+            } else {
+                MessageUtil.send(p, "utilities.kill.other", Map.of("player", target.getName()));
+                MessageUtil.send(target, "utilities.kill.by", Map.of("player", p.getName()));
             }
-        });
+        } else {
+            sender.sendMessage("Killed " + target.getName());
+            if (feedbackEnabled) {
+                MessageUtil.send(target, "utilities.kill.by", Map.of("player", senderName));
+            }
+        }
     }
 
-    private void killPlayerByPlayer(Player target, Player killer) {
+    private void performKillAction(Player target) {
         plugin.scheduler().runEntityTask(target, () -> {
-            markForcedDeath(target);
+            target.getPersistentDataContainer().set(deathReasonKey, PersistentDataType.STRING, "command");
             target.setHealth(0.0);
-            MessageUtil.send(target, "utilities.kill.by", Map.of("player", killer.getName()));
         });
     }
 
-    private void markForcedDeath(Player player) {
-        player.getPersistentDataContainer().set(deathReasonKey, PersistentDataType.STRING, "command");
+    private void sendError(Player player, String label, boolean hasOthers) {
+        String usage = plugin.commandConfig().getUsage("kill", hasOthers ? "others" : null, label);
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
+        String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
-        if (!(sender instanceof Player player)) {
-            if ("@a".startsWith(input)) suggestions.add("@a");
+        if (sender instanceof Player player) {
+            if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+
+            if (player.hasPermission(PERM_OTHERS)) {
+                Bukkit.getOnlinePlayers().stream()
+                        .map(Player::getName)
+                        .filter(name -> name.toLowerCase().startsWith(input))
+                        .limit(20)
+                        .forEach(suggestions::add);
+            }
+
+            if (player.hasPermission(PERM_ALL) && selectorAll.toLowerCase().startsWith(input)) {
+                suggestions.add(selectorAll);
+            }
+        } else {
             Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
                     .limit(20)
                     .forEach(suggestions::add);
-            return suggestions;
-        }
 
-        if (!player.hasPermission("aircore.command.kill")) return Collections.emptyList();
-
-        if (player.hasPermission("aircore.command.kill.others")) {
-            Bukkit.getOnlinePlayers().forEach(p -> {
-                if (p.getName().toLowerCase().startsWith(input)) suggestions.add(p.getName());
-            });
-        }
-
-        if (player.hasPermission("aircore.command.kill.all") && "@a".startsWith(input)) {
-            suggestions.add("@a");
+            if (selectorAll.toLowerCase().startsWith(input)) {
+                suggestions.add(selectorAll);
+            }
         }
 
         return suggestions;

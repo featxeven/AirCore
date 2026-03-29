@@ -136,15 +136,6 @@ public final class PlayerRecords {
         return input;
     }
 
-    public void updateName(UUID uuid, String name) {
-        String sql = "UPDATE player_records SET name = ?, updated_at = ? WHERE uuid = ?;";
-        plugin.database().executeAsync(sql, ps -> {
-            ps.setString(1, name);
-            ps.setLong(2, Instant.now().getEpochSecond());
-            ps.setString(3, uuid.toString());
-        });
-    }
-
     public int createPlayerRecord(UUID uuid, String name) {
         String sql = """
         INSERT INTO player_records (uuid, name, balance, updated_at)
@@ -320,6 +311,50 @@ public final class PlayerRecords {
             ps.setFloat(6, loc.getPitch());
             ps.setLong(7, Instant.now().getEpochSecond());
             ps.setString(8, uuid.toString());
+        });
+    }
+
+    public long getPlayerTime(UUID uuid) {
+        String sql = "SELECT player_time FROM player_records WHERE uuid = ?;";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getLong("player_time");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to fetch player_time for " + uuid + ": " + e.getMessage());
+        }
+        return -1L;
+    }
+
+    public void setPlayerTime(UUID uuid, long ticks) {
+        String sql = "UPDATE player_records SET player_time = ?, updated_at = ? WHERE uuid = ?;";
+        plugin.database().executeAsync(sql, ps -> {
+            ps.setLong(1, ticks);
+            ps.setLong(2, Instant.now().getEpochSecond());
+            ps.setString(3, uuid.toString());
+        });
+    }
+
+    public String getPlayerWeather(UUID uuid) {
+        String sql = "SELECT player_weather FROM player_records WHERE uuid = ?;";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("player_weather");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to fetch player_weather for " + uuid + ": " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void setPlayerWeather(UUID uuid, String weatherType) {
+        String sql = "UPDATE player_records SET player_weather = ?, updated_at = ? WHERE uuid = ?;";
+        plugin.database().executeAsync(sql, ps -> {
+            ps.setString(1, weatherType);
+            ps.setLong(2, Instant.now().getEpochSecond());
+            ps.setString(3, uuid.toString());
         });
     }
 }

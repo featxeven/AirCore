@@ -147,6 +147,18 @@ public final class DatabaseManager {
                 stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN skin_signature TEXT;");
             }
         }
+
+        if (!columns.contains("player_time")) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN player_time INTEGER DEFAULT -1;");
+            }
+        }
+
+        if (!columns.contains("player_weather")) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN player_weather TEXT;");
+            }
+        }
     }
 
     public void close() {

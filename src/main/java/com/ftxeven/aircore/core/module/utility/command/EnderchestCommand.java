@@ -20,6 +20,8 @@ public final class EnderchestCommand implements TabExecutor {
 
     private final AirCore plugin;
     private final GuiManager guiManager;
+    private static final String PERM_BASE = "aircore.command.enderchest";
+    private static final String PERM_OTHERS = "aircore.command.enderchest.others";
 
     public EnderchestCommand(AirCore plugin, GuiManager guiManager) {
         this.plugin = plugin;
@@ -31,53 +33,47 @@ public final class EnderchestCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.enderchest")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.enderchest"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
 
         if (args.length == 0) {
-            openOwnEnderchest(player);
+            handleEnderchest(player, player.getName());
             return true;
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.enderchest.others");
         if (!hasOthers) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.enderchest.others"));
+            sendError(player, label, false);
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("enderchest", "others", label)));
+        if (args.length > 1) {
+            sendError(player, label, true);
             return true;
         }
 
-        String targetName = args[0];
-        handleOthers(player, targetName);
+        handleEnderchest(player, args[0]);
         return true;
     }
 
-    private void openOwnEnderchest(Player player) {
-        plugin.scheduler().runEntityTask(player, () ->
-                player.openInventory(guiManager.getEnderchestManager().buildOwn(player))
-        );
-    }
-
-    private void handleOthers(Player player, String targetName) {
+    private void handleEnderchest(Player player, String targetName) {
         OfflinePlayer resolved = resolve(player, targetName);
         if (resolved == null) return;
 
         String realName = plugin.database().records().getRealName(targetName);
 
         if (resolved.getUniqueId().equals(player.getUniqueId())) {
-            openOwnEnderchest(player);
+            plugin.scheduler().runEntityTask(player, () ->
+                    player.openInventory(guiManager.getEnderchestManager().buildOwn(player))
+            );
             return;
         }
 
@@ -87,14 +83,17 @@ public final class EnderchestCommand implements TabExecutor {
         );
     }
 
+    private void sendError(Player player, String label, boolean hasOthers) {
+        String usage = plugin.commandConfig().getUsage("enderchest", hasOthers ? "others" : null, label);
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+    }
+
     private OfflinePlayer resolve(Player player, String name) {
         Player online = Bukkit.getPlayer(name);
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         MessageUtil.send(player, "errors.player-never-joined", Map.of());
         return null;
@@ -105,10 +104,9 @@ public final class EnderchestCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (args.length != 1 || !(sender instanceof Player player)) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
 
-        if (!player.hasPermission("aircore.command.enderchest") ||
-                !player.hasPermission("aircore.command.enderchest.others")) {
+        if (!player.hasPermission(PERM_OTHERS)) {
             return Collections.emptyList();
         }
 

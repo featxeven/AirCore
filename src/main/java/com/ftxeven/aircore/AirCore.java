@@ -18,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class AirCore extends JavaPlugin {
 
     private ConfigManager configManager;
+    private CommandConfig commandConfig;
     private LangManager langManager;
     private AnnouncementManager announcementManager;
     private ChatManager chatManager;
@@ -58,6 +59,7 @@ public final class AirCore extends JavaPlugin {
     }
 
     public void setConfigManager(ConfigManager configManager) { this.configManager = configManager; }
+    public void setCommandConfig(CommandConfig commandConfig) { this.commandConfig = commandConfig; }
     public void setLangManager(LangManager langManager) { this.langManager = langManager; }
     public void setAnnouncementManager(AnnouncementManager announcementManager) { this.announcementManager = announcementManager; }
     public void setChatManager(ChatManager chatManager) { this.chatManager = chatManager; }
@@ -76,6 +78,7 @@ public final class AirCore extends JavaPlugin {
     public void setHookManager(HookManager hookManager) { this.hookManager = hookManager; }
 
     public ConfigManager config() { return configManager; }
+    public CommandConfig commandConfig() { return commandConfig; }
     public LangManager lang() { return langManager; }
     public AnnouncementManager announcements() { return announcementManager; }
     public ChatManager chat() { return chatManager; }

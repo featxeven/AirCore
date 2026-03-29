@@ -15,6 +15,7 @@ import java.util.*;
 public final class UnblockCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.unblock";
 
     public UnblockCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -27,18 +28,22 @@ public final class UnblockCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command.");
+            sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.unblock")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.unblock"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
-        if (args.length == 0 || (plugin.config().errorOnExcessArgs() && args.length > 1)) {
-            String usageKey = args.length == 0 ? "errors.incorrect-usage" : "errors.too-many-arguments";
-            MessageUtil.send(player, usageKey, Map.of("usage", plugin.config().getUsage("unblock", label)));
+        if (args.length == 0) {
+            sendError(player, label, "incorrect-usage");
+            return true;
+        }
+
+        if (args.length > 1) {
+            sendError(player, label, "too-many-arguments");
             return true;
         }
 
@@ -57,9 +62,13 @@ public final class UnblockCommand implements TabExecutor {
         }
 
         plugin.api().blocks().unblock(playerId, targetId);
-
         MessageUtil.send(player, "utilities.blocking.removed", Map.of("player", realName));
         return true;
+    }
+
+    private void sendError(Player player, String label, String key) {
+        String usage = plugin.commandConfig().getUsage("unblock", null, label);
+        MessageUtil.send(player, "errors." + key, Map.of("usage", usage));
     }
 
     @Override
@@ -68,18 +77,22 @@ public final class UnblockCommand implements TabExecutor {
                                       @NotNull String label,
                                       String @NotNull [] args) {
 
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission("aircore.command.unblock")) return Collections.emptyList();
+        if (!(sender instanceof Player player) || !player.hasPermission(PERMISSION)) {
+            return Collections.emptyList();
+        }
 
-        UUID playerId = player.getUniqueId();
-        String input = args[0].toLowerCase();
+        if (args.length == 1) {
+            UUID playerId = player.getUniqueId();
+            String input = args[0].toLowerCase();
 
-        return plugin.core().blocks().getBlocked(playerId).stream()
-                .map(uuid -> plugin.database().records().getName(uuid))
-                .filter(Objects::nonNull)
-                .filter(name -> name.toLowerCase().startsWith(input))
-                .limit(20)
-                .toList();
+            return plugin.core().blocks().getBlocked(playerId).stream()
+                    .map(uuid -> plugin.database().records().getName(uuid))
+                    .filter(Objects::nonNull)
+                    .filter(name -> name.toLowerCase().startsWith(input))
+                    .limit(20)
+                    .toList();
+        }
+        return Collections.emptyList();
     }
 
     private OfflinePlayer resolve(Player sender, String name) {

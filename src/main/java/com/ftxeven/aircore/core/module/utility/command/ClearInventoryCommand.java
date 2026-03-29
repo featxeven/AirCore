@@ -20,87 +20,92 @@ import java.util.UUID;
 public final class ClearInventoryCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.clearinventory";
+    private static final String PERM_OTHERS = "aircore.command.clearinventory.others";
+    private static final String PERM_ALL = "aircore.command.clearinventory.all";
 
     public ClearInventoryCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
 
         if (!(sender instanceof Player player)) {
             if (args.length < 1) {
-                sender.sendMessage("Usage: /" + label + " <player>");
+                sender.sendMessage("Usage: /" + label + " <player|" + selectorAll + ">");
                 return true;
             }
-            handleClear(sender, args[0]);
+            handleClear(sender, args[0], selectorAll);
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.clearinventory")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.clearinventory"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
+        boolean hasAll = player.hasPermission(PERM_ALL);
+        boolean hasExtended = hasOthers || hasAll;
 
         if (args.length == 0) {
-            handleClear(player, player.getName());
+            handleClear(player, player.getName(), selectorAll);
             return true;
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.clearinventory.others");
-        boolean hasAll = player.hasPermission("aircore.command.clearinventory.all");
-
-        if (!hasOthers && !hasAll) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.clearinventory.others"));
+        if (!hasExtended) {
+            sendError(player, label, false);
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            String usage = hasOthers
-                    ? plugin.config().getUsage("clearinventory", "others", label)
-                    : plugin.config().getUsage("clearinventory", label);
-
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
+        if (args.length > 1) {
+            sendError(player, label, true);
             return true;
         }
 
-        String targetName = args[0];
+        String targetArg = args[0];
 
-        if (targetName.equalsIgnoreCase("@a")) {
+        if (targetArg.equalsIgnoreCase(selectorAll)) {
             if (!hasAll) {
-                MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.clearinventory.all"));
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_ALL));
                 return true;
             }
-
-            for (Player target : Bukkit.getOnlinePlayers()) {
-                performClearOnline(target);
-                if (!target.equals(player)) {
-                    MessageUtil.send(target, "utilities.inventory.cleared-by", Map.of("player", player.getName()));
-                }
+        } else {
+            if (!hasOthers) {
+                MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_OTHERS));
+                return true;
             }
-            MessageUtil.send(player, "utilities.inventory.cleared-everyone", Map.of());
-            return true;
         }
 
-        if (!hasOthers) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.clearinventory.others"));
-            return true;
-        }
-
-        handleClear(player, targetName);
+        handleClear(player, targetArg, selectorAll);
         return true;
     }
 
-    private void handleClear(CommandSender sender, String targetName) {
-        OfflinePlayer resolved = resolve(sender, targetName);
+    private void handleClear(CommandSender sender, String targetArg, String selectorAll) {
+        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        boolean feedbackEnabled = plugin.config().consoleToPlayerFeedback();
+
+        if (targetArg.equalsIgnoreCase(selectorAll)) {
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                performClearOnline(target);
+                if (!target.equals(sender)) {
+                    MessageUtil.send(target, "utilities.inventory.cleared-by", Map.of("player", senderName));
+                }
+            }
+            if (sender instanceof Player p) MessageUtil.send(p, "utilities.inventory.cleared-everyone", Map.of());
+            else sender.sendMessage("Cleared inventory for all online players.");
+            return;
+        }
+
+        OfflinePlayer resolved = resolve(sender, targetArg);
         if (resolved == null) return;
 
-        String displayName = plugin.database().records().getRealName(targetName);
+        String displayName = resolved.getName() != null ? resolved.getName() : targetArg;
 
-        if (resolved instanceof Player targetOnline) {
+        if (resolved.isOnline() && resolved.getPlayer() != null) {
+            Player targetOnline = resolved.getPlayer();
             performClearOnline(targetOnline);
             if (sender instanceof Player p) {
                 if (targetOnline.equals(p)) {
@@ -111,6 +116,9 @@ public final class ClearInventoryCommand implements TabExecutor {
                 }
             } else {
                 sender.sendMessage("Cleared inventory for " + displayName);
+                if (feedbackEnabled) {
+                    MessageUtil.send(targetOnline, "utilities.inventory.cleared-by", Map.of("player", senderName));
+                }
             }
         } else {
             final UUID targetId = resolved.getUniqueId();
@@ -136,7 +144,11 @@ public final class ClearInventoryCommand implements TabExecutor {
 
     private void performClearOffline(UUID uuid) {
         plugin.database().inventories().saveInventory(uuid, new ItemStack[36], new ItemStack[4], null);
-        plugin.database().inventories().saveEnderchest(uuid, new ItemStack[27]);
+    }
+
+    private void sendError(Player player, String label, boolean hasOthers) {
+        String usage = plugin.commandConfig().getUsage("clearinventory", hasOthers ? "others" : null, label);
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
     }
 
     private OfflinePlayer resolve(CommandSender sender, String name) {
@@ -144,35 +156,39 @@ public final class ClearInventoryCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
-            sender.sendMessage("Player not found in database.");
+            sender.sendMessage("Player not found");
         }
         return null;
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (args.length != 1 || !(sender instanceof Player player)) return Collections.emptyList();
+        if (args.length != 1) return Collections.emptyList();
 
         String input = args[0].toLowerCase();
+        String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
-        if (player.hasPermission("aircore.command.clearinventory.others")) {
-            Bukkit.getOnlinePlayers().forEach(p -> {
-                if (p.getName().toLowerCase().startsWith(input)) suggestions.add(p.getName());
-            });
-        }
+        if (sender instanceof Player player) {
+            if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
 
-        if (player.hasPermission("aircore.command.clearinventory.all") && "@a".startsWith(input)) {
-            suggestions.add("@a");
+            if (player.hasPermission(PERM_OTHERS)) {
+                Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                        .filter(n -> n.toLowerCase().startsWith(input)).limit(20).forEach(suggestions::add);
+            }
+            if (player.hasPermission(PERM_ALL) && selectorAll.toLowerCase().startsWith(input)) {
+                suggestions.add(selectorAll);
+            }
+        } else {
+            Bukkit.getOnlinePlayers().stream().map(Player::getName)
+                    .filter(n -> n.toLowerCase().startsWith(input)).limit(20).forEach(suggestions::add);
+            if (selectorAll.toLowerCase().startsWith(input)) suggestions.add(selectorAll);
         }
-
         return suggestions;
     }
 }

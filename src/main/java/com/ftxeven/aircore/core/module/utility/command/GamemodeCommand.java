@@ -28,7 +28,6 @@ public final class GamemodeCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             if (args.length < 2) {
                 sender.sendMessage("Usage: /" + label + " <gamemode> <player>");
@@ -43,57 +42,50 @@ public final class GamemodeCommand implements TabExecutor {
             return true;
         }
 
+        boolean hasOthers = player.hasPermission("aircore.command.gamemode.others");
+
         if (args.length == 0) {
-            String usageKey = player.hasPermission("aircore.command.gamemode.others") ? "others" : null;
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("gamemode", usageKey, label)));
+            sendUsage(player, "incorrect-usage", label);
             return true;
         }
 
-        boolean hasOthers = player.hasPermission("aircore.command.gamemode.others");
+        if (!hasOthers && args.length > 1) {
+            sendUsage(player, "too-many-arguments", label);
+            return true;
+        }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 2) {
-            String usageKey = hasOthers ? "others" : null;
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("gamemode", usageKey, label)));
+        if (args.length > 2) {
+            sendUsage(player, "too-many-arguments", label);
             return true;
         }
 
         GameMode mode = parseMode(args[0]);
         if (mode == null) {
-            String usageKey = hasOthers ? "others" : null;
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("gamemode", usageKey, label)));
+            sendUsage(player, "incorrect-usage", label);
             return true;
         }
 
-        if (args.length == 1) {
-            handleGamemode(player, args[0], player.getName());
-            return true;
-        }
+        String targetName = (args.length == 1) ? player.getName() : args[1];
 
-        if (!hasOthers) {
+        if (!targetName.equalsIgnoreCase(player.getName()) && !hasOthers) {
             MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.gamemode.others"));
             return true;
         }
 
-        handleGamemode(player, args[0], args[1]);
+        handleGamemode(player, args[0], targetName);
         return true;
     }
 
     private void handleGamemode(CommandSender sender, String modeInput, String targetName) {
         GameMode mode = parseMode(modeInput);
-        if (mode == null) {
-            if (!(sender instanceof Player)) sender.sendMessage("Invalid gamemode.");
-            return;
-        }
+        if (mode == null) return;
 
         Player target = Bukkit.getPlayerExact(targetName);
         if (target == null) {
             if (sender instanceof Player p) {
-                MessageUtil.send(p, "errors.player-not-found", Map.of("player", targetName));
+                MessageUtil.send(p, "errors.player-not-found", Map.of());
             } else {
-                sender.sendMessage("Player not found.");
+                sender.sendMessage("Player not found");
             }
             return;
         }
@@ -119,7 +111,14 @@ public final class GamemodeCommand implements TabExecutor {
     }
 
     private GameMode parseMode(String input) {
-        return switch (input.toLowerCase()) {
+        String lower = input.toLowerCase();
+
+        if (lower.equals(plugin.commandConfig().getSelector("gamemode", "survival"))) return GameMode.SURVIVAL;
+        if (lower.equals(plugin.commandConfig().getSelector("gamemode", "creative"))) return GameMode.CREATIVE;
+        if (lower.equals(plugin.commandConfig().getSelector("gamemode", "adventure"))) return GameMode.ADVENTURE;
+        if (lower.equals(plugin.commandConfig().getSelector("gamemode", "spectator"))) return GameMode.SPECTATOR;
+
+        return switch (lower) {
             case "0", "s", "survival" -> GameMode.SURVIVAL;
             case "1", "c", "creative" -> GameMode.CREATIVE;
             case "2", "a", "adventure" -> GameMode.ADVENTURE;
@@ -128,32 +127,39 @@ public final class GamemodeCommand implements TabExecutor {
         };
     }
 
+    private void sendUsage(Player player, String type, String label) {
+        String variant = player.hasPermission("aircore.command.gamemode.others") ? "others" : null;
+        MessageUtil.send(player, "errors." + type, Map.of("usage", plugin.commandConfig().getUsage("gamemode", variant, label)));
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-
         String input = args[args.length - 1].toLowerCase();
 
         if (args.length == 1) {
             if (sender instanceof Player player && !player.hasPermission("aircore.command.gamemode")) {
                 return Collections.emptyList();
             }
-            return Stream.of("survival", "creative", "adventure", "spectator")
-                    .filter(opt -> opt.startsWith(input))
-                    .toList();
+
+            return Stream.of(
+                    plugin.commandConfig().getSelector("gamemode", "survival"),
+                    plugin.commandConfig().getSelector("gamemode", "creative"),
+                    plugin.commandConfig().getSelector("gamemode", "adventure"),
+                    plugin.commandConfig().getSelector("gamemode", "spectator")
+            ).filter(opt -> opt != null && opt.startsWith(input)).toList();
         }
 
         if (args.length == 2) {
-            if (sender instanceof Player player) {
-                if (!player.hasPermission("aircore.command.gamemode.others")) return Collections.emptyList();
+            if (sender instanceof Player player && !player.hasPermission("aircore.command.gamemode.others")) {
+                return Collections.emptyList();
             }
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
-                    .limit(20)
-                    .toList();
+                    .limit(20).toList();
         }
 
         return Collections.emptyList();

@@ -17,56 +17,52 @@ import java.util.Map;
 public final class TpPosCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.tppos";
 
     public TpPosCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.tppos")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tppos"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
+        String usage = plugin.commandConfig().getUsage("tppos", label);
+
         if (args.length < 3) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("tppos", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", usage));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 3) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("tppos", label)));
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
         try {
-            final Location currentLoc = player.getLocation();
-            final double x = parseCoordinate(args[0], currentLoc.getX());
-            final double y = parseCoordinate(args[1], currentLoc.getY());
-            final double z = parseCoordinate(args[2], currentLoc.getZ());
+            Location current = player.getLocation();
+            double x = parseCoordinate(args[0], current.getX());
+            double y = parseCoordinate(args[1], current.getY());
+            double z = parseCoordinate(args[2], current.getZ());
 
-            final Location targetLoc = new Location(
-                    player.getWorld(),
-                    x, y, z,
-                    currentLoc.getYaw(),
-                    currentLoc.getPitch()
-            );
+            Location target = new Location(player.getWorld(), x, y, z, current.getYaw(), current.getPitch());
 
-            plugin.core().teleports().teleport(player, targetLoc);
+            plugin.core().teleports().teleport(player, target);
 
-            MessageUtil.send(player, "teleport.coords.success",
-                    Map.of("x", Double.toString(Math.floor(x * 100) / 100),
-                            "y", Double.toString(Math.floor(y * 100) / 100),
-                            "z", Double.toString(Math.floor(z * 100) / 100)));
+            MessageUtil.send(player, "teleport.coords.success", Map.of(
+                    "x", String.format("%.2f", x),
+                    "y", String.format("%.2f", y),
+                    "z", String.format("%.2f", z)
+            ));
 
         } catch (NumberFormatException e) {
             MessageUtil.send(player, "teleport.coords.invalid", Map.of());
@@ -77,7 +73,7 @@ public final class TpPosCommand implements TabExecutor {
 
     private double parseCoordinate(String arg, double relativeBase) throws NumberFormatException {
         if (arg.isEmpty()) throw new NumberFormatException();
-        if (arg.charAt(0) == '~') {
+        if (arg.startsWith("~")) {
             if (arg.length() == 1) return relativeBase;
             return relativeBase + Double.parseDouble(arg.substring(1));
         }
@@ -85,23 +81,21 @@ public final class TpPosCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length > 3) return Collections.emptyList();
-
-        final Block targetBlock = player.getTargetBlockExact(5);
-
-        if (targetBlock != null && !targetBlock.isEmpty()) {
-            return switch (args.length) {
-                case 1 -> List.of(Integer.toString(targetBlock.getX()));
-                case 2 -> List.of(Integer.toString(targetBlock.getY()));
-                case 3 -> List.of(Integer.toString(targetBlock.getZ()));
-                default -> List.of("~");
-            };
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (!(sender instanceof Player player) || !player.hasPermission(PERMISSION) || args.length > 3) {
+            return Collections.emptyList();
         }
 
-        return List.of("~");
+        Block target = player.getTargetBlockExact(5);
+        String x = target != null ? String.valueOf(target.getX()) : "~";
+        String y = target != null ? String.valueOf(target.getY()) : "~";
+        String z = target != null ? String.valueOf(target.getZ()) : "~";
+
+        return switch (args.length) {
+            case 1 -> List.of(x + " " + y + " " + z, x + " " + y, x);
+            case 2 -> List.of(y + " " + z, y);
+            case 3 -> List.of(z);
+            default -> Collections.emptyList();
+        };
     }
 }

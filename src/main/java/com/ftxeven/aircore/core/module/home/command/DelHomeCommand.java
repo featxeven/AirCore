@@ -54,12 +54,12 @@ public final class DelHomeCommand implements TabExecutor {
             }
 
             if (args.length < 3) {
-                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("delhome", "others", label)));
+                MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.commandConfig().getUsage("delhome", "others", label)));
                 return true;
             }
 
             if (plugin.config().errorOnExcessArgs() && args.length > 3) {
-                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("delhome", "others", label)));
+                MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.commandConfig().getUsage("delhome", "others", label)));
                 return true;
             }
 
@@ -71,12 +71,12 @@ public final class DelHomeCommand implements TabExecutor {
         }
 
         if (args.length < 1) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("delhome", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.commandConfig().getUsage("delhome", label)));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("delhome", label)));
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.commandConfig().getUsage("delhome", label)));
             return true;
         }
 

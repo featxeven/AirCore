@@ -64,6 +64,7 @@ public final class CoreCommand implements TabExecutor {
             case "config" -> {
                 plugin.config().reload();
                 plugin.core().reload();
+                plugin.commandConfig().reload();
                 notifyReload(sender, "config");
             }
             case "guis" -> {
@@ -80,6 +81,7 @@ public final class CoreCommand implements TabExecutor {
             }
             case "all" -> {
                 plugin.config().reload();
+                plugin.commandConfig().reload();
                 plugin.lang().reload();
                 plugin.core().reload();
                 plugin.gui().reload();
@@ -116,7 +118,7 @@ public final class CoreCommand implements TabExecutor {
         if (sender instanceof Player p) {
             MessageUtil.send(p, "general.plugin-usage", Map.of());
         } else {
-            sender.sendMessage("Usage: /aircore <reload [type]|version>");
+            sender.sendMessage("Usage: /aircore <reload [module]|version>");
         }
     }
 

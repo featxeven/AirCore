@@ -11,6 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,51 +19,50 @@ import java.util.UUID;
 public final class PayCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.pay";
+    private static final String BYPASS_TOGGLE = "aircore.bypass.pay.toggle";
 
     public PayCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
-
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command");
+            sender.sendMessage("Only players may use this command.");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.pay")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.pay"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
 
         if (args.length < 2) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("pay", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.commandConfig().getUsage("pay", label)));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 2) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("pay", label)));
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.commandConfig().getUsage("pay", label)));
             return true;
         }
 
-        String targetArg = args[0];
-        OfflinePlayer target = resolve(player, targetArg);
+        OfflinePlayer target = resolve(player, args[0]);
         if (target == null) return true;
 
-        if (target.getUniqueId().equals(player.getUniqueId()) && !plugin.config().economyAllowSelfPay()) {
+        UUID targetId = target.getUniqueId();
+        UUID senderId = player.getUniqueId();
+
+        if (targetId.equals(senderId) && !plugin.config().economyAllowSelfPay()) {
             MessageUtil.send(player, "economy.payments.error-self", Map.of());
             return true;
         }
 
-        UUID targetId = target.getUniqueId();
-        String targetName = plugin.database().records().getRealName(targetArg);
+        String realTargetName = plugin.database().records().getRealName(args[0]);
 
-        if (plugin.core().blocks().isBlocked(targetId, player.getUniqueId())) {
-            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", targetName));
+        if (plugin.core().blocks().isBlocked(targetId, senderId)) {
+            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", realTargetName));
             return true;
         }
 
@@ -85,7 +85,6 @@ public final class PayCommand implements TabExecutor {
             return true;
         }
 
-        UUID senderId = player.getUniqueId();
         double senderBalance = plugin.economy().balances().getBalance(senderId);
         if (senderBalance < amount) {
             MessageUtil.send(player, "economy.payments.error-insufficient", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
@@ -97,24 +96,25 @@ public final class PayCommand implements TabExecutor {
             double targetBalance = plugin.economy().balances().getBalance(targetId);
             if (targetBalance + amount > maxBalance) {
                 MessageUtil.send(player, "economy.payments.error-exceed",
-                        Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(maxBalance)));
+                        Map.of("player", realTargetName, "amount", plugin.economy().formats().formatAmount(maxBalance)));
                 return true;
             }
         }
 
-        if (!plugin.core().toggles().isEnabled(targetId, ToggleService.Toggle.PAY)
-                && !player.hasPermission("aircore.bypass.pay.toggle")) {
-            MessageUtil.send(player, "economy.payments.error-disabled", Map.of("player", targetName));
+        if (!plugin.core().toggles().isEnabled(targetId, ToggleService.Toggle.PAY) && !player.hasPermission(BYPASS_TOGGLE)) {
+            MessageUtil.send(player, "economy.payments.error-disabled", Map.of("player", realTargetName));
             return true;
         }
 
         plugin.economy().transactions().withdraw(senderId, amount);
         plugin.economy().transactions().deposit(targetId, amount);
 
-        MessageUtil.send(player, "economy.payments.send", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
+        String formattedAmount = plugin.economy().formats().formatAmount(amount);
+        MessageUtil.send(player, "economy.payments.send", Map.of("player", realTargetName, "amount", formattedAmount));
+
         if (target.isOnline() && target.getPlayer() != null) {
             MessageUtil.send(target.getPlayer(), "economy.payments.receive",
-                    Map.of("player", player.getName(), "amount", plugin.economy().formats().formatAmount(amount)));
+                    Map.of("player", player.getName(), "amount", formattedAmount));
         }
 
         return true;
@@ -122,8 +122,8 @@ public final class PayCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player) || !player.hasPermission("aircore.command.pay") || args.length != 1) {
-            return List.of();
+        if (args.length != 1 || !(sender instanceof Player player) || !player.hasPermission(PERM_BASE)) {
+            return Collections.emptyList();
         }
 
         String input = args[0].toLowerCase();
@@ -139,9 +139,7 @@ public final class PayCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;

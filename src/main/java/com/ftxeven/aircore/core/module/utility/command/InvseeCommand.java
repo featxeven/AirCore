@@ -43,13 +43,13 @@ public final class InvseeCommand implements TabExecutor {
 
         if (args.length < 1) {
             MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("invsee", label)));
+                    Map.of("usage", plugin.commandConfig().getUsage("invsee", label)));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 1) {
             MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("invsee", label)));
+                    Map.of("usage", plugin.commandConfig().getUsage("invsee", label)));
             return true;
         }
 

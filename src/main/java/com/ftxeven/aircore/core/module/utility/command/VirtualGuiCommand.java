@@ -46,9 +46,9 @@ public final class VirtualGuiCommand implements TabExecutor {
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 0) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage(menuKey, label)));
+        if (args.length > 0) {
+            String usage = plugin.commandConfig().getUsage(menuKey, null, label);
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
@@ -57,7 +57,10 @@ public final class VirtualGuiCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender,
+                                      @NotNull Command cmd,
+                                      @NotNull String label,
+                                      String @NotNull [] args) {
         return Collections.emptyList();
     }
 }

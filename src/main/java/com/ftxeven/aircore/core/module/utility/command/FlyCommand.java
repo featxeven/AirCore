@@ -19,6 +19,8 @@ import java.util.UUID;
 public final class FlyCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.fly";
+    private static final String PERM_OTHERS = "aircore.command.fly.others";
 
     public FlyCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -29,7 +31,6 @@ public final class FlyCommand implements TabExecutor {
                              @NotNull Command cmd,
                              @NotNull String label,
                              String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             if (args.length < 1) {
                 sender.sendMessage("Usage: /" + label + " <player>");
@@ -39,24 +40,25 @@ public final class FlyCommand implements TabExecutor {
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.fly")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.fly"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
 
-        if (args.length > 0 && !player.hasPermission("aircore.command.fly.others")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.fly.others"));
-            return true;
-        }
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
 
         if (args.length == 0) {
             handleFly(player, player.getName());
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("fly", "others", label)));
+        if (!hasOthers) {
+            sendError(player, label, false);
+            return true;
+        }
+
+        if (args.length > 1) {
+            sendError(player, label, true);
             return true;
         }
 
@@ -64,12 +66,12 @@ public final class FlyCommand implements TabExecutor {
         return true;
     }
 
-    private void handleFly(CommandSender sender, String targetArg) {
-        OfflinePlayer resolved = resolve(sender, targetArg);
+    private void handleFly(CommandSender sender, String targetName) {
+        OfflinePlayer resolved = resolve(sender, targetName);
         if (resolved == null) return;
 
         UUID uuid = resolved.getUniqueId();
-        String finalName = plugin.database().records().getRealName(targetArg);
+        String realName = resolved.getName() != null ? resolved.getName() : targetName;
         String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         boolean currentState = resolved.isOnline() && resolved.getPlayer() != null
@@ -95,11 +97,10 @@ public final class FlyCommand implements TabExecutor {
                     if (uuid.equals(p.getUniqueId())) {
                         MessageUtil.send(p, newState ? "utilities.fly.enabled" : "utilities.fly.disabled", Map.of());
                     } else {
-                        MessageUtil.send(p, newState ? "utilities.fly.enabled-for" : "utilities.fly.disabled-for",
-                                Map.of("player", finalName));
+                        MessageUtil.send(p, newState ? "utilities.fly.enabled-for" : "utilities.fly.disabled-for", Map.of("player", realName));
                     }
                 } else {
-                    sender.sendMessage("Fly mode for " + finalName + " -> " + (newState ? "enabled" : "disabled"));
+                    sender.sendMessage("Fly mode for " + realName + " -> " + (newState ? "enabled" : "disabled"));
                 }
 
                 if (resolved.isOnline() && resolved.getPlayer() != null) {
@@ -107,11 +108,15 @@ public final class FlyCommand implements TabExecutor {
                     if (sender instanceof Player p && onlineTarget.equals(p)) return;
                     if (!(sender instanceof Player) && !plugin.config().consoleToPlayerFeedback()) return;
 
-                    MessageUtil.send(onlineTarget, newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by",
-                            Map.of("player", senderName));
+                    MessageUtil.send(onlineTarget, newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by", Map.of("player", senderName));
                 }
             });
         });
+    }
+
+    private void sendError(Player player, String label, boolean hasOthers) {
+        String usage = plugin.commandConfig().getUsage("fly", hasOthers ? "others" : null, label);
+        MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
     }
 
     private OfflinePlayer resolve(CommandSender sender, String name) {
@@ -119,14 +124,12 @@ public final class FlyCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
-            sender.sendMessage("Player not found in database.");
+            sender.sendMessage("Player not found");
         }
         return null;
     }
@@ -138,12 +141,11 @@ public final class FlyCommand implements TabExecutor {
                                       String @NotNull [] args) {
         if (args.length != 1) return Collections.emptyList();
 
-        String input = args[0].toLowerCase();
-
-        if (sender instanceof Player player) {
-            if (!player.hasPermission("aircore.command.fly.others")) return Collections.emptyList();
+        if (sender instanceof Player player && !player.hasPermission(PERM_OTHERS)) {
+            return Collections.emptyList();
         }
 
+        String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))

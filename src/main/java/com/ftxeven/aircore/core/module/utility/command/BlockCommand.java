@@ -20,6 +20,8 @@ import java.util.UUID;
 public final class BlockCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.block";
+    private static final String BYPASS_PERM = "aircore.bypass.block";
 
     public BlockCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -31,50 +33,47 @@ public final class BlockCommand implements TabExecutor {
                              @NotNull String label,
                              String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command.");
+            sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.block")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.block"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
         if (args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("block", label)));
+            sendError(player, label, "incorrect-usage");
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("block", label)));
+        if (args.length > 1) {
+            sendError(player, label, "too-many-arguments");
             return true;
         }
 
         String targetName = args[0];
 
         plugin.scheduler().runAsync(() -> {
-            OfflinePlayer resolved = resolveOffline(targetName);
+            OfflinePlayer resolved = resolve(player, targetName);
+            if (resolved == null) return;
 
-            if (resolved == null) {
-                plugin.scheduler().runTask(() -> MessageUtil.send(player, "errors.player-never-joined", Map.of()));
-                return;
-            }
+            UUID targetId = resolved.getUniqueId();
+            String realName = plugin.database().records().getRealName(targetName);
 
-            if (resolved.getUniqueId().equals(player.getUniqueId())) {
+            if (targetId.equals(player.getUniqueId())) {
                 plugin.scheduler().runTask(() -> MessageUtil.send(player, "utilities.blocking.error-self", Map.of()));
                 return;
             }
 
-            boolean bypass = hasBypassPermission(resolved);
-            String displayName = plugin.database().records().getRealName(targetName);
+            if (hasBypassPermission(resolved)) {
+                plugin.scheduler().runTask(() -> MessageUtil.send(player, "utilities.blocking.error-cannot", Map.of("player", realName)));
+                return;
+            }
 
             plugin.scheduler().runTask(() -> {
                 if (!player.isOnline()) return;
-                if (bypass) {
-                    MessageUtil.send(player, "utilities.blocking.error-cannot", Map.of("player", displayName));
-                    return;
-                }
-                executeBlock(player, resolved.getUniqueId(), displayName);
+                executeBlock(player, targetId, realName);
             });
         });
 
@@ -90,24 +89,25 @@ public final class BlockCommand implements TabExecutor {
         }
 
         int limit = plugin.core().blocks().getLimit(playerId);
-        int current = plugin.core().blocks().getBlocked(playerId).size();
+        int currentSize = plugin.core().blocks().getBlocked(playerId).size();
 
-        if (current >= limit) {
+        if (currentSize >= limit) {
             MessageUtil.send(executor, "utilities.blocking.limit", Map.of("limit", String.valueOf(limit)));
             return;
         }
 
         plugin.api().blocks().block(playerId, targetId);
-
         MessageUtil.send(executor, "utilities.blocking.added", Map.of("player", displayName));
+    }
+
+    private void sendError(Player player, String label, String key) {
+        String usage = plugin.commandConfig().getUsage("block", null, label);
+        MessageUtil.send(player, "errors." + key, Map.of("usage", usage));
     }
 
     private boolean hasBypassPermission(OfflinePlayer target) {
         if (target.isOp()) return true;
-
-        if (target instanceof Player online) {
-            return online.hasPermission("aircore.bypass.block");
-        }
+        if (target instanceof Player online) return online.hasPermission(BYPASS_PERM);
 
         var registration = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (registration == null) return false;
@@ -116,25 +116,28 @@ public final class BlockCommand implements TabExecutor {
         User user = api.getUserManager().loadUser(target.getUniqueId()).join();
 
         return user != null && user.getCachedData().getPermissionData()
-                .checkPermission("aircore.bypass.block").asBoolean();
+                .checkPermission(BYPASS_PERM).asBoolean();
     }
 
-    private OfflinePlayer resolveOffline(String name) {
+    private OfflinePlayer resolve(Player sender, String name) {
         Player online = Bukkit.getPlayer(name);
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
+        plugin.scheduler().runTask(() -> MessageUtil.send(sender, "errors.player-never-joined", Map.of()));
         return null;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission("aircore.command.block")) return Collections.emptyList();
+    public List<String> onTabComplete(@NotNull CommandSender sender,
+                                      @NotNull Command cmd,
+                                      @NotNull String label,
+                                      String @NotNull [] args) {
+        if (!(sender instanceof Player player) || args.length != 1 || !player.hasPermission(PERMISSION)) {
+            return Collections.emptyList();
+        }
 
         String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()

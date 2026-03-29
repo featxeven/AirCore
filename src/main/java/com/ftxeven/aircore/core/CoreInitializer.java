@@ -5,10 +5,7 @@ import com.ftxeven.aircore.api.AirCoreAPI;
 import com.ftxeven.aircore.api.AirCoreAPIImpl;
 import com.ftxeven.aircore.api.AirCorePAPIExpansion;
 import com.ftxeven.aircore.api.AirCoreProvider;
-import com.ftxeven.aircore.config.AnnouncementManager;
-import com.ftxeven.aircore.config.ConfigManager;
-import com.ftxeven.aircore.config.LangManager;
-import com.ftxeven.aircore.config.PlaceholderManager;
+import com.ftxeven.aircore.config.*;
 import com.ftxeven.aircore.core.hook.HookManager;
 import com.ftxeven.aircore.core.module.chat.ChatManager;
 import com.ftxeven.aircore.core.module.economy.EconomyManager;
@@ -59,6 +56,7 @@ public final class CoreInitializer {
         logServerType();
 
         plugin.setConfigManager(new ConfigManager(plugin));
+        plugin.setCommandConfig(new CommandConfig(plugin));
         plugin.setLangManager(new LangManager(plugin));
 
         DatabaseManager db = new DatabaseManager(plugin);
@@ -264,6 +262,7 @@ public final class CoreInitializer {
         reg("back", new BackCommand(plugin));
         reg("announcement", new AnnouncementCommand(plugin));
         reg("announcetoggle", new AnnounceToggleCommand(plugin));
+        reg("pweather", new PlayerWeatherCommand(plugin));
 
         // Virtual GUIs
         reg("craftingtable", new VirtualGuiCommand(plugin, "craftingtable", p -> p.openWorkbench(null, true)));
@@ -287,22 +286,18 @@ public final class CoreInitializer {
 
     private void reg(String name, CommandExecutor executor) {
         String lower = name.toLowerCase();
-        if (plugin.config().disabledCommands().contains(lower)) return;
+        if (plugin.commandConfig().disabledCommands().contains(lower)) return;
 
         PluginCommand cmd = plugin.getCommand(name);
         if (cmd == null) return;
 
         cmd.setExecutor(executor);
 
-        var section = plugin.getConfig().getConfigurationSection("command-usages." + lower);
-        if (section == null) return;
+        try {
+            cmd.setUsage(plugin.commandConfig().getUsage(lower, name));
+        } catch (IllegalArgumentException ignored) {}
 
-        String usage = section.getString("usage");
-        if (usage != null) {
-            cmd.setUsage(usage.replace("%label%", name));
-        }
-
-        List<String> aliases = section.getStringList("aliases");
+        List<String> aliases = plugin.commandConfig().getAliases(lower);
         if (!aliases.isEmpty()) {
             aliases.removeIf(a -> a == null || a.isBlank());
             cmd.setAliases(aliases);
@@ -320,7 +315,7 @@ public final class CoreInitializer {
     }
 
     private void unregisterDisabledCommands() {
-        List<String> disabled = plugin.config().disabledCommands();
+        List<String> disabled = plugin.commandConfig().disabledCommands();
         for (String cmdName : disabled) {
             try {
                 Map<String, Command> knownCommands = getKnownCommands();

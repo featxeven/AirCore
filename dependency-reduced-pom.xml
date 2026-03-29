@@ -4,18 +4,10 @@
   <groupId>com.ftxeven</groupId>
   <artifactId>AirCore</artifactId>
   <name>AirCore</name>
-  <version>1.0.0</version>
+  <version>1.1.13</version>
   <description>Core commands and features for all servers</description>
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.5.0</version>
@@ -25,8 +17,35 @@
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>org.bstats</pattern>
+                  <shadedPattern>com.ftxeven.aircore.bstats</shadedPattern>
+                </relocation>
+              </relocations>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <source>21</source>
+          <target>21</target>
+          <release>21</release>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -47,12 +66,32 @@
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
     </repository>
+    <repository>
+      <id>enginehub</id>
+      <url>https://maven.enginehub.org/repo/</url>
+    </repository>
+    <repository>
+      <id>nexomc-repo</id>
+      <url>https://repo.nexomc.com/releases</url>
+    </repository>
+    <repository>
+      <id>itemsadder-repo</id>
+      <url>https://maven.devs.beer/</url>
+    </repository>
+    <repository>
+      <id>momirealms-repo</id>
+      <url>https://repo.momirealms.net/releases/</url>
+    </repository>
+    <repository>
+      <id>alessiodp-repo</id>
+      <url>https://repo.alessiodp.com/releases/</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
       <groupId>io.papermc.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.21.4-R0.1-SNAPSHOT</version>
+      <version>1.21.10-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -79,9 +118,33 @@
       <version>1.7</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.sk89q.worldguard</groupId>
+      <artifactId>worldguard-bukkit</artifactId>
+      <version>7.0.12</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.nexomc</groupId>
+      <artifactId>nexo</artifactId>
+      <version>1.4.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>dev.lone</groupId>
+      <artifactId>api-itemsadder</artifactId>
+      <version>4.0.10</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.momirealms</groupId>
+      <artifactId>craft-engine-core</artifactId>
+      <version>0.0.67</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <properties>
     <java.version>21</java.version>
-    <paper.api.version>1.21.4-R0.1-SNAPSHOT</paper.api.version>
+    <paper.api.version>1.21.10-R0.1-SNAPSHOT</paper.api.version>
   </properties>
 </project>

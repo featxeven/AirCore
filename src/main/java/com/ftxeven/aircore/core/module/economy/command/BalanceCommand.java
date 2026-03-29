@@ -10,6 +10,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,16 +18,15 @@ import java.util.UUID;
 public final class BalanceCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.balance";
+    private static final String PERM_OTHERS = "aircore.command.balance.others";
 
     public BalanceCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
             if (args.length < 1) {
@@ -37,24 +37,21 @@ public final class BalanceCommand implements TabExecutor {
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.balance")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.balance"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
+
+        boolean hasOthers = player.hasPermission(PERM_OTHERS);
 
         if (args.length == 0) {
             handleBalance(player, player.getName());
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.balance.others")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.balance.others"));
-            return true;
-        }
-
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("balance", "others", label)));
+        if (!hasOthers || (plugin.config().errorOnExcessArgs() && args.length > 1)) {
+            String usage = plugin.commandConfig().getUsage("balance", hasOthers ? "others" : null, label);
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
@@ -83,13 +80,13 @@ public final class BalanceCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (args.length != 1) return List.of();
-        String input = args[0].toLowerCase();
+        if (args.length != 1) return Collections.emptyList();
 
-        if (sender instanceof Player player && !player.hasPermission("aircore.command.balance.others")) {
-            return List.of();
+        if (sender instanceof Player player && !player.hasPermission(PERM_OTHERS)) {
+            return Collections.emptyList();
         }
 
+        String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
@@ -102,14 +99,12 @@ public final class BalanceCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "errors.player-never-joined", Map.of());
         } else {
-            sender.sendMessage("Player not found in database.");
+            sender.sendMessage("Player not found");
         }
         return null;
     }

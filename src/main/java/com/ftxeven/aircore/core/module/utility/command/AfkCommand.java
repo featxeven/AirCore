@@ -13,79 +13,82 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public final class AfkCommand implements TabExecutor {
+
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.afk";
 
     public AfkCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.afk")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.afk"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 0) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("afk", label)));
+            String usage = plugin.commandConfig().getUsage("afk", label);
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
-        if (plugin.utility().afk().wasRecentlyCleared(player.getUniqueId())) {
+        UUID uuid = player.getUniqueId();
+
+        if (plugin.utility().afk().wasRecentlyCleared(uuid)) {
             return true;
         }
 
-        if (plugin.utility().afk().isAfk(player.getUniqueId())) {
-            stopAfk(player);
+        if (plugin.utility().afk().isAfk(uuid)) {
+            handleStopAfk(player);
         } else {
-            startAfk(player);
+            handleStartAfk(player);
         }
 
         return true;
     }
 
-    private void startAfk(Player player) {
+    private void handleStartAfk(Player player) {
         plugin.utility().afk().setAfk(player.getUniqueId());
         MessageUtil.send(player, "utilities.afk.set", Map.of());
 
+        String name = player.getName();
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other.equals(player)) continue;
             if (other.hasPermission("aircore.command.afk.notify")) {
-                MessageUtil.send(other, "utilities.afk.set-notify", Map.of("player", player.getName()));
+                MessageUtil.send(other, "utilities.afk.set-notify", Map.of("player", name));
             }
         }
     }
 
-    private void stopAfk(Player player) {
+    private void handleStopAfk(Player player) {
         long elapsed = plugin.utility().afk().clearAfk(player.getUniqueId());
         String timeStr = TimeUtil.formatSeconds(plugin, elapsed);
 
         MessageUtil.send(player, "utilities.afk.stop", Map.of("time", timeStr));
 
+        String name = player.getName();
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other.equals(player)) continue;
             if (other.hasPermission("aircore.command.afk.notify")) {
                 MessageUtil.send(other, "utilities.afk.stop-notify",
-                        Map.of("player", player.getName(), "time", timeStr));
+                        Map.of("player", name, "time", timeStr));
             }
         }
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         return Collections.emptyList();
     }
 }

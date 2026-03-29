@@ -249,6 +249,10 @@ commands:
     description: Toggles whether you see periodic announcements.
     usage: /announcetoggle
     permission: aircore.command.announcetoggle
+  pweather:
+    description: Changes the weather for a player.
+    usage: /pweather <type> [player]
+    permission: aircore.command.pweather
 
 permissions:
   aircore.command.admin: {description: "Admin command.", default: op}
@@ -304,17 +308,17 @@ permissions:
     children:
       aircore.command.eco: true
       aircore.command.eco.give: true
-      aircore.command.eco.give.online: true
       aircore.command.eco.give.all: true
+      aircore.command.eco.give.server: true
       aircore.command.eco.take: true
-      aircore.command.eco.take.online: true
       aircore.command.eco.take.all: true
+      aircore.command.eco.take.server: true
       aircore.command.eco.set: true
-      aircore.command.eco.set.online: true
       aircore.command.eco.set.all: true
+      aircore.command.eco.set.server: true
       aircore.command.eco.reset: true
-      aircore.command.eco.reset.online: true
       aircore.command.eco.reset.all: true
+      aircore.command.eco.reset.server: true
   aircore.command.pay: {description: "Use /pay.", default: op}
   aircore.command.paytoggle: {description: "Toggle payments.", default: op}
   aircore.command.paytoggle.others: {description: "Toggle payments for others.", default: op}
@@ -363,9 +367,9 @@ permissions:
   aircore.command.heal.others: {description: "Heal others.", default: op}
   aircore.command.heal.all: {description: "Heal all.", default: op}
   aircore.command.time: {description: "Use /time.", default: op}
-  aircore.command.time.world: {description: "Set time per world.", default: op}
   aircore.command.weather: {description: "Use /weather.", default: op}
-  aircore.command.weather.world: {description: "Set weather per world.", default: op}
+  aircore.command.pweather: {description: "Use /pweather.", default: op}
+  aircore.command.pweather.others: {description: "Set others' /pweather.", default: op}
   aircore.command.virtual.*:
     description: Access to all virtual workstations.
     default: op

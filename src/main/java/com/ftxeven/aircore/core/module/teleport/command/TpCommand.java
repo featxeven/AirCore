@@ -3,28 +3,29 @@ package com.ftxeven.aircore.core.module.teleport.command;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.util.MessageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public final class TpCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERM_BASE = "aircore.command.tp";
+    private static final String PERM_OTHERS = "aircore.command.tp.others";
 
     public TpCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
             if (args.length < 2) {
                 sender.sendMessage("Usage: /" + label + " <player> <target>");
@@ -39,32 +40,33 @@ public final class TpCommand implements TabExecutor {
                 return true;
             }
 
-            String consoleName = String.valueOf(plugin.lang().get("general.console-name"));
-            plugin.core().teleports().teleport(target, other.getLocation());
+            String consoleName = (String) plugin.lang().get("general.console-name");
+            Location destination = plugin.core().teleports().adjustToCenter(other.getLocation());
+            plugin.core().teleports().teleport(target, destination);
 
             sender.sendMessage("Teleported " + target.getName() + " to " + other.getName() + ".");
-            MessageUtil.send(target, "teleport.direct.to-player-by",
-                    Map.of("player", consoleName, "target", other.getName()));
+            MessageUtil.send(target, "teleport.direct.to-player-by", Map.of("player", consoleName, "target", other.getName()));
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.tp")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tp"));
-            return true;
-        }
-
-        if (args.length < 1) {
-            sendUsage(player, label);
-            return true;
-        }
-
-        if (args.length >= 2 && !player.hasPermission("aircore.command.tp.others")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tp.others"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 2) {
             MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", getUsageString(player, label)));
+            return true;
+        }
+
+        if (args.length < 1) {
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", getUsageString(player, label)));
+            return true;
+        }
+
+        boolean hasOthersPerm = player.hasPermission(PERM_OTHERS);
+        if (args.length >= 2 && !hasOthersPerm) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_OTHERS));
             return true;
         }
 
@@ -75,7 +77,9 @@ public final class TpCommand implements TabExecutor {
         }
 
         if (args.length == 1) {
-            handleSingleTeleport(player, target);
+            Location destination = plugin.core().teleports().adjustToCenter(target.getLocation());
+            plugin.core().teleports().teleport(player, destination);
+            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", target.getName()));
             return true;
         }
 
@@ -89,56 +93,42 @@ public final class TpCommand implements TabExecutor {
         return true;
     }
 
-    private void handleSingleTeleport(Player player, Player target) {
-        plugin.core().teleports().teleport(player, target.getLocation());
-        MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", target.getName()));
-    }
-
     private void handleDoubleTeleport(Player player, Player target, Player other) {
+        Location destination = plugin.core().teleports().adjustToCenter(other.getLocation());
+
         if (target.equals(player)) {
-            plugin.core().teleports().teleport(player, other.getLocation());
+            plugin.core().teleports().teleport(player, destination);
             MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", other.getName()));
             return;
         }
 
         if (other.equals(player)) {
-            plugin.core().teleports().teleport(target, player.getLocation());
+            Location playerLoc = plugin.core().teleports().adjustToCenter(player.getLocation());
+            plugin.core().teleports().teleport(target, playerLoc);
             MessageUtil.send(player, "teleport.direct.player-to-self", Map.of("player", target.getName()));
             return;
         }
 
-        plugin.core().teleports().teleport(target, other.getLocation());
-        MessageUtil.send(player, "teleport.direct.player-to-target",
-                Map.of("player", target.getName(), "target", other.getName()));
-        MessageUtil.send(target, "teleport.direct.to-player-by",
-                Map.of("player", player.getName(), "target", other.getName()));
-    }
-
-    private void sendUsage(Player player, String label) {
-        MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", getUsageString(player, label)));
+        plugin.core().teleports().teleport(target, destination);
+        MessageUtil.send(player, "teleport.direct.player-to-target", Map.of("player", target.getName(), "target", other.getName()));
+        MessageUtil.send(target, "teleport.direct.to-player-by", Map.of("player", player.getName(), "target", other.getName()));
     }
 
     private String getUsageString(Player player, String label) {
-        return player.hasPermission("aircore.command.tp.others")
-                ? plugin.config().getUsage("tp", "others", label)
-                : plugin.config().getUsage("tp", label);
+        return player.hasPermission(PERM_OTHERS)
+                ? plugin.commandConfig().getUsage("tp", "others", label)
+                : plugin.commandConfig().getUsage("tp", label);
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-
-        if (sender instanceof Player player && !player.hasPermission("aircore.command.tp")) {
-            return List.of();
-        }
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (sender instanceof Player player && !player.hasPermission(PERM_BASE)) return Collections.emptyList();
+        if (args.length > 2) return Collections.emptyList();
 
         String input = args[args.length - 1].toLowerCase();
+        boolean canCompleteSecond = !(sender instanceof Player) || sender.hasPermission(PERM_OTHERS);
 
-        boolean canCompleteSecond = !(sender instanceof Player) || sender.hasPermission("aircore.command.tp.others");
-
-        if (args.length == 1 || (args.length == 2 && canCompleteSecond)) {
+        if (args.length == 1 || canCompleteSecond) {
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
@@ -146,6 +136,6 @@ public final class TpCommand implements TabExecutor {
                     .toList();
         }
 
-        return List.of();
+        return Collections.emptyList();
     }
 }

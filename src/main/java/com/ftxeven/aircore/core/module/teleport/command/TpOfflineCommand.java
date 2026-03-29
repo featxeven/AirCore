@@ -11,6 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,34 +19,34 @@ import java.util.UUID;
 public final class TpOfflineCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.tpoffline";
 
     public TpOfflineCommand(AirCore plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.tpoffline")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.tpoffline"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
+        String usage = plugin.commandConfig().getUsage("tpoffline", label);
+
         if (args.length < 1) {
-            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", plugin.config().getUsage("tpoffline", label)));
+            MessageUtil.send(player, "errors.incorrect-usage", Map.of("usage", usage));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("tpoffline", label)));
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", usage));
             return true;
         }
 
@@ -53,8 +54,8 @@ public final class TpOfflineCommand implements TabExecutor {
         if (resolved == null) return true;
 
         String displayName = plugin.database().records().getRealName(args[0]);
-
         Player targetOnline = resolved.getPlayer();
+
         if (targetOnline != null) {
             plugin.core().teleports().teleport(player, targetOnline.getLocation());
             MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", displayName));
@@ -78,22 +79,17 @@ public final class TpOfflineCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
-        if (args.length != 1) return List.of();
-        String input = args[0].toLowerCase();
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
+        if (args.length != 1 || !sender.hasPermission(PERMISSION)) return Collections.emptyList();
 
+        String input = args[0].toLowerCase();
         return Bukkit.getOnlinePlayers().stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))

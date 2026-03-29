@@ -12,13 +12,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public final class SellCommand implements TabExecutor {
 
-    private final GuiManager guiManager;
     private final AirCore plugin;
+    private final GuiManager guiManager;
+
+    private static final String PERM_BASE = "aircore.command.sell";
 
     public SellCommand(AirCore plugin, GuiManager guiManager) {
         this.plugin = plugin;
@@ -26,29 +29,25 @@ public final class SellCommand implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender,
-                             @NotNull Command cmd,
-                             @NotNull String label,
-                             String @NotNull [] args) {
-
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command.");
+            sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.sell")) {
-            MessageUtil.send(player, "errors.no-permission", Map.of("permission", "aircore.command.sell"));
+        if (!player.hasPermission(PERM_BASE)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERM_BASE));
             return true;
         }
 
         if (plugin.config().errorOnExcessArgs() && args.length > 0) {
-            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.config().getUsage("sell", label)));
+            MessageUtil.send(player, "errors.too-many-arguments", Map.of("usage", plugin.commandConfig().getUsage("sell", label)));
             return true;
         }
 
         SellManager sellManager = (SellManager) guiManager.getManager("sell");
-
         boolean guiEnabled = sellManager != null && sellManager.definition().config().getBoolean("enabled", true);
+
         if (guiEnabled) {
             guiManager.openGui("sell", player, Map.of("player", player.getName()));
         } else {
@@ -67,13 +66,12 @@ public final class SellCommand implements TabExecutor {
         }
 
         double worthPerItem = plugin.economy().worth().getWorth(inHand);
-        double totalWorth = worthPerItem * inHand.getAmount();
-
-        if (totalWorth <= 0) {
+        if (worthPerItem <= 0) {
             MessageUtil.send(player, "economy.sell.error-failed", Map.of());
             return;
         }
 
+        double totalWorth = worthPerItem * inHand.getAmount();
         double rounded = plugin.economy().formats().round(totalWorth);
         String formatted = plugin.economy().formats().formatAmount(rounded);
 
@@ -89,6 +87,6 @@ public final class SellCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        return List.of();
+        return Collections.emptyList();
     }
 }

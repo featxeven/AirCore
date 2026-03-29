@@ -12,6 +12,7 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.WeatherType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,21 +38,6 @@ public final class PlayerLifecycleListener implements Listener {
         startInventoryAutoSave();
     }
 
-    private void startInventoryAutoSave() {
-        plugin.scheduler().runAsyncTimer(() -> {
-            var players = Bukkit.getOnlinePlayers();
-            if (players.isEmpty()) return;
-
-            Map<UUID, PlayerInventories.InventorySnapshot> snapshots = new ConcurrentHashMap<>();
-            players.forEach(p -> plugin.scheduler().runEntityTask(p, () -> {
-                snapshots.put(p.getUniqueId(), plugin.database().inventories().createSnapshot(p));
-                if (snapshots.size() == players.size()) {
-                    plugin.scheduler().runAsync(() -> plugin.database().inventories().saveAllSync(snapshots));
-                }
-            }));
-        }, AUTOSAVE_INTERVAL_TICKS, AUTOSAVE_INTERVAL_TICKS);
-    }
-
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
@@ -61,57 +47,20 @@ public final class PlayerLifecycleListener implements Listener {
         setInvLock(uuid, true);
 
         plugin.scheduler().runAsync(() -> {
-            if (plugin.database() == null || plugin.database().isClosed()) {
-                return;
-            }
+            if (plugin.database() == null || plugin.database().isClosed()) return;
 
             try {
-                boolean hasJoinedBefore = plugin.database().records().hasJoinedBefore(uuid);
-                plugin.core().commandCooldowns().load(uuid);
-
-                int joinIndex = hasJoinedBefore ?
-                        Optional.ofNullable(plugin.database().records().getJoinIndex(uuid)).orElse(0) :
-                        plugin.database().records().createPlayerRecord(uuid, player.getName());
-
-                if (hasJoinedBefore) {
-                    plugin.database().records().updateJoinInfo(player);
-                } else {
-                    plugin.database().records().updateJoinInfo(player);
-                }
-
-                Map<ToggleService.Toggle, Boolean> toggles = new EnumMap<>(ToggleService.Toggle.class);
-                for (var t : ToggleService.Toggle.values()) {
-                    toggles.put(t, plugin.database().records().getToggle(uuid, t));
-                }
-
-                double walk = plugin.database().records().getWalkSpeed(uuid);
-                double fly = plugin.database().records().getFlySpeed(uuid);
-                double bal = plugin.database().records().getBalance(uuid);
-                var invBundle = plugin.database().inventories().loadAllInventory(uuid);
+                JoinData data = loadPlayerDataAsync(player);
 
                 plugin.scheduler().runEntityTask(player, () -> {
                     try {
                         if (!player.isOnline()) return;
-
-                        plugin.core().toggles().load(uuid, toggles);
-                        plugin.economy().balances().setBalanceLocal(uuid, bal);
-                        plugin.home().homes().loadFromDatabase(uuid, plugin.database().homes().load(uuid));
-
-                        var blockedData = plugin.database().blocks().load(uuid);
-                        plugin.core().blocks().loadExistingBlocks(uuid, blockedData);
-
-                        applyAttributes(player, walk, fly, toggles.get(ToggleService.Toggle.FLY));
-                        applyInventoryBundle(player, invBundle);
+                        applyPlayerDataSync(player, data);
                     } finally {
                         setInvLock(uuid, false);
                     }
 
-                    if ((!hasJoinedBefore && plugin.config().teleportToSpawnOnFirstJoin()) || plugin.config().teleportToSpawnOnJoin()) {
-                        teleportToSpawn(player);
-                    }
-
-                    handleMotdAndBroadcastOnJoin(player, hasJoinedBefore, joinIndex);
-                    handleUpdateNotification(player);
+                    postJoinActions(player, data.hasJoinedBefore(), data.joinIndex());
                 });
 
             } catch (Exception e) {
@@ -119,6 +68,184 @@ public final class PlayerLifecycleListener implements Listener {
                 plugin.scheduler().runEntityTask(player, () -> setInvLock(uuid, false));
             }
         });
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+        event.quitMessage(null);
+        justDied.remove(uuid);
+
+        BossbarUtil.hideAll(player);
+        if (plugin.core().teleports().hasCountdown(player)) {
+            plugin.core().teleports().cancelCountdown(player, false);
+        }
+
+        savePlayerDataAsync(player);
+        cleanupPlayerData(player);
+        handleBroadcastOnQuit(player);
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        plugin.utility().back().setLastDeath(player.getUniqueId(), player.getLocation());
+
+        if (plugin.core().teleports().hasCountdown(player)) {
+            plugin.core().teleports().cancelCountdown(player, false);
+        }
+
+        if (plugin.scheduler().isFoliaServer()) {
+            justDied.add(player.getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        if (!plugin.scheduler().isFoliaServer() && plugin.config().teleportToSpawnOnDeath()) {
+            Location spawn = plugin.utility().spawn().loadSpawn();
+            if (spawn != null) event.setRespawnLocation(spawn);
+        }
+        handlePostRespawn(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!plugin.scheduler().isFoliaServer() || !(event.getPlayer() instanceof Player p)) return;
+        if (!justDied.remove(p.getUniqueId())) return;
+
+        if (plugin.config().teleportToSpawnOnDeath()) {
+            Location spawn = plugin.utility().spawn().loadSpawn();
+            plugin.scheduler().runEntityTaskDelayed(p, () -> {
+                if (p.isOnline() && spawn != null) plugin.core().teleports().teleport(p, spawn);
+                handlePostRespawn(p);
+            }, 1L);
+        } else {
+            handlePostRespawn(p);
+        }
+    }
+
+    private JoinData loadPlayerDataAsync(Player player) {
+        UUID uuid = player.getUniqueId();
+        boolean hasJoinedBefore = plugin.database().records().hasJoinedBefore(uuid);
+
+        plugin.core().commandCooldowns().load(uuid);
+        plugin.database().records().updateJoinInfo(player);
+
+        int joinIndex = hasJoinedBefore
+                ? Optional.ofNullable(plugin.database().records().getJoinIndex(uuid)).orElse(0)
+                : plugin.database().records().createPlayerRecord(uuid, player.getName());
+
+        Map<ToggleService.Toggle, Boolean> toggles = new EnumMap<>(ToggleService.Toggle.class);
+        for (var t : ToggleService.Toggle.values()) {
+            toggles.put(t, plugin.database().records().getToggle(uuid, t));
+        }
+
+        return new JoinData(
+                hasJoinedBefore,
+                joinIndex,
+                toggles,
+                plugin.database().records().getWalkSpeed(uuid),
+                plugin.database().records().getFlySpeed(uuid),
+                plugin.database().records().getBalance(uuid),
+                plugin.database().records().getPlayerTime(uuid),
+                plugin.database().records().getPlayerWeather(uuid),
+                plugin.database().inventories().loadAllInventory(uuid)
+        );
+    }
+
+    private void applyPlayerDataSync(Player player, JoinData data) {
+        UUID uuid = player.getUniqueId();
+
+        plugin.core().toggles().load(uuid, data.toggles());
+        plugin.economy().balances().setBalanceLocal(uuid, data.balance());
+
+        plugin.home().homes().loadFromDatabase(uuid, plugin.database().homes().load(uuid));
+        plugin.core().blocks().loadExistingBlocks(uuid, plugin.database().blocks().load(uuid));
+
+        applyAttributes(player, data.walkSpeed(), data.flySpeed(), data.toggles().get(ToggleService.Toggle.FLY));
+        applyInventoryBundle(player, data.invBundle());
+
+        if (data.playerTime() != -1L) {
+            player.setPlayerTime(data.playerTime(), false);
+        }
+        if (data.playerWeather() != null) {
+            try { player.setPlayerWeather(WeatherType.valueOf(data.playerWeather())); }
+            catch (IllegalArgumentException ignored) {}
+        }
+    }
+
+    private void postJoinActions(Player player, boolean hasJoinedBefore, int joinIndex) {
+        if ((!hasJoinedBefore && plugin.config().teleportToSpawnOnFirstJoin()) || plugin.config().teleportToSpawnOnJoin()) {
+            teleportToSpawn(player);
+        }
+        handleMotdAndBroadcastOnJoin(player, hasJoinedBefore, joinIndex);
+        handleUpdateNotification(player);
+    }
+
+    private void handleMotdAndBroadcastOnJoin(Player p, boolean joinedBefore, int idx) {
+        if (!joinedBefore) plugin.kit().kits().grantFirstJoinKit(p);
+
+        var placeholders = Map.of("player", p.getName(), "unique", String.valueOf(idx));
+        String group = fetchVaultGroup(p);
+
+        if (!joinedBefore) {
+            MessageUtil.sendRaw(p, plugin.config().motdFirstJoin(), placeholders);
+            broadcastToAll(plugin.config().broadcastFirstJoin(), placeholders);
+        } else {
+            MessageUtil.sendRaw(p, plugin.config().motdJoin(group), placeholders);
+            broadcastToAll(plugin.config().broadcastJoinFormat(group), placeholders);
+        }
+    }
+
+    private void savePlayerDataAsync(Player player) {
+        UUID uuid = player.getUniqueId();
+        Location loc = player.getLocation();
+        var snap = plugin.database().inventories().createSnapshot(player);
+
+        Runnable saveTask = () -> {
+            if (plugin.database() == null || plugin.database().isClosed()) return;
+            try {
+                plugin.database().records().setLocation(uuid, loc);
+                plugin.database().inventories().saveAllSync(Map.of(uuid, snap));
+                plugin.economy().balances().unloadBalance(uuid);
+                plugin.home().homes().unload(uuid);
+            } catch (Exception e) {
+                if (plugin.isEnabled()) {
+                    plugin.getLogger().warning("Failed to save data on quit for " + player.getName() + ": " + e.getMessage());
+                }
+            }
+        };
+
+        if (!plugin.isEnabled()) {
+            saveTask.run();
+        } else {
+            plugin.scheduler().runAsync(saveTask);
+        }
+    }
+
+    private void cleanupPlayerData(Player p) {
+        UUID uuid = p.getUniqueId();
+        if (!plugin.config().retainRequestStateOnLogout()) {
+            plugin.teleport().requests().clearRequests(uuid);
+            plugin.teleport().cooldowns().clear(uuid);
+        }
+        plugin.core().commandCooldowns().clear(uuid);
+        plugin.utility().afk().clearAfk(uuid);
+        plugin.core().blocks().unload(uuid);
+    }
+
+    private void handlePostRespawn(Player p) {
+        boolean fly = plugin.core().toggles().isEnabled(p.getUniqueId(), ToggleService.Toggle.FLY);
+        plugin.scheduler().runEntityTask(p, () -> {
+            if (p.isOnline()) applyAttributes(p, p.getWalkSpeed() * 5.0, p.getFlySpeed() * 10.0, fly);
+        });
+    }
+
+    private void handleBroadcastOnQuit(Player p) {
+        String group = fetchVaultGroup(p);
+        broadcastToAll(plugin.config().broadcastLeaveFormat(group), Map.of("player", p.getName()));
     }
 
     private void applyAttributes(Player p, double walk, double fly, boolean flyToggle) {
@@ -166,93 +293,33 @@ public final class PlayerLifecycleListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        event.quitMessage(null);
-        justDied.remove(uuid);
+    private void startInventoryAutoSave() {
+        plugin.scheduler().runAsyncTimer(() -> {
+            var players = Bukkit.getOnlinePlayers();
+            if (players.isEmpty()) return;
 
-        BossbarUtil.hideAll(player);
-
-        if (plugin.core().teleports().hasCountdown(player)) {
-            plugin.core().teleports().cancelCountdown(player, false);
-        }
-
-        var loc = player.getLocation();
-        var snap = plugin.database().inventories().createSnapshot(player);
-
-        Runnable saveTask = () -> {
-            if (plugin.database() == null || plugin.database().isClosed()) return;
-
-            try {
-                plugin.database().records().setLocation(uuid, loc);
-                plugin.database().inventories().saveAllSync(Map.of(uuid, snap));
-                plugin.economy().balances().unloadBalance(uuid);
-                plugin.home().homes().unload(uuid);
-            } catch (Exception e) {
-                if (plugin.isEnabled()) {
-                    plugin.getLogger().warning("Failed to save data on quit for " + player.getName() + ": " + e.getMessage());
+            Map<UUID, PlayerInventories.InventorySnapshot> snapshots = new ConcurrentHashMap<>();
+            players.forEach(p -> plugin.scheduler().runEntityTask(p, () -> {
+                snapshots.put(p.getUniqueId(), plugin.database().inventories().createSnapshot(p));
+                if (snapshots.size() == players.size()) {
+                    plugin.scheduler().runAsync(() -> plugin.database().inventories().saveAllSync(snapshots));
                 }
-            }
-        };
-
-        if (!plugin.isEnabled()) {
-            saveTask.run();
-        } else {
-            plugin.scheduler().runAsync(saveTask);
-        }
-
-        cleanupPlayerData(player);
-        handleBroadcastOnQuit(player);
+            }));
+        }, AUTOSAVE_INTERVAL_TICKS, AUTOSAVE_INTERVAL_TICKS);
     }
 
-    private void cleanupPlayerData(Player p) {
-        UUID uuid = p.getUniqueId();
-        if (!plugin.config().retainRequestStateOnLogout()) {
-            plugin.teleport().requests().clearRequests(uuid);
-            plugin.teleport().cooldowns().clear(uuid);
-        }
-        plugin.core().commandCooldowns().clear(uuid);
-        plugin.utility().afk().clearAfk(uuid);
-        plugin.core().blocks().unload(uuid);
-    }
-
-    @EventHandler public void onPlayerDeath(PlayerDeathEvent e) {
-        plugin.utility().back().setLastDeath(e.getEntity().getUniqueId(), e.getEntity().getLocation());
-        if (plugin.core().teleports().hasCountdown(e.getEntity())) plugin.core().teleports().cancelCountdown(e.getEntity(), false);
-        if (plugin.scheduler().isFoliaServer()) justDied.add(e.getEntity().getUniqueId());
-    }
-
-    @EventHandler public void onRespawn(PlayerRespawnEvent e) {
-        if (!plugin.scheduler().isFoliaServer() && plugin.config().teleportToSpawnOnDeath()) {
+    private void teleportToSpawn(Player player) {
+        plugin.scheduler().runDelayed(() -> {
             Location spawn = plugin.utility().spawn().loadSpawn();
-            if (spawn != null) e.setRespawnLocation(spawn);
-        }
-        handlePostRespawn(e.getPlayer());
+            if (player.isOnline() && spawn != null) plugin.core().teleports().teleport(player, spawn);
+        }, 1L);
     }
 
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (!plugin.scheduler().isFoliaServer() || !(event.getPlayer() instanceof Player p)) return;
-        if (!justDied.remove(p.getUniqueId())) return;
-
-        if (plugin.config().teleportToSpawnOnDeath()) {
-            Location spawn = plugin.utility().spawn().loadSpawn();
-            plugin.scheduler().runEntityTaskDelayed(p, () -> {
-                if (p.isOnline() && spawn != null) plugin.core().teleports().teleport(p, spawn);
-                handlePostRespawn(p);
-            }, 1L);
-        } else {
-            handlePostRespawn(p);
+    private void broadcastToAll(Object messageObj, Map<String, String> placeholders) {
+        if (messageObj == null) return;
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            MessageUtil.sendRaw(online, messageObj, placeholders);
         }
-    }
-
-    private void handlePostRespawn(Player p) {
-        boolean fly = plugin.core().toggles().isEnabled(p.getUniqueId(), ToggleService.Toggle.FLY);
-        plugin.scheduler().runEntityTask(p, () -> {
-            if (p.isOnline()) applyAttributes(p, p.getWalkSpeed() * 5.0, p.getFlySpeed() * 10.0, fly);
-        });
     }
 
     private void handleUpdateNotification(Player player) {
@@ -266,55 +333,27 @@ public final class PlayerLifecycleListener implements Listener {
         }
     }
 
-    private void teleportToSpawn(Player player) {
-        plugin.scheduler().runDelayed(() -> {
-            Location spawn = plugin.utility().spawn().loadSpawn();
-            if (player.isOnline() && spawn != null) plugin.core().teleports().teleport(player, spawn);
-        }, 1L);
-    }
-
-    private void handleMotdAndBroadcastOnJoin(Player p, boolean joinedBefore, int idx) {
-        if (!joinedBefore) plugin.kit().kits().grantFirstJoinKit(p);
-        var ph = Map.of("player", p.getName(), "unique", String.valueOf(idx));
-
-        if (!joinedBefore) {
-            MessageUtil.sendRaw(p, plugin.config().motdFirstJoin(), ph);
-
-            Object br = plugin.config().broadcastFirstJoin();
-            if (br != null) {
-                for (Player online : Bukkit.getOnlinePlayers()) MessageUtil.sendRaw(online, br, ph);
-            }
-        } else {
-            String group = fetchVaultGroup(p);
-            MessageUtil.sendRaw(p, plugin.config().motdJoin(group), ph);
-
-            Object br = plugin.config().broadcastJoinFormat(group);
-            if (br != null) {
-                for (Player online : Bukkit.getOnlinePlayers()) MessageUtil.sendRaw(online, br, ph);
-            }
-        }
-    }
-
-    private void handleBroadcastOnQuit(Player p) {
-        String group = fetchVaultGroup(p);
-        Object br = plugin.config().broadcastLeaveFormat(group);
-        if (br != null) {
-            for (Player online : Bukkit.getOnlinePlayers()) {
-                MessageUtil.sendRaw(online, br, Map.of("player", p.getName()));
-            }
-        }
-    }
-
     private String fetchVaultGroup(Player p) {
         if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             RegisteredServiceProvider<Permission> rsp = Bukkit.getServer().getServicesManager().getRegistration(Permission.class);
             if (rsp != null) {
-                Permission perms = rsp.getProvider();
                 try {
-                    return perms.getPrimaryGroup(p);
+                    return rsp.getProvider().getPrimaryGroup(p);
                 } catch (UnsupportedOperationException ignored) { }
             }
         }
         return "default";
     }
+
+    private record JoinData(
+            boolean hasJoinedBefore,
+            int joinIndex,
+            Map<ToggleService.Toggle, Boolean> toggles,
+            double walkSpeed,
+            double flySpeed,
+            double balance,
+            long playerTime,
+            String playerWeather,
+            PlayerInventories.InventoryBundle invBundle
+    ) {}
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 public final class SetWarpCommand implements TabExecutor {
 
     private final AirCore plugin;
+    private static final String PERMISSION = "aircore.command.setwarp";
 
     public SetWarpCommand(AirCore plugin) {
         this.plugin = plugin;
@@ -31,21 +32,18 @@ public final class SetWarpCommand implements TabExecutor {
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.setwarp")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.setwarp"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
-        if (args.length < 1) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("setwarp", label)));
+        if (args.length == 0) {
+            sendError(player, label, "incorrect-usage");
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("setwarp", label)));
+        if (args.length > 1) {
+            sendError(player, label, "too-many-arguments");
             return true;
         }
 
@@ -59,6 +57,11 @@ public final class SetWarpCommand implements TabExecutor {
         plugin.utility().warps().saveWarp(warpName, player.getLocation());
         MessageUtil.send(player, "utilities.warp.created", Map.of("name", warpName));
         return true;
+    }
+
+    private void sendError(Player player, String label, String key) {
+        String usage = plugin.commandConfig().getUsage("setwarp", null, label);
+        MessageUtil.send(player, "errors." + key, Map.of("usage", usage));
     }
 
     @Override

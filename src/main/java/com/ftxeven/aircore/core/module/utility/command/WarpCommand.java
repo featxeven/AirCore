@@ -16,7 +16,7 @@ import java.util.Map;
 public final class WarpCommand implements TabExecutor {
 
     private final AirCore plugin;
-
+    private static final String PERMISSION = "aircore.command.warp";
     public WarpCommand(AirCore plugin) {
         this.plugin = plugin;
     }
@@ -28,40 +28,36 @@ public final class WarpCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players may use this command.");
+            sender.sendMessage("Only players may use this command");
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.warp")) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.warp"));
+        if (!player.hasPermission(PERMISSION)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", PERMISSION));
             return true;
         }
 
         if (args.length == 0) {
-            MessageUtil.send(player, "errors.incorrect-usage",
-                    Map.of("usage", plugin.config().getUsage("warp", label)));
+            sendError(player, label, "incorrect-usage");
             return true;
         }
 
-        if (plugin.config().errorOnExcessArgs() && args.length > 1) {
-            MessageUtil.send(player, "errors.too-many-arguments",
-                    Map.of("usage", plugin.config().getUsage("warp", label)));
+        if (args.length > 1) {
+            sendError(player, label, "too-many-arguments");
             return true;
         }
 
         String warpName = args[0].toLowerCase();
-
         Location loc = plugin.utility().warps().loadWarp(warpName);
+
         if (loc == null) {
-            MessageUtil.send(player, "utilities.warp.not-found", Map.of("name", warpName));
+            MessageUtil.send(player, "utilities.warp.not-found", Map.of());
             return true;
         }
 
-        if (!player.hasPermission("aircore.command.warp.*") &&
-                !player.hasPermission("aircore.command.warp." + warpName)) {
-            MessageUtil.send(player, "errors.no-permission",
-                    Map.of("permission", "aircore.command.warp." + warpName));
+        String subPerm = PERMISSION + "." + warpName;
+        if (!player.hasPermission(PERMISSION + ".*") && !player.hasPermission(subPerm)) {
+            MessageUtil.send(player, "errors.no-permission", Map.of("permission", subPerm));
             return true;
         }
 
@@ -77,13 +73,19 @@ public final class WarpCommand implements TabExecutor {
         return true;
     }
 
+    private void sendError(Player player, String label, String key) {
+        String usage = plugin.commandConfig().getUsage("warp", null, label);
+        MessageUtil.send(player, "errors." + key, Map.of("usage", usage));
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return Collections.emptyList();
-        if (!player.hasPermission("aircore.command.warp")) return Collections.emptyList();
+        if (!(sender instanceof Player player) || !player.hasPermission(PERMISSION)) {
+            return Collections.emptyList();
+        }
 
         if (args.length == 1) {
             var section = plugin.utility().warps().getConfig().getConfigurationSection("warps");
@@ -92,9 +94,8 @@ public final class WarpCommand implements TabExecutor {
             String input = args[0].toLowerCase();
             return section.getKeys(false).stream()
                     .filter(name -> name.toLowerCase().startsWith(input))
-                    .filter(name ->
-                            player.hasPermission("aircore.command.warp.*") ||
-                                    player.hasPermission("aircore.command.warp." + name.toLowerCase()))
+                    .filter(name -> player.hasPermission(PERMISSION + ".*") ||
+                            player.hasPermission(PERMISSION + "." + name.toLowerCase()))
                     .limit(20)
                     .toList();
         }

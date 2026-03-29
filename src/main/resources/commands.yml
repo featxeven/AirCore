@@ -4,11 +4,11 @@
 
 # Commands that will be completely unregistered from the server.
 # Requires a server restart to take effect.
-disabled-commands:
-  - give
-  - kill
-  - weather
-  - time
+disabled-commands: []
+  # - give
+  # - kill
+  # - weather
+  # - time
 
 # Global cooldown settings. Bypass with aircore.bypass.command.<id>
 # 'strict: true' to match the exact command string.
@@ -168,10 +168,14 @@ commands:
     usage: "/%label% <kitname>"
 
   # Utils
+  kill:
+    aliases: []
+    usage: "/%label%"
+    usage-others: "/%label% [player]"
   repair:
     aliases: [fix]
     usage: "/%label%"
-    usage-all: "/%label% all"
+    usage-all: "/%label% %sublabel%"
     selectors:
       all: "all"
   heal:
@@ -195,8 +199,8 @@ commands:
     usage: "/%label% <speed> [type]"
     usage-others: "/%label% <speed> [type] [player]"
     selectors:
-      flying: "@f"
-      walking: "@w"
+      flying: "flying"
+      walking: "walking"
   clearinventory:
     aliases: [clear, clearinv]
     usage: "/%label%"
@@ -225,8 +229,8 @@ commands:
   time:
     aliases: []
     usage: "/%label% <type> <time> [world]"
-    usage-set: "/%label% set <time> [world]"
-    usage-add: "/%label% add <time> [world]"
+    usage-set: "/%label% %sublabel% <time> [world]"
+    usage-add: "/%label% %sublabel% <time> [world]"
     selectors:
       set: "set"
       add: "add"
@@ -248,13 +252,21 @@ commands:
   announcement:
     aliases: [announcements]
     usage: "/%label% <option> <key>"
-    usage-trigger: "/%label% trigger <key> [args]"
-    usage-enable: "/%label% enable <key>"
-    usage-disable: "/%label% disable <key>"
+    usage-trigger: "/%label% %sublabel% <key> [args]"
+    usage-enable: "/%label% %sublabel% <key>"
+    usage-disable: "/%label% %sublabel% <key>"
+    selectors:
+      trigger: "trigger"
+      enable: "enable"
+      disable: "disable"
   announcetoggle:
     aliases: []
     usage: "/%label%"
     usage-others: "/%label% [player]"
+  give:
+    aliases: [item, i]
+    usage: "/%label% <item> [amount]"
+    usage-others: "/%label% <item> [amount] <player>"
 
   # Inventory shortcuts
   craftingtable:
