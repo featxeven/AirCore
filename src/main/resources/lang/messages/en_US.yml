@@ -450,9 +450,9 @@ utilities:
     item: "%prefix% <green>Item repaired successfully.</green>"
     inventory: "%prefix% <green>Inventory repaired successfully.</green>"
     item-not-damaged: "%prefix% <red>This item is not damaged.</red>"
+    inventory-not-damaged: "%prefix% <red>You have no damaged items in your inventory.</red>"
     cannot-repair: "%prefix% <red>This item cannot be repaired.</red>"
     invalid-item: "%prefix% <red>You must hold an item in your hand to repair.</red>"
-    inventory-not-damaged: "%prefix% <red>You have no damaged items in your inventory.</red>"
 
   blocking:
     added: "%prefix% <green>You have blocked <yellow>%player%</yellow>.</green>"

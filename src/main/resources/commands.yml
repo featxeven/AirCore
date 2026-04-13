@@ -40,11 +40,8 @@ global-selectors:
 # -------------------------------------------------------------------
 # COMMAND SETTINGS
 # -------------------------------------------------------------------
-# Define cooldowns, aliases, usages, and custom selectors here.
-# Cooldowns: bypass with aircore.bypass.command.<id>
-# -------------------------------------------------------------------
 commands:
-  # --- CHAT & MESSAGING ---
+  # Chat
   msg:
     aliases: [pm, tell, whisper]
     usage: "/%label% <player> <message>"
@@ -315,7 +312,7 @@ commands:
 # COMMAND SHORTCUTS
 # -------------------------------------------------------------------
 # Define shortcut commands that map to full commands with arguments.
-# Requires a restart to take effect when added/removed.
+# Requires restart to reflect changes.
 #
 # You can add, remove, or rename any shortcut below.
 # Format:

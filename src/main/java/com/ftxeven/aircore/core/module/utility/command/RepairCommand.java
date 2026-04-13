@@ -62,6 +62,11 @@ public final class RepairCommand implements TabExecutor {
         plugin.scheduler().runEntityTask(player, () -> {
             ItemStack item = player.getInventory().getItemInMainHand();
 
+            if (item.getType() == Material.AIR) {
+                MessageUtil.send(player, "utilities.repair.invalid-item", Map.of());
+                return;
+            }
+
             if (isNotRepairable(item)) {
                 MessageUtil.send(player, "utilities.repair.cannot-repair", Map.of());
                 return;
@@ -73,9 +78,9 @@ public final class RepairCommand implements TabExecutor {
             if (meta.hasDamage()) {
                 meta.setDamage(0);
                 item.setItemMeta(meta);
-                MessageUtil.send(player, "utilities.repair.success", Map.of());
+                MessageUtil.send(player, "utilities.repair.item", Map.of());
             } else {
-                MessageUtil.send(player, "utilities.repair.error-not-damaged", Map.of());
+                MessageUtil.send(player, "utilities.repair.item-not-damaged", Map.of());
             }
         });
     }
@@ -97,7 +102,7 @@ public final class RepairCommand implements TabExecutor {
             }
 
             if (repairedAny) {
-                MessageUtil.send(player, "utilities.repair.success-all", Map.of());
+                MessageUtil.send(player, "utilities.repair.inventory", Map.of());
             } else {
                 MessageUtil.send(player, "utilities.repair.inventory-not-damaged", Map.of());
             }

@@ -4,9 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added configurable command shortcuts">
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="version update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dependency-reduced-pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/RepairCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/RepairCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/commands.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/commands.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/lang/messages/en_US.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,22 +62,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00022" summary="execute actions first, then logic">
-      <option name="closed" value="true" />
-      <created>1772518927057</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1772518927057</updated>
-    </task>
-    <task id="LOCAL-00023" summary="added @a argument&#10;added @a permission&#10;added new message key">
-      <option name="closed" value="true" />
-      <created>1772556919073</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1772556919073</updated>
     </task>
     <task id="LOCAL-00024" summary="added validation for balance limit on sell">
       <option name="closed" value="true" />
@@ -451,15 +439,29 @@
       <option name="project" value="LOCAL" />
       <updated>1776052383896</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary="fix: shortcut tab completion now delegates to original command">
+      <option name="closed" value="true" />
+      <created>1776053107596</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1776053107596</updated>
+    </task>
+    <task id="LOCAL-00072" summary="version update">
+      <option name="closed" value="true" />
+      <created>1776053160063</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1776053160063</updated>
+    </task>
+    <option name="localTasksCounter" value="73" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="minor bug fixes" />
-    <MESSAGE value="ver update" />
     <MESSAGE value="cached head texture &amp; added date-format" />
     <MESSAGE value="fixed message key" />
     <MESSAGE value="added item priority for GUIs&#10;prevent error during shutdown for bossbar&#10;fixed Folia item duplication for invsee" />
@@ -483,6 +485,8 @@
     <MESSAGE value="minor change to default config" />
     <MESSAGE value="added multi-format message support (MINI, LEGACY, SMART)" />
     <MESSAGE value="added configurable command shortcuts" />
-    <option name="LAST_COMMIT_MESSAGE" value="added configurable command shortcuts" />
+    <MESSAGE value="fix: shortcut tab completion now delegates to original command" />
+    <MESSAGE value="version update" />
+    <option name="LAST_COMMIT_MESSAGE" value="version update" />
   </component>
 </project>

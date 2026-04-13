@@ -98,7 +98,7 @@ public final class CoreCommand implements TabExecutor {
                 if (sender instanceof Player) {
                     sendUsage(sender);
                 } else {
-                    sender.sendMessage("Unknown reload type. Use: placeholders, config, guis, messages, or all.");
+                    sender.sendMessage("Unknown reload type. Use: placeholders, config, guis, messages, announcements, or all.");
                 }
             }
         }
