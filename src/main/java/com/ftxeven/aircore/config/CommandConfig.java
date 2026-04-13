@@ -110,4 +110,19 @@ public final class CommandConfig {
     }
 
     public List<String> getAliases(String command) { return sl("commands." + command + ".aliases"); }
+
+    public record ShortcutEntry(String name, String command, List<String> aliases) {}
+
+    public List<ShortcutEntry> getShortcuts() {
+        ConfigurationSection section = config.getConfigurationSection("shortcuts");
+        if (section == null) return List.of();
+
+        List<ShortcutEntry> entries = new java.util.ArrayList<>();
+        for (String key : section.getKeys(false)) {
+            String command = section.getString(key + ".command", "");
+            List<String> aliases = section.getStringList(key + ".aliases");
+            if (!command.isBlank()) entries.add(new ShortcutEntry(key.toLowerCase(), command, aliases));
+        }
+        return entries;
+    }
 }

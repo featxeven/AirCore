@@ -310,3 +310,32 @@ commands:
   unblock:
     aliases: [unignore]
     usage: "/%label% <player>"
+
+# -------------------------------------------------------------------
+# COMMAND SHORTCUTS
+# -------------------------------------------------------------------
+# Define shortcut commands that map to full commands with arguments.
+# Requires a restart to take effect when added/removed.
+#
+# You can add, remove, or rename any shortcut below.
+# Format:
+#   <shortcut>:
+#     command: "<full command and arguments>"
+#     aliases: [...]   # optional extra names for the same shortcut
+# -------------------------------------------------------------------
+shortcuts:
+  gmc:
+    command: "gamemode creative"
+    aliases: [gmce]
+  gms:
+    command: "gamemode survival"
+    aliases: [gmsu, gmsurv]
+  repairall:
+    command: "repair all"
+    aliases: []
+  day:
+    command: "time set day"
+    aliases: []
+  night:
+    command: "time set night"
+    aliases: []

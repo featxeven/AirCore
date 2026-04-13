@@ -99,7 +99,7 @@ public final class RepairCommand implements TabExecutor {
             if (repairedAny) {
                 MessageUtil.send(player, "utilities.repair.success-all", Map.of());
             } else {
-                MessageUtil.send(player, "utilities.repair.error-none-damaged", Map.of());
+                MessageUtil.send(player, "utilities.repair.inventory-not-damaged", Map.of());
             }
         });
     }

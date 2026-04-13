@@ -34,6 +34,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -84,6 +85,7 @@ public final class CoreInitializer {
         listenerManager.registerAll();
 
         registerCommands();
+        registerShortcuts();
         setupUtilities();
         setupIntegrations();
 
@@ -284,6 +286,39 @@ public final class CoreInitializer {
         reg("aircore", new CoreCommand(plugin));
 
         unregisterDisabledCommands();
+    }
+
+    private void registerShortcuts() {
+        List<CommandConfig.ShortcutEntry> shortcuts = plugin.commandConfig().getShortcuts();
+        if (shortcuts.isEmpty()) return;
+
+        try {
+            SimpleCommandMap commandMap = (SimpleCommandMap) getCommandMapField().get(plugin.getServer());
+
+            for (CommandConfig.ShortcutEntry entry : shortcuts) {
+                if (plugin.commandConfig().disabledCommands().contains(entry.name())) continue;
+
+                PluginCommand existing = plugin.getServer().getPluginCommand(entry.name());
+                if (existing != null) {
+                    existing.setExecutor(new ShortcutCommand(entry.command()));
+                    existing.setAliases(entry.aliases());
+                    continue;
+                }
+
+                Command dynamic = new Command(entry.name(), "Shortcut for: " + entry.command(), "/" + entry.name(), entry.aliases()) {
+                    private final ShortcutCommand executor = new ShortcutCommand(entry.command());
+
+                    @Override
+                    public boolean execute(@NotNull CommandSender sender, @NotNull String label, String @NotNull [] args) {
+                        return executor.onCommand(sender, this, label, args);
+                    }
+                };
+
+                commandMap.register(plugin.getName().toLowerCase(), dynamic);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Failed to register shortcuts", e);
+        }
     }
 
     public void setupIntegrations() {

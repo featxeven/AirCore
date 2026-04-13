@@ -4,15 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added bstats">
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added multi-format message support (MINI, LEGACY, SMART)">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/ConfigManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/ConfigManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/service/ChatFormatService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/service/DisplayTagsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/service/DisplayTagsService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/MessageUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/util/MessageUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/guis/homes/homes-target.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/guis/homes/homes-target.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/guis/homes/homes.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/guis/homes/homes.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/commands.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/commands.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,22 +61,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00019" summary="added new message key error-max-balance">
-      <option name="closed" value="true" />
-      <created>1772518605792</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1772518605792</updated>
-    </task>
-    <task id="LOCAL-00020" summary="added new validation to check max balance limit">
-      <option name="closed" value="true" />
-      <created>1772518622037</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1772518622037</updated>
     </task>
     <task id="LOCAL-00021" summary="changed default config">
       <option name="closed" value="true" />
@@ -457,15 +438,29 @@
       <option name="project" value="LOCAL" />
       <updated>1774825564750</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <task id="LOCAL-00068" summary="minor change to default config">
+      <option name="closed" value="true" />
+      <created>1776051487075</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1776051487077</updated>
+    </task>
+    <task id="LOCAL-00069" summary="added multi-format message support (MINI, LEGACY, SMART)">
+      <option name="closed" value="true" />
+      <created>1776051520060</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1776051520060</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="refactor &amp; fixed placeholder" />
-    <MESSAGE value="improved default messages" />
     <MESSAGE value="small config changes &amp; MessageUtil InlineTags method refactor" />
     <MESSAGE value="minor bug fixes" />
     <MESSAGE value="ver update" />
@@ -489,6 +484,8 @@
     <MESSAGE value="decoupled group formatting from message processing" />
     <MESSAGE value="added ptime command" />
     <MESSAGE value="added bstats" />
-    <option name="LAST_COMMIT_MESSAGE" value="added bstats" />
+    <MESSAGE value="minor change to default config" />
+    <MESSAGE value="added multi-format message support (MINI, LEGACY, SMART)" />
+    <option name="LAST_COMMIT_MESSAGE" value="added multi-format message support (MINI, LEGACY, SMART)" />
   </component>
 </project>
