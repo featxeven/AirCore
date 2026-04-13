@@ -38,6 +38,7 @@ home-item:
   actions:
     - "[sound] entity.enderman.teleport 1 1.2"
     - "[teleport]"
+    - "[close]"
   shift-actions:
     - "[sound] entity.enderman.teleport 1 1.2"
     - "[delete]"
