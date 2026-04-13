@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added multi-format message support (MINI, LEGACY, SMART)">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" afterDir="false" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="added configurable command shortcuts">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/config/CommandConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/CoreInitializer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/commands.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/commands.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,14 +58,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00021" summary="changed default config">
-      <option name="closed" value="true" />
-      <created>1772518632435</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1772518632435</updated>
     </task>
     <task id="LOCAL-00022" summary="execute actions first, then logic">
       <option name="closed" value="true" />
@@ -454,14 +443,21 @@
       <option name="project" value="LOCAL" />
       <updated>1776051520060</updated>
     </task>
-    <option name="localTasksCounter" value="70" />
+    <task id="LOCAL-00070" summary="added configurable command shortcuts">
+      <option name="closed" value="true" />
+      <created>1776052383896</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1776052383896</updated>
+    </task>
+    <option name="localTasksCounter" value="71" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="small config changes &amp; MessageUtil InlineTags method refactor" />
     <MESSAGE value="minor bug fixes" />
     <MESSAGE value="ver update" />
     <MESSAGE value="cached head texture &amp; added date-format" />
@@ -486,6 +482,7 @@
     <MESSAGE value="added bstats" />
     <MESSAGE value="minor change to default config" />
     <MESSAGE value="added multi-format message support (MINI, LEGACY, SMART)" />
-    <option name="LAST_COMMIT_MESSAGE" value="added multi-format message support (MINI, LEGACY, SMART)" />
+    <MESSAGE value="added configurable command shortcuts" />
+    <option name="LAST_COMMIT_MESSAGE" value="added configurable command shortcuts" />
   </component>
 </project>

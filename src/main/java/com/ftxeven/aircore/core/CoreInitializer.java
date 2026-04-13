@@ -40,10 +40,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public final class CoreInitializer {
@@ -311,6 +308,11 @@ public final class CoreInitializer {
                     @Override
                     public boolean execute(@NotNull CommandSender sender, @NotNull String label, String @NotNull [] args) {
                         return executor.onCommand(sender, this, label, args);
+                    }
+
+                    @Override
+                    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, String @NotNull [] args) {
+                        return executor.onTabComplete(sender, this, alias, args);
                     }
                 };
 
