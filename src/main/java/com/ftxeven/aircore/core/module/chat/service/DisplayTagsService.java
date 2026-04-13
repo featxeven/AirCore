@@ -1,9 +1,9 @@
 package com.ftxeven.aircore.core.module.chat.service;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.util.MessageUtil;
 import com.ftxeven.aircore.util.PlaceholderUtil;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class DisplayTagsService {
-    private final MiniMessage mm = MiniMessage.miniMessage();
     private final Map<String, TagDefinition> tags = new HashMap<>();
 
     public DisplayTagsService(AirCore plugin) {
@@ -72,14 +71,14 @@ public final class DisplayTagsService {
 
         String preParsed = format.replace("%amount%", String.valueOf(item.getAmount()));
 
-        return mm.deserialize(preParsed)
+        return MessageUtil.mini(player, preParsed, Map.of())
                 .replaceText(builder -> builder.matchLiteral("%item%").replacement(finalItemName))
                 .hoverEvent(item.asHoverEvent());
     }
 
     private Component buildGenericComponent(Player player, String format) {
         String parsed = format.replace("%player%", player.getName());
-        return mm.deserialize(PlaceholderUtil.apply(player, parsed));
+        return MessageUtil.mini(player, PlaceholderUtil.apply(player, parsed), Map.of());
     }
 
     private record TagDefinition(String id, List<String> keys, String format, String permission) {}

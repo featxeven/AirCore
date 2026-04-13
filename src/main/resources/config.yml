@@ -10,6 +10,12 @@ lang: "en_US"                      # Locale file name (lang/messages/KEY.yml)
 console-to-player-feedback: true   # Send feedback to players when console runs commands targeting them
 error-on-excess-args: true         # Show error message if too many arguments are provided
 
+# Message format: MINI | LEGACY | SMART
+# MINI   - MiniMessage only (<red>, <bold>, etc.)
+# LEGACY - Legacy color codes (&c, &l, etc.)
+# SMART  - Auto-detect per message
+message-format: SMART
+
 # Time formatting used across the plugin and in placeholders
 time-format:
   # Modes: DETAILED | SEQUENTIAL | CUSTOM
