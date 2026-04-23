@@ -357,4 +357,27 @@ public final class PlayerRecords {
             ps.setString(3, uuid.toString());
         });
     }
+
+    public String getNick(UUID uuid) {
+        String sql = "SELECT nick FROM player_records WHERE uuid = ?;";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("nick");
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Failed to fetch nick for " + uuid + ": " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void setNick(UUID uuid, String nick) {
+        String sql = "UPDATE player_records SET nick = ?, updated_at = ? WHERE uuid = ?;";
+        plugin.database().executeAsync(sql, ps -> {
+            if (nick == null) ps.setNull(1, java.sql.Types.VARCHAR);
+            else ps.setString(1, nick);
+            ps.setLong(2, Instant.now().getEpochSecond());
+            ps.setString(3, uuid.toString());
+        });
+    }
 }

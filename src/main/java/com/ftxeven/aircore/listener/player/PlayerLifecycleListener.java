@@ -151,7 +151,8 @@ public final class PlayerLifecycleListener implements Listener {
                 plugin.database().records().getBalance(uuid),
                 plugin.database().records().getPlayerTime(uuid),
                 plugin.database().records().getPlayerWeather(uuid),
-                plugin.database().inventories().loadAllInventory(uuid)
+                plugin.database().inventories().loadAllInventory(uuid),
+                plugin.database().records().getNick(uuid)
         );
     }
 
@@ -174,6 +175,8 @@ public final class PlayerLifecycleListener implements Listener {
             try { player.setPlayerWeather(WeatherType.valueOf(data.playerWeather())); }
             catch (IllegalArgumentException ignored) {}
         }
+
+        plugin.utility().nicks().load(uuid, data.nick());
     }
 
     private void postJoinActions(Player player, boolean hasJoinedBefore, int joinIndex) {
@@ -234,6 +237,7 @@ public final class PlayerLifecycleListener implements Listener {
         plugin.core().commandCooldowns().clear(uuid);
         plugin.utility().afk().clearAfk(uuid);
         plugin.core().blocks().unload(uuid);
+        plugin.utility().nicks().unload(uuid);
     }
 
     private void handlePostRespawn(Player p) {
@@ -249,8 +253,8 @@ public final class PlayerLifecycleListener implements Listener {
     }
 
     private void applyAttributes(Player p, double walk, double fly, boolean flyToggle) {
-        p.setWalkSpeed((float) Math.min(Math.max(walk * 0.2, 0.0), 1.0));
-        p.setFlySpeed((float) Math.min(Math.max(fly * 0.1, 0.0), 1.0));
+        p.setWalkSpeed((float) Math.clamp(walk * 0.2, 0.0, 1.0));
+        p.setFlySpeed((float) Math.clamp(fly * 0.1, 0.0, 1.0));
 
         boolean canFly = p.getGameMode() == GameMode.CREATIVE || p.getGameMode() == GameMode.SPECTATOR || flyToggle;
         p.setAllowFlight(canFly);
@@ -354,6 +358,7 @@ public final class PlayerLifecycleListener implements Listener {
             double balance,
             long playerTime,
             String playerWeather,
-            PlayerInventories.InventoryBundle invBundle
+            PlayerInventories.InventoryBundle invBundle,
+            String nick
     ) {}
 }

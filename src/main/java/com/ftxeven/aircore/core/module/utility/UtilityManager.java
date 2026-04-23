@@ -9,12 +9,14 @@ public final class UtilityManager {
     private WarpService warpService;
     private final AfkService afkService;
     private final BackService backService;
+    private final NickService nickService;
 
     public UtilityManager(AirCore plugin) {
         this.plugin = plugin;
 
         this.afkService = new AfkService();
         this.backService = new BackService();
+        this.nickService = new NickService(plugin);
 
         constructServices();
     }
@@ -32,4 +34,5 @@ public final class UtilityManager {
     public WarpService warps() { return warpService; }
     public AfkService afk() { return afkService; }
     public BackService back() { return backService; }
+    public NickService nicks() { return nickService; }
 }

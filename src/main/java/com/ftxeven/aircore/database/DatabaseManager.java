@@ -159,6 +159,12 @@ public final class DatabaseManager {
                 stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN player_weather TEXT;");
             }
         }
+
+        if (!columns.contains("nick")) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("ALTER TABLE player_records ADD COLUMN nick TEXT;");
+            }
+        }
     }
 
     public void close() {

@@ -75,10 +75,10 @@ public final class EditKitCommand implements TabExecutor {
             }
         }
 
-        List<ItemStack> items = new ArrayList<>();
+        List<Map<String, Object>> items = new ArrayList<>();
         for (ItemStack stack : player.getInventory().getContents()) {
             if (stack == null || stack.getType().isAir()) continue;
-            items.add(stack.clone());
+            items.add(stack.serialize());
         }
 
         kitsConfig.set(path + ".one-time", oneTime);

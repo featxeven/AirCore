@@ -480,6 +480,17 @@ utilities:
       enabled-by: "%prefix% <green><yellow>%player%</yellow> enabled announcements for you.</green>"
       disabled-by: "%prefix% <red><yellow>%player%</yellow> disabled announcements for you.</red>"
 
+  nick:
+    set: "%prefix% <green>Your nickname has been set to <yellow>%nick%</yellow>.</green>"
+    set-for: "%prefix% <green>You set <yellow>%player%</yellow>'s nickname to <yellow>%nick%</yellow>.</green>"
+    set-by: "%prefix% <green><yellow>%player%</yellow> set your nickname to <yellow>%nick%</yellow>.</green>"
+
+    reset: "%prefix% <green>Your nickname has been cleared.</green>"
+    reset-for: "%prefix% <green>You cleared the nickname for <yellow>%player%</yellow>.</green>"
+    reset-by: "%prefix% <red><yellow>%player%</yellow> cleared your nickname.</red>"
+
+    error-too-long: "%prefix% <red>That nickname is too long! (<yellow>%length%</yellow>/<yellow>%max%</yellow> characters).</red>"
+
   errors:
     invsee-self: "%prefix% <red>You can only view other players' inventory.</red>"
 

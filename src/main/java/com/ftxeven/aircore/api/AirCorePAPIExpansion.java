@@ -47,9 +47,23 @@ public final class AirCorePAPIExpansion extends PlaceholderExpansion {
             } catch (Exception e) { return null; }
         }
 
-        if (pLow.equals("player_unique")) return String.valueOf(plugin.database().records().getJoinIndex(uuid));
-        if (pLow.equals("player_back_available")) return bool(plugin.utility().back().getLastDeath(uuid) != null);
-        if (pLow.equals("player_afk_status")) return player.isOnline() ? bool(plugin.utility().afk().isAfk(uuid)) : null;
+        switch (pLow) {
+            case "player_unique" -> {
+                return String.valueOf(plugin.database().records().getJoinIndex(uuid));
+            }
+            case "player_back_available" -> {
+                return bool(plugin.utility().back().getLastDeath(uuid) != null);
+            }
+            case "player_afk_status" -> {
+                return player.isOnline() ? bool(plugin.utility().afk().isAfk(uuid)) : null;
+            }
+            case "player_has_nickname" -> {
+                return bool(plugin.utility().nicks().hasNick(uuid));
+            }
+            case "player_displayname" -> {
+                return plugin.utility().nicks().getDisplayName(uuid, plugin.database().records().getName(uuid));
+            }
+        }
 
         if (pLow.startsWith("player_balance_")) {
             double bal = plugin.database().records().getBalance(uuid);
@@ -74,34 +88,44 @@ public final class AirCorePAPIExpansion extends PlaceholderExpansion {
             }
         }
 
-        if (pLow.equals("player_home_limit")) return getLimit(player, "home", () -> plugin.home().homes().getLimit(uuid));
-        if (pLow.equals("player_block_limit")) return getLimit(player, "block", () -> plugin.core().blocks().getLimit(uuid));
-        if (pLow.equals("player_home_amount")) return String.valueOf(plugin.database().homes().getHomeAmount(uuid));
-        if (pLow.equals("player_block_amount")) return String.valueOf(plugin.database().blocks().load(uuid).size());
-        if (pLow.equals("player_home_gui_page") || pLow.equals("player_home_gui_pages")) {
-            Player p = player.getPlayer();
-            if (p == null) return "0";
-            boolean isPage = pLow.endsWith("gui_page");
-
-            HomeManager.HomeHolder construction = HomeManager.CONSTRUCTION_CONTEXT.get();
-            if (construction != null) {
-                return String.valueOf(isPage ? construction.page() : construction.maxPages());
+        switch (pLow) {
+            case "player_home_limit" -> {
+                return getLimit(player, "home", () -> plugin.home().homes().getLimit(uuid));
             }
-
-            HomeTargetManager.HomeTargetHolder targetConstruction = HomeTargetManager.CONSTRUCTION_CONTEXT.get();
-            if (targetConstruction != null) {
-                return String.valueOf(isPage ? targetConstruction.page() : targetConstruction.maxPages());
+            case "player_block_limit" -> {
+                return getLimit(player, "block", () -> plugin.core().blocks().getLimit(uuid));
             }
-
-            Object holder = p.getOpenInventory().getTopInventory().getHolder();
-            if (holder instanceof HomeManager.HomeHolder h) {
-                return String.valueOf(isPage ? h.page() : h.maxPages());
+            case "player_home_amount" -> {
+                return String.valueOf(plugin.database().homes().getHomeAmount(uuid));
             }
-            if (holder instanceof HomeTargetManager.HomeTargetHolder h) {
-                return String.valueOf(isPage ? h.page() : h.maxPages());
+            case "player_block_amount" -> {
+                return String.valueOf(plugin.database().blocks().load(uuid).size());
             }
+            case "player_home_gui_page", "player_home_gui_pages" -> {
+                Player p = player.getPlayer();
+                if (p == null) return "0";
+                boolean isPage = pLow.endsWith("gui_page");
 
-            return "0";
+                HomeManager.HomeHolder construction = HomeManager.CONSTRUCTION_CONTEXT.get();
+                if (construction != null) {
+                    return String.valueOf(isPage ? construction.page() : construction.maxPages());
+                }
+
+                HomeTargetManager.HomeTargetHolder targetConstruction = HomeTargetManager.CONSTRUCTION_CONTEXT.get();
+                if (targetConstruction != null) {
+                    return String.valueOf(isPage ? targetConstruction.page() : targetConstruction.maxPages());
+                }
+
+                Object holder = p.getOpenInventory().getTopInventory().getHolder();
+                if (holder instanceof HomeManager.HomeHolder h) {
+                    return String.valueOf(isPage ? h.page() : h.maxPages());
+                }
+                if (holder instanceof HomeTargetManager.HomeTargetHolder h) {
+                    return String.valueOf(isPage ? h.page() : h.maxPages());
+                }
+
+                return "0";
+            }
         }
 
         if (pLow.startsWith("player_home_get_")) {
@@ -136,7 +160,7 @@ public final class AirCorePAPIExpansion extends PlaceholderExpansion {
         return pLow.startsWith("key_") ? plugin.placeholders().resolve(player, params.substring(4), Map.of()) : null;
     }
 
-    private String bool(boolean v) { return v ? "true" : "false"; }
+    private String bool(boolean v) { return Boolean.toString(v); }
 
     private boolean hasPerm(OfflinePlayer p, String node) {
         var online = p.getPlayer();

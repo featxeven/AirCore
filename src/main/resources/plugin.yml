@@ -257,6 +257,10 @@ commands:
     description: Changes the time for a player.
     usage: /ptime <set|add> <time> [world] [player]
     permission: aircore.command.ptime
+  nick:
+    description: Set or reset a player's nickname.
+    usage: /nick [player] [nick]
+    permission: aircore.command.nick
 
 permissions:
   aircore.command.admin: {description: "Admin command.", default: op}
@@ -427,3 +431,5 @@ permissions:
   aircore.command.announcement: { description: "Use /announcements.", default: op }
   aircore.command.announcetoggle: { description: "Use /announcetoggle.", default: op }
   aircore.command.announcetoggle.others: { description: "Toggle others' announcements.", default: op }
+  aircore.command.nick: { description: "Use /nick.", default: op }
+  aircore.command.nick.others: { description: "Set nick for others.", default: op }

@@ -270,6 +270,7 @@ public final class CoreInitializer {
         reg("announcetoggle", new AnnounceToggleCommand(plugin));
         reg("pweather", new PlayerWeatherCommand(plugin));
         reg("ptime", new PlayerTimeCommand(plugin));
+        reg("nick", new NickCommand(plugin));
 
         // Virtual GUIs
         reg("craftingtable", new VirtualGuiCommand(plugin, "craftingtable", p -> p.openWorkbench(null, true)));

@@ -45,6 +45,11 @@ chat:
       vip: "<dark_green><bold>VIP</bold></dark_green> <green>%player%</green> <dark_gray>></dark_gray> <white>%message%</white>"
       custom: "<dark_gray>[%player_ping%ms] %luckperms_prefix% <yellow>%player%</yellow> <dark_gray>></dark_gray> <gold>%message%</gold>"
 
+  # Player nicknames
+  nickname:
+    prefix: "*"                    # Prefix shown before a player's nickname in chat ("" for no prefix)
+    max-length: 16
+
   # Link detection and formatting
   url-formatting:
     enabled: true

@@ -87,10 +87,6 @@ public final class KitCommand implements TabExecutor {
             }
 
             List<ItemStack> items = plugin.kit().kits().getKitItems(kitName);
-            if (items.isEmpty()) {
-                MessageUtil.send(player, "kits.errors.empty-kit", Map.of("name", kitName));
-                return;
-            }
 
             boolean dropWhenFull = plugin.config().kitsDropItemsWhenFull();
             if (!dropWhenFull && !canFitAll(player, items, autoEquip)) {

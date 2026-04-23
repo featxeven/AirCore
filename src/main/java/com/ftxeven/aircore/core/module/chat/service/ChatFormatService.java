@@ -51,8 +51,10 @@ public final class ChatFormatService {
         String formatString = resolveGroupFormat(player);
         if (formatString == null) return null;
 
+        String displayName = plugin.utility().nicks().getDisplayName(player.getUniqueId(), player.getName());
+
         Component messageComponent = MessageUtil.mini(player, sanitized, Map.of(), false);
-        Component base = MessageUtil.mini(player, formatString, Map.of("player", player.getName()), true);
+        Component base = MessageUtil.mini(player, formatString, Map.of("player", displayName), true);
         if (base == null) return Component.empty();
 
         return applyFeatures(player, base.replaceText(b -> b.matchLiteral("%message%").replacement(messageComponent)));

@@ -212,6 +212,10 @@ commands:
   afk:
     aliases: []
     usage: "/%label%"
+  nick:
+    aliases: [nickname]
+    usage: "/%label% [nick]"
+    usage-others: "/%label% [player] [nick]"
 
   # Management
   gamemode:
