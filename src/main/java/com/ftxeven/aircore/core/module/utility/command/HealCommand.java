@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -80,14 +79,17 @@ public final class HealCommand implements TabExecutor {
     }
 
     private void handleHeal(CommandSender sender, String targetArg, String selectorAll) {
-        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        String senderDisplayName = (sender instanceof Player p)
+                ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                : String.valueOf(plugin.lang().get("general.console-name"));
+
         boolean feedbackEnabled = plugin.config().consoleToPlayerFeedback();
 
         if (targetArg.equalsIgnoreCase(selectorAll)) {
             for (Player target : Bukkit.getOnlinePlayers()) {
                 performHeal(target);
                 if (!target.equals(sender)) {
-                    MessageUtil.send(target, "utilities.heal.by", Map.of("player", senderName));
+                    MessageUtil.send(target, "utilities.heal.by", Map.of("player", senderDisplayName));
                 }
             }
             if (sender instanceof Player p) MessageUtil.send(p, "utilities.heal.everyone", Map.of());
@@ -102,17 +104,19 @@ public final class HealCommand implements TabExecutor {
             return;
         }
 
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+
         performHeal(target);
         if (sender instanceof Player p) {
             if (target.equals(p)) MessageUtil.send(p, "utilities.heal.self", Map.of());
             else {
-                MessageUtil.send(p, "utilities.heal.for", Map.of("player", target.getName()));
-                MessageUtil.send(target, "utilities.heal.by", Map.of("player", p.getName()));
+                MessageUtil.send(p, "utilities.heal.for", Map.of("player", targetDisplayName));
+                MessageUtil.send(target, "utilities.heal.by", Map.of("player", senderDisplayName));
             }
         } else {
-            sender.sendMessage("Healed " + target.getName());
+            sender.sendMessage("Healed " + targetDisplayName);
             if (feedbackEnabled) {
-                MessageUtil.send(target, "utilities.heal.by", Map.of("player", senderName));
+                MessageUtil.send(target, "utilities.heal.by", Map.of("player", senderDisplayName));
             }
         }
     }
@@ -137,17 +141,17 @@ public final class HealCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (args.length != 1) return Collections.emptyList();
+        if (args.length != 1) return List.of();
 
         String input = args[0].toLowerCase();
         String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
         if (sender instanceof Player player) {
-            if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+            if (!player.hasPermission(PERM_BASE)) return List.of();
 
             if (player.hasPermission(PERM_OTHERS)) {
-                Bukkit.getOnlinePlayers().stream()
+                new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                         .map(Player::getName)
                         .filter(n -> n.toLowerCase().startsWith(input))
                         .limit(20)
@@ -157,7 +161,7 @@ public final class HealCommand implements TabExecutor {
                 suggestions.add(selectorAll);
             }
         } else {
-            Bukkit.getOnlinePlayers().stream()
+            new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                     .map(Player::getName)
                     .filter(n -> n.toLowerCase().startsWith(input))
                     .limit(20)

@@ -191,11 +191,12 @@ public final class EcoCommand implements TabExecutor {
     private void handleGive(Player sender, Scope scope, OfflinePlayer target, String targetArg, double amount) {
         if (scope == Scope.SINGLE) {
             EconomyManager.Result res = plugin.economy().transactions().deposit(target.getUniqueId(), amount);
-            String targetName = plugin.database().records().getRealName(targetArg);
+            String targetNick = plugin.utility().nicks().getDisplayName(target.getUniqueId(), plugin.database().records().getRealName(targetArg));
+
             if (res.type() == EconomyManager.ResultType.MAX_LIMIT) {
                 sendToSender(sender, "economy.give.error-exceed",
-                        "Gave would exceed max limit for " + targetName,
-                        Map.of("player", consoleName(sender), "amount", plugin.economy().formats().formatAmount(plugin.config().economyMaxBalance())));
+                        "Gave would exceed max limit for " + targetNick,
+                        Map.of("player", targetNick, "amount", plugin.economy().formats().formatAmount(plugin.config().economyMaxBalance())));
                 return;
             }
 
@@ -203,14 +204,12 @@ public final class EcoCommand implements TabExecutor {
                 handleResult(sender, target, res, "economy.give.by", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             }
 
-            if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
-                MessageUtil.send(sender, "economy.give.player", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
-            } else if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                MessageUtil.send(sender, "economy.give.self", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
-            } else if (sender == null) {
-                sendToSender(null, "economy.give.player",
-                        "Gave " + plugin.economy().formats().formatAmount(amount) + " to " + targetName,
-                        Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(amount)));
+            if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null) {
+                boolean isSelf = sender.getUniqueId().equals(target.getUniqueId());
+                MessageUtil.send(sender, isSelf ? "economy.give.self" : "economy.give.player",
+                        Map.of("player", targetNick, "amount", plugin.economy().formats().formatAmount(amount)));
+            } else if (res.type() == EconomyManager.ResultType.SUCCESS) {
+                Bukkit.getConsoleSender().sendMessage("Gave " + plugin.economy().formats().formatAmount(amount) + " to " + targetNick);
             }
             return;
         }
@@ -228,9 +227,10 @@ public final class EcoCommand implements TabExecutor {
             }
 
             boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
-            String actor = consoleName(sender);
+            String actorNick = consoleName(sender);
+
             Collection<UUID> targets = isServerScope ? plugin.database().records().getAllKnownUuids() :
-                    Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).toList();
+                    new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getUniqueId).toList();
 
             for (UUID uuid : targets) {
                 double current = plugin.economy().balances().getBalance(uuid);
@@ -241,7 +241,7 @@ public final class EcoCommand implements TabExecutor {
                 plugin.economy().transactions().deposit(uuid, given);
 
                 if (shouldNotify && (sender == null || !uuid.equals(sender.getUniqueId()))) {
-                    notifyPlayer(uuid, "economy.give.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(given)));
+                    notifyPlayer(uuid, "economy.give.by", Map.of("player", actorNick, "amount", plugin.economy().formats().formatAmount(given)));
                 }
             }
             sendToSender(sender, isServerScope ? "economy.give.all" : "economy.give.online", "Gave balances.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
@@ -259,10 +259,10 @@ public final class EcoCommand implements TabExecutor {
         if (scope == Scope.SINGLE) {
             double current = plugin.economy().balances().getBalance(target.getUniqueId());
             double allowed = (min != -1) ? current - min : amount;
-            String targetName = plugin.database().records().getRealName(targetArg);
+            String targetNick = plugin.utility().nicks().getDisplayName(target.getUniqueId(), plugin.database().records().getRealName(targetArg));
 
             if (allowed < amount) {
-                sendToSender(sender, "economy.take.error-insufficient", "Insufficient funds.", Map.of("player", targetName));
+                sendToSender(sender, "economy.take.error-insufficient", "Insufficient funds.", Map.of("player", targetNick));
                 return;
             }
 
@@ -270,17 +270,17 @@ public final class EcoCommand implements TabExecutor {
             if (res.type() == EconomyManager.ResultType.SUCCESS) {
                 double actualTaken = plugin.economy().formats().round(current - res.balance());
                 if (target.isOnline() && (sender != null || plugin.config().consoleToPlayerFeedback())) {
-                    String actor = consoleName(sender);
+                    String actorNick = consoleName(sender);
                     if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
-                        notifyPlayer(target.getUniqueId(), "economy.take.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(actualTaken)));
+                        notifyPlayer(target.getUniqueId(), "economy.take.by", Map.of("player", actorNick, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                     }
                 }
-                if (sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
-                    MessageUtil.send(sender, "economy.take.player", Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(actualTaken)));
-                } else if (sender != null && sender.getUniqueId().equals(target.getUniqueId())) {
-                    MessageUtil.send(sender, "economy.take.self", Map.of("amount", plugin.economy().formats().formatAmount(actualTaken)));
-                } else if (sender == null) {
-                    sendToSender(null, "economy.take.player", "Took from " + targetName, Map.of("player", targetName, "amount", plugin.economy().formats().formatAmount(actualTaken)));
+                if (sender != null) {
+                    boolean isSelf = sender.getUniqueId().equals(target.getUniqueId());
+                    MessageUtil.send(sender, isSelf ? "economy.take.self" : "economy.take.player",
+                            Map.of("player", targetNick, "amount", plugin.economy().formats().formatAmount(actualTaken)));
+                } else {
+                    Bukkit.getConsoleSender().sendMessage("Took " + plugin.economy().formats().formatAmount(actualTaken) + " from " + targetNick);
                 }
             }
             return;
@@ -289,9 +289,10 @@ public final class EcoCommand implements TabExecutor {
         plugin.scheduler().runAsync(() -> {
             boolean isServerScope = (scope == Scope.SERVER);
             boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
-            String actor = consoleName(sender);
+            String actorNick = consoleName(sender);
+
             Collection<UUID> targets = isServerScope ? plugin.database().records().getAllKnownUuids() :
-                    Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).toList();
+                    new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getUniqueId).toList();
 
             for (UUID uuid : targets) {
                 double current = plugin.economy().balances().getBalance(uuid);
@@ -302,7 +303,7 @@ public final class EcoCommand implements TabExecutor {
                 EconomyManager.Result res = plugin.economy().transactions().withdraw(uuid, taken);
                 if (res.type() == EconomyManager.ResultType.SUCCESS && shouldNotify && (sender == null || !uuid.equals(sender.getUniqueId()))) {
                     double actualTaken = plugin.economy().formats().round(current - res.balance());
-                    notifyPlayer(uuid, "economy.take.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(actualTaken)));
+                    notifyPlayer(uuid, "economy.take.by", Map.of("player", actorNick, "amount", plugin.economy().formats().formatAmount(actualTaken)));
                 }
             }
             sendToSender(sender, isServerScope ? "economy.take.all" : "economy.take.online", "Took balances.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
@@ -324,15 +325,15 @@ public final class EcoCommand implements TabExecutor {
             }
 
             EconomyManager.Result res = plugin.economy().transactions().setBalance(target.getUniqueId(), amount);
+            String targetNick = plugin.utility().nicks().getDisplayName(target.getUniqueId(), plugin.database().records().getRealName(targetArg));
+
             if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
                 handleResult(sender, target, res, "economy.set.by", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
             }
             if (res.type() == EconomyManager.ResultType.SUCCESS && sender != null) {
-                if (!sender.getUniqueId().equals(target.getUniqueId())) {
-                    MessageUtil.send(sender, "economy.set.player", Map.of("player", plugin.database().records().getRealName(targetArg), "amount", plugin.economy().formats().formatAmount(amount)));
-                } else {
-                    MessageUtil.send(sender, "economy.set.self", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
-                }
+                boolean isSelf = sender.getUniqueId().equals(target.getUniqueId());
+                MessageUtil.send(sender, isSelf ? "economy.set.self" : "economy.set.player",
+                        Map.of("player", targetNick, "amount", plugin.economy().formats().formatAmount(amount)));
             }
             return;
         }
@@ -340,14 +341,15 @@ public final class EcoCommand implements TabExecutor {
         plugin.scheduler().runAsync(() -> {
             boolean isServerScope = (scope == Scope.SERVER);
             boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
-            String actor = consoleName(sender);
+            String actorNick = consoleName(sender);
+
             Collection<UUID> targets = isServerScope ? plugin.database().records().getAllKnownUuids() :
-                    Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).toList();
+                    new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getUniqueId).toList();
 
             for (UUID uuid : targets) {
                 EconomyManager.Result res = plugin.economy().transactions().setBalance(uuid, amount);
                 if (res.type() == EconomyManager.ResultType.SUCCESS && shouldNotify && (sender == null || !uuid.equals(sender.getUniqueId()))) {
-                    notifyPlayer(uuid, "economy.set.by", Map.of("player", actor, "amount", plugin.economy().formats().formatAmount(amount)));
+                    notifyPlayer(uuid, "economy.set.by", Map.of("player", actorNick, "amount", plugin.economy().formats().formatAmount(amount)));
                 }
             }
             sendToSender(sender, isServerScope ? "economy.set.all" : "economy.set.online", "Set balances.", Map.of("amount", plugin.economy().formats().formatAmount(amount)));
@@ -357,16 +359,17 @@ public final class EcoCommand implements TabExecutor {
     private void handleReset(Player sender, Scope scope, OfflinePlayer target, String targetArg) {
         if (scope == Scope.SINGLE) {
             plugin.economy().transactions().resetBalance(target.getUniqueId());
+            String targetNick = plugin.utility().nicks().getDisplayName(target.getUniqueId(), plugin.database().records().getRealName(targetArg));
+
             if (target.isOnline() && (sender != null || plugin.config().consoleToPlayerFeedback())) {
-                String actor = consoleName(sender);
+                String actorNick = consoleName(sender);
                 if (!(sender != null && sender.getUniqueId().equals(target.getUniqueId()))) {
-                    notifyPlayer(target.getUniqueId(), "economy.reset.by", Map.of("player", actor));
+                    notifyPlayer(target.getUniqueId(), "economy.reset.by", Map.of("player", actorNick));
                 }
             }
-            if (sender != null && !sender.getUniqueId().equals(target.getUniqueId())) {
-                MessageUtil.send(sender, "economy.reset.player", Map.of("player", plugin.database().records().getRealName(targetArg)));
-            } else if (sender != null) {
-                MessageUtil.send(sender, "economy.reset.self", Map.of());
+            if (sender != null) {
+                boolean isSelf = sender.getUniqueId().equals(target.getUniqueId());
+                MessageUtil.send(sender, isSelf ? "economy.reset.self" : "economy.reset.player", Map.of("player", targetNick));
             }
             return;
         }
@@ -374,14 +377,15 @@ public final class EcoCommand implements TabExecutor {
         plugin.scheduler().runAsync(() -> {
             boolean isServerScope = (scope == Scope.SERVER);
             boolean shouldNotify = (sender != null) || plugin.config().consoleToPlayerFeedback();
-            String actor = consoleName(sender);
+            String actorNick = consoleName(sender);
+
             Collection<UUID> targets = isServerScope ? plugin.database().records().getAllKnownUuids() :
-                    Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).toList();
+                    new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getUniqueId).toList();
 
             for (UUID uuid : targets) {
                 plugin.economy().transactions().resetBalance(uuid);
                 if (shouldNotify && (sender == null || !uuid.equals(sender.getUniqueId()))) {
-                    notifyPlayer(uuid, "economy.reset.by", Map.of("player", actor));
+                    notifyPlayer(uuid, "economy.reset.by", Map.of("player", actorNick));
                 }
             }
             sendToSender(sender, isServerScope ? "economy.reset.all" : "economy.reset.online", "Reset balances.", Map.of());
@@ -389,7 +393,8 @@ public final class EcoCommand implements TabExecutor {
     }
 
     private String consoleName(Player sender) {
-        return (sender != null) ? sender.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        if (sender == null) return String.valueOf(plugin.lang().get("general.console-name"));
+        return plugin.utility().nicks().getDisplayName(sender.getUniqueId(), sender.getName());
     }
 
     private void sendToSender(Player sender, String key, String fallback, Map<String, String> placeholders) {

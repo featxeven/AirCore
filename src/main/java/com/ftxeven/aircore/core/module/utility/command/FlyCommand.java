@@ -11,7 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,8 +71,12 @@ public final class FlyCommand implements TabExecutor {
         if (resolved == null) return;
 
         UUID uuid = resolved.getUniqueId();
-        String realName = resolved.getName() != null ? resolved.getName() : targetName;
-        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        String rawName = resolved.getName() != null ? resolved.getName() : targetName;
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(uuid, rawName);
+
+        String senderDisplayName = (sender instanceof Player p)
+                ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                : String.valueOf(plugin.lang().get("general.console-name"));
 
         boolean currentState = resolved.isOnline() && resolved.getPlayer() != null
                 ? resolved.getPlayer().getAllowFlight()
@@ -97,10 +101,10 @@ public final class FlyCommand implements TabExecutor {
                     if (uuid.equals(p.getUniqueId())) {
                         MessageUtil.send(p, newState ? "utilities.fly.enabled" : "utilities.fly.disabled", Map.of());
                     } else {
-                        MessageUtil.send(p, newState ? "utilities.fly.enabled-for" : "utilities.fly.disabled-for", Map.of("player", realName));
+                        MessageUtil.send(p, newState ? "utilities.fly.enabled-for" : "utilities.fly.disabled-for", Map.of("player", targetDisplayName));
                     }
                 } else {
-                    sender.sendMessage("Fly mode for " + realName + " -> " + (newState ? "enabled" : "disabled"));
+                    sender.sendMessage("Fly mode for " + targetDisplayName + " -> " + (newState ? "enabled" : "disabled"));
                 }
 
                 if (resolved.isOnline() && resolved.getPlayer() != null) {
@@ -108,7 +112,7 @@ public final class FlyCommand implements TabExecutor {
                     if (sender instanceof Player p && onlineTarget.equals(p)) return;
                     if (!(sender instanceof Player) && !plugin.config().consoleToPlayerFeedback()) return;
 
-                    MessageUtil.send(onlineTarget, newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by", Map.of("player", senderName));
+                    MessageUtil.send(onlineTarget, newState ? "utilities.fly.enabled-by" : "utilities.fly.disabled-by", Map.of("player", senderDisplayName));
                 }
             });
         });
@@ -139,14 +143,14 @@ public final class FlyCommand implements TabExecutor {
                                       @NotNull Command cmd,
                                       @NotNull String label,
                                       String @NotNull [] args) {
-        if (args.length != 1) return Collections.emptyList();
+        if (args.length != 1) return List.of();
 
         if (sender instanceof Player player && !player.hasPermission(PERM_OTHERS)) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         String input = args[0].toLowerCase();
-        return Bukkit.getOnlinePlayers().stream()
+        return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)

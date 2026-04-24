@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -68,8 +67,9 @@ public final class TpHereCommand implements TabExecutor {
             return true;
         }
 
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
         plugin.core().teleports().teleport(target, player.getLocation());
-        MessageUtil.send(player, "teleport.direct.player-to-self", Map.of("player", target.getName()));
+        MessageUtil.send(player, "teleport.direct.player-to-self", Map.of("player", targetDisplayName));
         return true;
     }
 
@@ -95,14 +95,14 @@ public final class TpHereCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1) return List.of();
+        if (!player.hasPermission(PERM_BASE)) return List.of();
 
         String input = args[0].toLowerCase();
         String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
-        Bukkit.getOnlinePlayers().stream()
+        new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(n -> n.toLowerCase().startsWith(input))
                 .limit(20)

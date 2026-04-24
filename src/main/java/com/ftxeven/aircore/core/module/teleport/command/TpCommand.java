@@ -10,7 +10,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,16 +36,19 @@ public final class TpCommand implements TabExecutor {
             Player other = Bukkit.getPlayerExact(args[1]);
 
             if (target == null || other == null) {
-                sender.sendMessage("One or both players not found.");
+                sender.sendMessage("One or both players not found");
                 return true;
             }
 
             String consoleName = (String) plugin.lang().get("general.console-name");
+            String targetDisp = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+            String otherDisp = plugin.utility().nicks().getDisplayName(other.getUniqueId(), other.getName());
+
             Location destination = plugin.core().teleports().adjustToCenter(other.getLocation());
             plugin.core().teleports().teleport(target, destination);
 
-            sender.sendMessage("Teleported " + target.getName() + " to " + other.getName() + ".");
-            MessageUtil.send(target, "teleport.direct.to-player-by", Map.of("player", consoleName, "target", other.getName()));
+            sender.sendMessage("Teleported " + targetDisp + " to " + otherDisp + ".");
+            MessageUtil.send(target, "teleport.direct.to-player-by", Map.of("player", consoleName, "target", otherDisp));
             return true;
         }
 
@@ -77,9 +80,10 @@ public final class TpCommand implements TabExecutor {
         }
 
         if (args.length == 1) {
+            String targetDisp = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
             Location destination = plugin.core().teleports().adjustToCenter(target.getLocation());
             plugin.core().teleports().teleport(player, destination);
-            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", target.getName()));
+            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", targetDisp));
             return true;
         }
 
@@ -95,23 +99,27 @@ public final class TpCommand implements TabExecutor {
 
     private void handleDoubleTeleport(Player player, Player target, Player other) {
         Location destination = plugin.core().teleports().adjustToCenter(other.getLocation());
+        String targetDisp = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+        String otherDisp = plugin.utility().nicks().getDisplayName(other.getUniqueId(), other.getName());
 
         if (target.equals(player)) {
             plugin.core().teleports().teleport(player, destination);
-            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", other.getName()));
+            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", otherDisp));
             return;
         }
 
         if (other.equals(player)) {
+            String playerDisp = plugin.utility().nicks().getDisplayName(player.getUniqueId(), player.getName());
             Location playerLoc = plugin.core().teleports().adjustToCenter(player.getLocation());
             plugin.core().teleports().teleport(target, playerLoc);
-            MessageUtil.send(player, "teleport.direct.player-to-self", Map.of("player", target.getName()));
+            MessageUtil.send(player, "teleport.direct.player-to-self", Map.of("player", targetDisp));
+            MessageUtil.send(target, "teleport.direct.to-player", Map.of("player", playerDisp));
             return;
         }
 
         plugin.core().teleports().teleport(target, destination);
-        MessageUtil.send(player, "teleport.direct.player-to-target", Map.of("player", target.getName(), "target", other.getName()));
-        MessageUtil.send(target, "teleport.direct.to-player-by", Map.of("player", player.getName(), "target", other.getName()));
+        MessageUtil.send(player, "teleport.direct.player-to-target", Map.of("player", targetDisp, "target", otherDisp));
+        MessageUtil.send(target, "teleport.direct.to-player-by", Map.of("player", plugin.utility().nicks().getDisplayName(player.getUniqueId(), player.getName()), "target", otherDisp));
     }
 
     private String getUsageString(Player player, String label) {
@@ -122,20 +130,20 @@ public final class TpCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (sender instanceof Player player && !player.hasPermission(PERM_BASE)) return Collections.emptyList();
-        if (args.length > 2) return Collections.emptyList();
+        if (sender instanceof Player player && !player.hasPermission(PERM_BASE)) return List.of();
+        if (args.length > 2) return List.of();
 
         String input = args[args.length - 1].toLowerCase();
         boolean canCompleteSecond = !(sender instanceof Player) || sender.hasPermission(PERM_OTHERS);
 
         if (args.length == 1 || canCompleteSecond) {
-            return Bukkit.getOnlinePlayers().stream()
+            return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input))
                     .limit(20)
                     .toList();
         }
 
-        return Collections.emptyList();
+        return List.of();
     }
 }

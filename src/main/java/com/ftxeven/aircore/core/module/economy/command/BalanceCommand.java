@@ -65,16 +65,18 @@ public final class BalanceCommand implements TabExecutor {
 
         double balance = plugin.economy().balances().getBalance(resolved.getUniqueId());
         String formatted = plugin.economy().formats().formatAmount(balance);
-        String finalName = plugin.database().records().getRealName(targetName);
+
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(resolved.getUniqueId(),
+                plugin.database().records().getRealName(targetName));
 
         if (sender instanceof Player p) {
             if (resolved.getUniqueId().equals(p.getUniqueId())) {
                 MessageUtil.send(p, "economy.balance.self", Map.of("balance", formatted));
             } else {
-                MessageUtil.send(p, "economy.balance.player", Map.of("player", finalName, "balance", formatted));
+                MessageUtil.send(p, "economy.balance.player", Map.of("player", targetDisplayName, "balance", formatted));
             }
         } else {
-            sender.sendMessage(finalName + "'s balance: " + formatted);
+            sender.sendMessage(targetDisplayName + "'s balance: " + formatted);
         }
     }
 

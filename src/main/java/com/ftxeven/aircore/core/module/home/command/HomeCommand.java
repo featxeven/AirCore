@@ -55,6 +55,7 @@ public final class HomeCommand implements TabExecutor {
             if (target == null) return true;
 
             String realName = plugin.database().records().getRealName(args[1]);
+            String targetDisplayName = plugin.utility().nicks().getDisplayName(target.getUniqueId(), realName);
 
             if (args.length == 2) {
                 if (target.getUniqueId().equals(player.getUniqueId())) {
@@ -69,7 +70,7 @@ public final class HomeCommand implements TabExecutor {
                     boolean allowEmpty = (mgr instanceof HomeTargetManager htm) && htm.definition().config().getBoolean("allow-empty-gui", true);
 
                     if (targetHomes.isEmpty() && !allowEmpty) {
-                        MessageUtil.send(player, "homes.errors.none-yet-for", Map.of("player", realName));
+                        MessageUtil.send(player, "homes.errors.none-yet-for", Map.of("player", targetDisplayName));
                         return true;
                     }
 
@@ -142,7 +143,9 @@ public final class HomeCommand implements TabExecutor {
     private void handleTeleport(Player player, OfflinePlayer target, String homeName) {
         UUID uuid = target.getUniqueId();
         String nameLower = homeName.toLowerCase();
-        String realName = plugin.database().records().getRealName(target.getName() != null ? target.getName() : "");
+
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(uuid,
+                plugin.database().records().getRealName(target.getName() != null ? target.getName() : ""));
 
         plugin.scheduler().runAsync(() -> {
             var homes = plugin.home().homes().getHomes(uuid);
@@ -156,7 +159,7 @@ public final class HomeCommand implements TabExecutor {
             plugin.scheduler().runEntityTask(player, () -> {
                 if (!finalHomes.containsKey(nameLower)) {
                     String msgKey = uuid.equals(player.getUniqueId()) ? "homes.errors.not-found" : "homes.errors.not-found-for";
-                    MessageUtil.send(player, msgKey, Map.of("player", realName, "name", homeName));
+                    MessageUtil.send(player, msgKey, Map.of("player", targetDisplayName, "name", homeName));
                     return;
                 }
 
@@ -165,10 +168,10 @@ public final class HomeCommand implements TabExecutor {
                 plugin.core().teleports().startCountdown(player, player, () -> {
                     plugin.core().teleports().teleport(player, loc);
                     String successKey = uuid.equals(player.getUniqueId()) ? "homes.teleport.success" : "homes.teleport.success-other";
-                    MessageUtil.send(player, successKey, Map.of("player", realName, "name", homeName));
+                    MessageUtil.send(player, successKey, Map.of("player", targetDisplayName, "name", homeName));
                 }, reason -> {
                     String cancelKey = uuid.equals(player.getUniqueId()) ? "homes.teleport.cancelled" : "homes.teleport.cancelled-other";
-                    MessageUtil.send(player, cancelKey, Map.of("player", realName, "name", homeName));
+                    MessageUtil.send(player, cancelKey, Map.of("player", targetDisplayName, "name", homeName));
                 });
             });
         });
@@ -176,7 +179,7 @@ public final class HomeCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player)) return Collections.emptyList();
+        if (!(sender instanceof Player player)) return List.of();
         String input = args[args.length - 1].toLowerCase();
         String otherSelector = plugin.commandConfig().getSelector("home", "player");
 
@@ -189,19 +192,20 @@ public final class HomeCommand implements TabExecutor {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase(otherSelector) && player.hasPermission(PERM_OTHERS)) {
-            return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
+            return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
+                    .map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase(otherSelector) && player.hasPermission(PERM_OTHERS)) {
             return getHomeCompletions(args[1], input);
         }
 
-        return Collections.emptyList();
+        return List.of();
     }
 
     private List<String> getHomeCompletions(String targetName, String input) {
         UUID id = plugin.database().records().uuidFromName(targetName);
-        if (id == null) return Collections.emptyList();
+        if (id == null) return List.of();
         return plugin.home().homes().getHomes(id).keySet().stream().filter(n -> n.toLowerCase().startsWith(input)).toList();
     }
 

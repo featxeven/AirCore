@@ -136,6 +136,7 @@ public final class CoreInitializer {
 
     private void setupUtilities() {
         plugin.scheduler().runTask(() -> MessageUtil.init(plugin));
+        PlaceholderUtil.init(plugin);
         TitleUtil.init(plugin.scheduler());
         SoundUtil.init(plugin.scheduler());
         ActionbarUtil.init(plugin.scheduler());

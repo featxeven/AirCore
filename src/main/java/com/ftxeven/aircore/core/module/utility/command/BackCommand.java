@@ -58,7 +58,7 @@ public final class BackCommand implements TabExecutor {
         String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
 
         if (target == null) {
-            if (!(sender instanceof Player)) sender.sendMessage("Player not found.");
+            if (!(sender instanceof Player)) sender.sendMessage("Player not found");
             return;
         }
 
@@ -70,9 +70,7 @@ public final class BackCommand implements TabExecutor {
         }
 
         if (useCountdown) {
-            plugin.core().teleports().startCountdown(target, target, () -> {
-                executeTeleport(sender, target, deathLoc, senderName);
-            }, cancelReason -> MessageUtil.send(target, "utilities.back.cancelled", Map.of()));
+            plugin.core().teleports().startCountdown(target, target, () -> executeTeleport(sender, target, deathLoc, senderName), cancelReason -> MessageUtil.send(target, "utilities.back.cancelled", Map.of()));
 
             if (!(sender instanceof Player)) {
                 sender.sendMessage("Countdown started for " + target.getName());

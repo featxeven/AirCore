@@ -11,7 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,7 +27,6 @@ public final class TpOfflineCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
@@ -53,23 +52,26 @@ public final class TpOfflineCommand implements TabExecutor {
         OfflinePlayer resolved = resolve(player, args[0]);
         if (resolved == null) return true;
 
-        String displayName = plugin.database().records().getRealName(args[0]);
+        UUID targetId = resolved.getUniqueId();
+        String realName = plugin.database().records().getRealName(args[0]);
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(targetId, realName);
+
         Player targetOnline = resolved.getPlayer();
 
         if (targetOnline != null) {
             plugin.core().teleports().teleport(player, targetOnline.getLocation());
-            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", displayName));
+            MessageUtil.send(player, "teleport.direct.to-player", Map.of("player", targetDisplayName));
             return true;
         }
 
-        Location loc = plugin.database().records().getLocation(resolved.getUniqueId());
+        Location loc = plugin.database().records().getLocation(targetId);
         if (loc == null) {
-            MessageUtil.send(player, "teleport.errors.location-not-found", Map.of("player", displayName));
+            MessageUtil.send(player, "teleport.errors.location-not-found", Map.of("player", targetDisplayName));
             return true;
         }
 
         plugin.core().teleports().teleport(player, loc);
-        MessageUtil.send(player, "teleport.direct.to-player-last", Map.of("player", displayName));
+        MessageUtil.send(player, "teleport.direct.to-player-last", Map.of("player", targetDisplayName));
 
         return true;
     }
@@ -87,10 +89,10 @@ public final class TpOfflineCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (args.length != 1 || !sender.hasPermission(PERMISSION)) return Collections.emptyList();
+        if (args.length != 1 || !sender.hasPermission(PERMISSION)) return List.of();
 
         String input = args[0].toLowerCase();
-        return Bukkit.getOnlinePlayers().stream()
+        return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)

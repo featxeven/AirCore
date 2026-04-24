@@ -46,19 +46,21 @@ public final class ReplyCommand implements TabExecutor {
             return true;
         }
 
+        String targetNick = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+
         if (target.equals(player) && !plugin.config().pmAllowSelfMessage()) {
             MessageUtil.send(player, "chat.private-messages.error-self", Map.of());
             return true;
         }
 
         if (plugin.core().blocks().isBlocked(target.getUniqueId(), player.getUniqueId())) {
-            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", target.getName()));
+            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", targetNick));
             return true;
         }
 
         boolean bypassToggle = player.hasPermission("aircore.bypass.chat.toggle");
         if (!bypassToggle && !plugin.core().toggles().isEnabled(target.getUniqueId(), ToggleService.Toggle.PM)) {
-            MessageUtil.send(player, "chat.private-messages.error-disabled", Map.of("player", target.getName()));
+            MessageUtil.send(player, "chat.private-messages.error-disabled", Map.of("player", targetNick));
             return true;
         }
 
@@ -73,7 +75,7 @@ public final class ReplyCommand implements TabExecutor {
         plugin.chat().messages().sendPrivateMessage(player, target, rawMessage);
 
         if (plugin.utility().afk().isAfk(target.getUniqueId())) {
-            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", target.getName()));
+            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", targetNick));
         }
 
         return true;

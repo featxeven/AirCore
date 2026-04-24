@@ -10,7 +10,6 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -93,19 +92,23 @@ public final class GamemodeCommand implements TabExecutor {
         plugin.scheduler().runEntityTask(target, () -> target.setGameMode(mode));
 
         String modeName = String.valueOf(plugin.lang().get("utilities.gamemode.placeholders." + mode.name().toLowerCase()));
-        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        String senderDisplayName = (sender instanceof Player p)
+                ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                : String.valueOf(plugin.lang().get("general.console-name"));
+
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
 
         if (sender instanceof Player p) {
             if (target.equals(p)) {
                 MessageUtil.send(p, "utilities.gamemode.set", Map.of("gamemode", modeName));
             } else {
-                MessageUtil.send(p, "utilities.gamemode.set-for", Map.of("gamemode", modeName, "player", target.getName()));
-                MessageUtil.send(target, "utilities.gamemode.set-by", Map.of("player", p.getName(), "gamemode", modeName));
+                MessageUtil.send(p, "utilities.gamemode.set-for", Map.of("gamemode", modeName, "player", targetDisplayName));
+                MessageUtil.send(target, "utilities.gamemode.set-by", Map.of("player", senderDisplayName, "gamemode", modeName));
             }
         } else {
-            sender.sendMessage("Set gamemode for " + target.getName() + " -> " + mode.name().toLowerCase());
+            sender.sendMessage("Set gamemode for " + targetDisplayName + " -> " + mode.name().toLowerCase());
             if (plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(target, "utilities.gamemode.set-by", Map.of("player", senderName, "gamemode", modeName));
+                MessageUtil.send(target, "utilities.gamemode.set-by", Map.of("player", senderDisplayName, "gamemode", modeName));
             }
         }
     }
@@ -133,15 +136,12 @@ public final class GamemodeCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command cmd,
-                                      @NotNull String label,
-                                      String @NotNull [] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         String input = args[args.length - 1].toLowerCase();
 
         if (args.length == 1) {
             if (sender instanceof Player player && !player.hasPermission("aircore.command.gamemode")) {
-                return Collections.emptyList();
+                return List.of();
             }
 
             return Stream.of(
@@ -154,7 +154,7 @@ public final class GamemodeCommand implements TabExecutor {
 
         if (args.length == 2) {
             if (sender instanceof Player player && !player.hasPermission("aircore.command.gamemode.others")) {
-                return Collections.emptyList();
+                return List.of();
             }
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
@@ -162,6 +162,6 @@ public final class GamemodeCommand implements TabExecutor {
                     .limit(20).toList();
         }
 
-        return Collections.emptyList();
+        return List.of();
     }
 }

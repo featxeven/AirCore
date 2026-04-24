@@ -11,7 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -131,6 +131,13 @@ public final class PlayerTimeCommand implements TabExecutor {
             plugin.database().records().setPlayerTime(uuid, finalTicks);
         }
 
+        String senderDisplayName = (sender instanceof Player p)
+                ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                : String.valueOf(plugin.lang().get("general.console-name"));
+
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(uuid, target.getName() != null ? target.getName() : "Unknown");
+        String timeFormatted = formatTime(finalTicks);
+
         if (target.isOnline() && target.getPlayer() != null) {
             Player online = target.getPlayer();
             plugin.scheduler().runEntityTask(online, () -> {
@@ -138,10 +145,6 @@ public final class PlayerTimeCommand implements TabExecutor {
                 else online.setPlayerTime(finalTicks, false);
             });
         }
-
-        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
-        String targetName = target.getName() != null ? target.getName() : "Unknown";
-        String timeFormatted = formatTime(finalTicks);
 
         if (sender instanceof Player p) {
             boolean isSelf = uuid.equals(p.getUniqueId());
@@ -151,17 +154,17 @@ public final class PlayerTimeCommand implements TabExecutor {
                 MessageUtil.send(target.getPlayer(), "utilities.time.player." + variant + "-by", Map.of(
                         "ticks", variant.equals("reset") ? "default" : String.valueOf(ticks),
                         "time-formatted", timeFormatted,
-                        "player", senderName
+                        "player", senderDisplayName
                 ));
             }
 
             MessageUtil.send(p, path, Map.of(
                     "ticks", variant.equals("reset") ? "default" : String.valueOf(variant.equals("add") ? ticks : finalTicks),
                     "time-formatted", timeFormatted,
-                    "player", targetName
+                    "player", targetDisplayName
             ));
         } else {
-            sender.sendMessage("Applied player-time " + variant + " for " + targetName);
+            sender.sendMessage("Applied player-time " + variant + " for " + targetDisplayName);
         }
     }
 
@@ -201,7 +204,7 @@ public final class PlayerTimeCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String @NotNull [] args) {
-        if (sender instanceof Player p && !p.hasPermission(PERMISSION)) return Collections.emptyList();
+        if (sender instanceof Player p && !p.hasPermission(PERMISSION)) return List.of();
         String input = args[args.length - 1].toLowerCase();
         boolean hasOthers = sender.hasPermission(PERMISSION_OTHERS);
 
@@ -215,19 +218,19 @@ public final class PlayerTimeCommand implements TabExecutor {
 
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase(resetSel)) {
-                if (!hasOthers) return Collections.emptyList();
-                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
+                if (!hasOthers) return List.of();
+                return new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
             }
             if (args[0].equalsIgnoreCase(setSel)) {
                 return Stream.of("day", "noon", "night", "midnight").filter(s -> s.startsWith(input)).toList();
             }
-            return Collections.emptyList();
+            return List.of();
         }
 
         if (args.length == 3 && hasOthers && !args[0].equalsIgnoreCase(resetSel)) {
-            return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
+            return new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
         }
 
-        return Collections.emptyList();
+        return List.of();
     }
 }

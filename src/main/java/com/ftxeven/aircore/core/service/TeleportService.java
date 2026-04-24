@@ -62,7 +62,6 @@ public final class TeleportService {
         activeTeleports.remove(targetId);
         cancelHandlers.remove(senderId);
         cancelHandlers.remove(targetId);
-
         activeTeleports.put(senderId, targetId);
         activeTeleports.put(targetId, senderId);
 

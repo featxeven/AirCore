@@ -11,7 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -88,6 +88,12 @@ public final class PlayerWeatherCommand implements TabExecutor {
 
         plugin.database().records().setPlayerWeather(uuid, type);
 
+        String senderDisplayName = (sender instanceof Player p)
+                ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                : String.valueOf(plugin.lang().get("general.console-name"));
+
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(uuid, target.getName() != null ? target.getName() : "Unknown");
+
         if (target.isOnline() && target.getPlayer() != null) {
             Player online = target.getPlayer();
             plugin.scheduler().runEntityTask(online, () -> {
@@ -95,9 +101,6 @@ public final class PlayerWeatherCommand implements TabExecutor {
                 else online.setPlayerWeather(type.equals("clear") ? WeatherType.CLEAR : WeatherType.DOWNFALL);
             });
         }
-
-        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
-        String targetName = target.getName() != null ? target.getName() : "Unknown";
 
         if (sender instanceof Player p) {
             boolean isSelf = uuid.equals(p.getUniqueId());
@@ -107,12 +110,12 @@ public final class PlayerWeatherCommand implements TabExecutor {
             if (!isSelf && target.isOnline() && target.getPlayer() != null) {
                 MessageUtil.send(target.getPlayer(), "utilities.weather.player." + action + "-by", Map.of(
                         "type", typeDisplay,
-                        "player", senderName
+                        "player", senderDisplayName
                 ));
             }
-            MessageUtil.send(p, path, Map.of("type", typeDisplay, "player", targetName));
+            MessageUtil.send(p, path, Map.of("type", typeDisplay, "player", targetDisplayName));
         } else {
-            sender.sendMessage("Set player-weather " + type + " for " + targetName);
+            sender.sendMessage("Set player-weather " + type + " for " + targetDisplayName);
         }
     }
 
@@ -136,7 +139,7 @@ public final class PlayerWeatherCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String @NotNull [] args) {
-        if (sender instanceof Player p && !p.hasPermission(PERMISSION)) return Collections.emptyList();
+        if (sender instanceof Player p && !p.hasPermission(PERMISSION)) return List.of();
         String input = args[args.length - 1].toLowerCase();
 
         if (args.length == 1) {
@@ -149,10 +152,10 @@ public final class PlayerWeatherCommand implements TabExecutor {
         }
 
         if (args.length == 2 && sender.hasPermission(PERMISSION_OTHERS)) {
-            return Bukkit.getOnlinePlayers().stream().map(Player::getName)
+            return new ArrayList<>(Bukkit.getOnlinePlayers()).stream().map(Player::getName)
                     .filter(s -> s.toLowerCase().startsWith(input)).limit(20).toList();
         }
 
-        return Collections.emptyList();
+        return List.of();
     }
 }

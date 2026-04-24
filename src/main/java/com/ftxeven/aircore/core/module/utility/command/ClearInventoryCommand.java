@@ -84,14 +84,17 @@ public final class ClearInventoryCommand implements TabExecutor {
     }
 
     private void handleClear(CommandSender sender, String targetArg, String selectorAll) {
-        String senderName = (sender instanceof Player p) ? p.getName() : String.valueOf(plugin.lang().get("general.console-name"));
+        String senderDisplayName = (sender instanceof Player p)
+                ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                : String.valueOf(plugin.lang().get("general.console-name"));
+
         boolean feedbackEnabled = plugin.config().consoleToPlayerFeedback();
 
         if (targetArg.equalsIgnoreCase(selectorAll)) {
             for (Player target : Bukkit.getOnlinePlayers()) {
                 performClearOnline(target);
                 if (!target.equals(sender)) {
-                    MessageUtil.send(target, "utilities.inventory.cleared-by", Map.of("player", senderName));
+                    MessageUtil.send(target, "utilities.inventory.cleared-by", Map.of("player", senderDisplayName));
                 }
             }
             if (sender instanceof Player p) MessageUtil.send(p, "utilities.inventory.cleared-everyone", Map.of());
@@ -102,7 +105,8 @@ public final class ClearInventoryCommand implements TabExecutor {
         OfflinePlayer resolved = resolve(sender, targetArg);
         if (resolved == null) return;
 
-        String displayName = resolved.getName() != null ? resolved.getName() : targetArg;
+        String rawName = resolved.getName() != null ? resolved.getName() : targetArg;
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(resolved.getUniqueId(), rawName);
 
         if (resolved.isOnline() && resolved.getPlayer() != null) {
             Player targetOnline = resolved.getPlayer();
@@ -111,13 +115,13 @@ public final class ClearInventoryCommand implements TabExecutor {
                 if (targetOnline.equals(p)) {
                     MessageUtil.send(p, "utilities.inventory.cleared", Map.of());
                 } else {
-                    MessageUtil.send(p, "utilities.inventory.cleared-for", Map.of("player", displayName));
-                    MessageUtil.send(targetOnline, "utilities.inventory.cleared-by", Map.of("player", p.getName()));
+                    MessageUtil.send(p, "utilities.inventory.cleared-for", Map.of("player", targetDisplayName));
+                    MessageUtil.send(targetOnline, "utilities.inventory.cleared-by", Map.of("player", senderDisplayName));
                 }
             } else {
-                sender.sendMessage("Cleared inventory for " + displayName);
+                sender.sendMessage("Cleared inventory for " + targetDisplayName);
                 if (feedbackEnabled) {
-                    MessageUtil.send(targetOnline, "utilities.inventory.cleared-by", Map.of("player", senderName));
+                    MessageUtil.send(targetOnline, "utilities.inventory.cleared-by", Map.of("player", senderDisplayName));
                 }
             }
         } else {
@@ -126,9 +130,9 @@ public final class ClearInventoryCommand implements TabExecutor {
                 performClearOffline(targetId);
                 plugin.scheduler().runTask(() -> {
                     if (sender instanceof Player p) {
-                        MessageUtil.send(p, "utilities.inventory.cleared-for", Map.of("player", displayName));
+                        MessageUtil.send(p, "utilities.inventory.cleared-for", Map.of("player", targetDisplayName));
                     } else {
-                        sender.sendMessage("Cleared offline inventory for " + displayName);
+                        sender.sendMessage("Cleared offline inventory for " + targetDisplayName);
                     }
                 });
             });

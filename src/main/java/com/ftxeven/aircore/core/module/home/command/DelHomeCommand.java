@@ -10,6 +10,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -87,7 +88,9 @@ public final class DelHomeCommand implements TabExecutor {
     private void handleDelete(CommandSender sender, OfflinePlayer target, String homeName, String actorName, boolean isConsole) {
         UUID uuid = target.getUniqueId();
         String nameLower = homeName.toLowerCase();
-        String targetName = plugin.database().records().getRealName(target.getName() != null ? target.getName() : "");
+
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(uuid,
+                plugin.database().records().getRealName(target.getName() != null ? target.getName() : ""));
 
         var homes = plugin.home().homes().getHomes(uuid);
         if (homes.isEmpty()) {
@@ -101,10 +104,10 @@ public final class DelHomeCommand implements TabExecutor {
                 if (uuid.equals(p.getUniqueId())) {
                     MessageUtil.send(p, "homes.errors.not-found", Map.of("name", homeName));
                 } else {
-                    MessageUtil.send(p, "homes.errors.not-found-for", Map.of("player", targetName, "name", homeName));
+                    MessageUtil.send(p, "homes.errors.not-found-for", Map.of("player", targetDisplayName, "name", homeName));
                 }
             } else {
-                sender.sendMessage("Home '" + homeName + "' not found for " + targetName);
+                sender.sendMessage("Home '" + homeName + "' not found for " + targetDisplayName);
             }
             return;
         }
@@ -115,10 +118,10 @@ public final class DelHomeCommand implements TabExecutor {
             if (uuid.equals(p.getUniqueId())) {
                 MessageUtil.send(p, "homes.management.deleted", Map.of("name", homeName));
             } else {
-                MessageUtil.send(p, "homes.management.deleted-for", Map.of("player", targetName, "name", homeName));
+                MessageUtil.send(p, "homes.management.deleted-for", Map.of("player", targetDisplayName, "name", homeName));
             }
         } else {
-            sender.sendMessage("Deleted home '" + homeName + "' for " + targetName);
+            sender.sendMessage("Deleted home '" + homeName + "' for " + targetDisplayName);
         }
 
         if (target.isOnline() && target.getPlayer() != null) {
@@ -126,7 +129,11 @@ public final class DelHomeCommand implements TabExecutor {
             if (sender instanceof Player p && onlineTarget.equals(p)) return;
 
             if (!isConsole || plugin.config().consoleToPlayerFeedback()) {
-                MessageUtil.send(onlineTarget, "homes.management.deleted-by", Map.of("player", actorName, "name", homeName));
+                String actorDisplayName = (sender instanceof Player p)
+                        ? plugin.utility().nicks().getDisplayName(p.getUniqueId(), p.getName())
+                        : actorName;
+
+                MessageUtil.send(onlineTarget, "homes.management.deleted-by", Map.of("player", actorDisplayName, "name", homeName));
             }
         }
     }
@@ -137,7 +144,8 @@ public final class DelHomeCommand implements TabExecutor {
 
         if (!(sender instanceof Player player)) {
             if (args.length == 1) {
-                return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
+                return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
+                        .map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
             }
             if (args.length == 2) {
                 return getHomeCompletions(args[0], input);
@@ -154,7 +162,8 @@ public final class DelHomeCommand implements TabExecutor {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("@p") && player.hasPermission("aircore.command.delhome.others")) {
-            return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
+            return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
+                    .map(Player::getName).filter(n -> n.toLowerCase().startsWith(input)).toList();
         }
 
         if (args.length == 3 && args[0].equalsIgnoreCase("@p") && player.hasPermission("aircore.command.delhome.others")) {
@@ -175,15 +184,9 @@ public final class DelHomeCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
-        if (sender instanceof Player p) {
-            MessageUtil.send(p, "errors.player-never-joined", Map.of());
-        } else {
-            sender.sendMessage("Player not found in database.");
-        }
+        if (sender instanceof Player p) MessageUtil.send(p, "errors.player-never-joined", Map.of());
         return null;
     }
 }

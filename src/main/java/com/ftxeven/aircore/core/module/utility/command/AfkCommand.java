@@ -10,7 +10,6 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,7 +25,6 @@ public final class AfkCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
@@ -62,11 +60,11 @@ public final class AfkCommand implements TabExecutor {
         plugin.utility().afk().setAfk(player.getUniqueId());
         MessageUtil.send(player, "utilities.afk.set", Map.of());
 
-        String name = player.getName();
+        String displayName = plugin.utility().nicks().getDisplayName(player.getUniqueId(), player.getName());
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other.equals(player)) continue;
             if (other.hasPermission("aircore.command.afk.notify")) {
-                MessageUtil.send(other, "utilities.afk.set-notify", Map.of("player", name));
+                MessageUtil.send(other, "utilities.afk.set-notify", Map.of("player", displayName));
             }
         }
     }
@@ -77,18 +75,18 @@ public final class AfkCommand implements TabExecutor {
 
         MessageUtil.send(player, "utilities.afk.stop", Map.of("time", timeStr));
 
-        String name = player.getName();
+        String displayName = plugin.utility().nicks().getDisplayName(player.getUniqueId(), player.getName());
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other.equals(player)) continue;
             if (other.hasPermission("aircore.command.afk.notify")) {
                 MessageUtil.send(other, "utilities.afk.stop-notify",
-                        Map.of("player", name, "time", timeStr));
+                        Map.of("player", displayName, "time", timeStr));
             }
         }
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        return Collections.emptyList();
+        return List.of();
     }
 }

@@ -11,7 +11,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,10 +59,11 @@ public final class PayCommand implements TabExecutor {
             return true;
         }
 
-        String realTargetName = plugin.database().records().getRealName(args[0]);
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(targetId,
+                plugin.database().records().getRealName(args[0]));
 
         if (plugin.core().blocks().isBlocked(targetId, senderId)) {
-            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", realTargetName));
+            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", targetDisplayName));
             return true;
         }
 
@@ -96,13 +97,13 @@ public final class PayCommand implements TabExecutor {
             double targetBalance = plugin.economy().balances().getBalance(targetId);
             if (targetBalance + amount > maxBalance) {
                 MessageUtil.send(player, "economy.payments.error-exceed",
-                        Map.of("player", realTargetName, "amount", plugin.economy().formats().formatAmount(maxBalance)));
+                        Map.of("player", targetDisplayName, "amount", plugin.economy().formats().formatAmount(maxBalance)));
                 return true;
             }
         }
 
         if (!plugin.core().toggles().isEnabled(targetId, ToggleService.Toggle.PAY) && !player.hasPermission(BYPASS_TOGGLE)) {
-            MessageUtil.send(player, "economy.payments.error-disabled", Map.of("player", realTargetName));
+            MessageUtil.send(player, "economy.payments.error-disabled", Map.of("player", targetDisplayName));
             return true;
         }
 
@@ -110,11 +111,12 @@ public final class PayCommand implements TabExecutor {
         plugin.economy().transactions().deposit(targetId, amount);
 
         String formattedAmount = plugin.economy().formats().formatAmount(amount);
-        MessageUtil.send(player, "economy.payments.send", Map.of("player", realTargetName, "amount", formattedAmount));
+        MessageUtil.send(player, "economy.payments.send", Map.of("player", targetDisplayName, "amount", formattedAmount));
 
         if (target.isOnline() && target.getPlayer() != null) {
+            String senderDisplayName = plugin.utility().nicks().getDisplayName(senderId, player.getName());
             MessageUtil.send(target.getPlayer(), "economy.payments.receive",
-                    Map.of("player", player.getName(), "amount", formattedAmount));
+                    Map.of("player", senderDisplayName, "amount", formattedAmount));
         }
 
         return true;
@@ -123,11 +125,11 @@ public final class PayCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (args.length != 1 || !(sender instanceof Player player) || !player.hasPermission(PERM_BASE)) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         String input = args[0].toLowerCase();
-        return Bukkit.getOnlinePlayers().stream()
+        return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)

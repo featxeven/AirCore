@@ -64,7 +64,8 @@ public final class TpAcceptCommand implements TabExecutor {
 
             senderPlayer = Bukkit.getPlayer(req.sender());
             if (senderPlayer == null || req.expiryTime() < System.currentTimeMillis()) {
-                MessageUtil.send(target, "teleport.lifecycle.expired-from", Map.of("player", req.senderName()));
+                String senderDisp = plugin.utility().nicks().getDisplayName(req.sender(), req.senderName());
+                MessageUtil.send(target, "teleport.lifecycle.expired-from", Map.of("player", senderDisp));
                 plugin.teleport().requests().popLatest(targetId);
                 return true;
             }
@@ -78,12 +79,14 @@ public final class TpAcceptCommand implements TabExecutor {
 
             req = plugin.teleport().requests().getRequest(targetId, senderPlayer.getUniqueId());
             if (req == null) {
-                MessageUtil.send(target, "teleport.errors.no-request-from", Map.of("player", senderPlayer.getName()));
+                String senderDisp = plugin.utility().nicks().getDisplayName(senderPlayer.getUniqueId(), senderPlayer.getName());
+                MessageUtil.send(target, "teleport.errors.no-request-from", Map.of("player", senderDisp));
                 return true;
             }
 
             if (req.expiryTime() < System.currentTimeMillis()) {
-                MessageUtil.send(target, "teleport.lifecycle.expired-from", Map.of("player", req.senderName()));
+                String senderDisp = plugin.utility().nicks().getDisplayName(req.sender(), req.senderName());
+                MessageUtil.send(target, "teleport.lifecycle.expired-from", Map.of("player", senderDisp));
                 plugin.teleport().requests().popRequestFrom(targetId, senderPlayer.getUniqueId());
                 return true;
             }
@@ -117,34 +120,37 @@ public final class TpAcceptCommand implements TabExecutor {
     }
 
     private void processRequest(RequestService.TeleportRequest req, Player senderPlayer, Player target) {
-        MessageUtil.send(target, "teleport.actions.accepted-player", Map.of("player", req.senderName()));
-        MessageUtil.send(senderPlayer, "teleport.actions.accepted-from", Map.of("player", req.targetName()));
+        String senderDisp = plugin.utility().nicks().getDisplayName(req.sender(), req.senderName());
+        String targetDisp = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+
+        MessageUtil.send(target, "teleport.actions.accepted-player", Map.of("player", senderDisp));
+        MessageUtil.send(senderPlayer, "teleport.actions.accepted-from", Map.of("player", targetDisp));
 
         if (req.type() == RequestService.RequestType.TPA) {
             plugin.core().teleports().startCountdown(senderPlayer, target, () -> {
                 Location loc = plugin.core().teleports().adjustToCenter(target.getLocation());
                 plugin.core().teleports().teleport(senderPlayer, loc);
-                MessageUtil.send(senderPlayer, "teleport.direct.to-player", Map.of("player", target.getName()));
+                MessageUtil.send(senderPlayer, "teleport.direct.to-player", Map.of("player", targetDisp));
             }, null);
         } else {
             plugin.core().teleports().startCountdown(target, senderPlayer, () -> {
                 Location loc = plugin.core().teleports().adjustToCenter(senderPlayer.getLocation());
                 plugin.core().teleports().teleport(target, loc);
-                MessageUtil.send(target, "teleport.direct.to-player", Map.of("player", senderPlayer.getName()));
+                MessageUtil.send(target, "teleport.direct.to-player", Map.of("player", senderDisp));
             }, null);
         }
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1) return List.of();
+        if (!player.hasPermission(PERM_BASE)) return List.of();
 
         String input = args[0].toLowerCase();
         String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
-        Bukkit.getOnlinePlayers().stream()
+        new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(n -> n.toLowerCase().startsWith(input))
                 .limit(20)

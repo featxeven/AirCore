@@ -74,7 +74,8 @@ public final class TpaHereCommand implements TabExecutor {
 
         if (canReceiveRequest(player, target, false)) {
             executeRequest(player, target);
-            MessageUtil.send(player, "teleport.requests.tpahere-to", Map.of("player", target.getName()));
+            String targetDisp = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+            MessageUtil.send(player, "teleport.requests.tpahere-to", Map.of("player", targetDisp));
         }
 
         return true;
@@ -111,13 +112,19 @@ public final class TpaHereCommand implements TabExecutor {
         UUID targetId = target.getUniqueId();
 
         if (plugin.core().blocks().isBlocked(targetId, playerId)) {
-            if (!silent) MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", target.getName()));
+            if (!silent) {
+                String targetDisp = plugin.utility().nicks().getDisplayName(targetId, target.getName());
+                MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", targetDisp));
+            }
             return false;
         }
 
         if (!player.hasPermission("aircore.bypass.teleport.toggle") &&
                 !plugin.core().toggles().isEnabled(targetId, ToggleService.Toggle.TELEPORT)) {
-            if (!silent) MessageUtil.send(player, "teleport.requests.error-disabled", Map.of("player", target.getName()));
+            if (!silent) {
+                String targetDisp = plugin.utility().nicks().getDisplayName(targetId, target.getName());
+                MessageUtil.send(player, "teleport.requests.error-disabled", Map.of("player", targetDisp));
+            }
             return false;
         }
 
@@ -144,23 +151,26 @@ public final class TpaHereCommand implements TabExecutor {
         );
 
         plugin.teleport().cooldowns().mark(player.getUniqueId(), target.getUniqueId());
-        MessageUtil.send(target, "teleport.requests.tpahere-from", Map.of("player", player.getName()));
+
+        String playerDisp = plugin.utility().nicks().getDisplayName(player.getUniqueId(), player.getName());
+        MessageUtil.send(target, "teleport.requests.tpahere-from", Map.of("player", playerDisp));
 
         if (plugin.utility().afk().isAfk(target.getUniqueId())) {
-            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", target.getName()));
+            String targetDisp = plugin.utility().nicks().getDisplayName(target.getUniqueId(), target.getName());
+            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", targetDisp));
         }
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1) return List.of();
+        if (!player.hasPermission(PERM_BASE)) return List.of();
 
         String input = args[0].toLowerCase();
         String selectorAll = plugin.commandConfig().getSelector("global.all", "@a");
         List<String> suggestions = new ArrayList<>();
 
-        Bukkit.getOnlinePlayers().stream()
+        new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(n -> n.toLowerCase().startsWith(input))
                 .limit(20)

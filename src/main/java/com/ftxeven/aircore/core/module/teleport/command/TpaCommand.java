@@ -12,7 +12,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +28,6 @@ public final class TpaCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players may use this command");
             return true;
@@ -65,14 +64,16 @@ public final class TpaCommand implements TabExecutor {
             return true;
         }
 
+        String targetDisp = plugin.utility().nicks().getDisplayName(targetId, target.getName());
+
         if (plugin.core().blocks().isBlocked(targetId, playerId)) {
-            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", target.getName()));
+            MessageUtil.send(player, "utilities.blocking.error-blocked-by", Map.of("player", targetDisp));
             return true;
         }
 
         if (!player.hasPermission("aircore.bypass.teleport.toggle") &&
                 !plugin.core().toggles().isEnabled(targetId, ToggleService.Toggle.TELEPORT)) {
-            MessageUtil.send(player, "teleport.requests.error-disabled", Map.of("player", target.getName()));
+            MessageUtil.send(player, "teleport.requests.error-disabled", Map.of("player", targetDisp));
             return true;
         }
 
@@ -94,11 +95,12 @@ public final class TpaCommand implements TabExecutor {
 
         plugin.teleport().cooldowns().mark(playerId, targetId);
 
-        MessageUtil.send(player, "teleport.requests.tpa-to", Map.of("player", target.getName()));
-        MessageUtil.send(target, "teleport.requests.tpa-from", Map.of("player", player.getName()));
+        String playerDisp = plugin.utility().nicks().getDisplayName(playerId, player.getName());
+        MessageUtil.send(player, "teleport.requests.tpa-to", Map.of("player", targetDisp));
+        MessageUtil.send(target, "teleport.requests.tpa-from", Map.of("player", playerDisp));
 
         if (plugin.utility().afk().isAfk(targetId)) {
-            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", target.getName()));
+            MessageUtil.send(player, "utilities.afk.interaction-notify", Map.of("player", targetDisp));
         }
 
         return true;
@@ -106,11 +108,11 @@ public final class TpaCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
-        if (!(sender instanceof Player player) || args.length != 1) return Collections.emptyList();
-        if (!player.hasPermission(PERM_BASE)) return Collections.emptyList();
+        if (!(sender instanceof Player player) || args.length != 1) return List.of();
+        if (!player.hasPermission(PERM_BASE)) return List.of();
 
         String input = args[0].toLowerCase();
-        return Bukkit.getOnlinePlayers().stream()
+        return new ArrayList<>(Bukkit.getOnlinePlayers()).stream()
                 .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(input))
                 .limit(20)

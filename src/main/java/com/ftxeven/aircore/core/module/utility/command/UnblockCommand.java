@@ -10,7 +10,10 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public final class UnblockCommand implements TabExecutor {
 
@@ -54,15 +57,17 @@ public final class UnblockCommand implements TabExecutor {
         if (resolved == null) return true;
 
         UUID targetId = resolved.getUniqueId();
-        String realName = plugin.database().records().getRealName(targetName);
+
+        String rawName = resolved.getName();
+        String targetDisplayName = plugin.utility().nicks().getDisplayName(targetId, rawName != null ? rawName : targetName);
 
         if (!plugin.core().blocks().isBlocked(playerId, targetId)) {
-            MessageUtil.send(player, "utilities.blocking.not-blocked", Map.of("player", realName));
+            MessageUtil.send(player, "utilities.blocking.not-blocked", Map.of("player", targetDisplayName));
             return true;
         }
 
         plugin.api().blocks().unblock(playerId, targetId);
-        MessageUtil.send(player, "utilities.blocking.removed", Map.of("player", realName));
+        MessageUtil.send(player, "utilities.blocking.removed", Map.of("player", targetDisplayName));
         return true;
     }
 
@@ -78,7 +83,7 @@ public final class UnblockCommand implements TabExecutor {
                                       String @NotNull [] args) {
 
         if (!(sender instanceof Player player) || !player.hasPermission(PERMISSION)) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         if (args.length == 1) {
@@ -92,7 +97,7 @@ public final class UnblockCommand implements TabExecutor {
                     .limit(20)
                     .toList();
         }
-        return Collections.emptyList();
+        return List.of();
     }
 
     private OfflinePlayer resolve(Player sender, String name) {
@@ -100,9 +105,7 @@ public final class UnblockCommand implements TabExecutor {
         if (online != null) return online;
 
         UUID uuid = plugin.database().records().uuidFromName(name);
-        if (uuid != null) {
-            return Bukkit.getOfflinePlayer(uuid);
-        }
+        if (uuid != null) return Bukkit.getOfflinePlayer(uuid);
 
         MessageUtil.send(sender, "errors.player-never-joined", Map.of());
         return null;
