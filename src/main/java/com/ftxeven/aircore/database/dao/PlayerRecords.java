@@ -359,7 +359,7 @@ public final class PlayerRecords {
     }
 
     public String getNick(UUID uuid) {
-        String sql = "SELECT nick FROM player_records WHERE uuid = ?;";
+        String sql = "SELECT nick FROM player_records WHERE uuid = ? LIMIT 1;";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, uuid.toString());
             try (ResultSet rs = ps.executeQuery()) {
