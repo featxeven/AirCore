@@ -82,6 +82,10 @@ public final class TeleportService {
         if (seconds <= 0 || bypass) {
             clearCountdownState(senderId);
             clearCountdownState(targetId);
+            activeTeleports.remove(senderId);
+            activeTeleports.remove(targetId);
+            cancelHandlers.remove(senderId);
+            cancelHandlers.remove(targetId);
             action.run();
             return;
         }
@@ -110,6 +114,11 @@ public final class TeleportService {
         SchedulerUtil.CancellableTask tpTask = scheduler.runDelayed(() -> {
             clearCountdownState(senderId);
             clearCountdownState(targetId);
+
+            activeTeleports.remove(senderId);
+            activeTeleports.remove(targetId);
+            cancelHandlers.remove(senderId);
+            cancelHandlers.remove(targetId);
             action.run();
         }, seconds * 20L);
 
