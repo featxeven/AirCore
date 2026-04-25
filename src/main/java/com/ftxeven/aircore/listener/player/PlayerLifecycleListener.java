@@ -90,7 +90,7 @@ public final class PlayerLifecycleListener implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        plugin.utility().back().setLastDeath(player.getUniqueId(), player.getLocation());
+        plugin.utility().back().setLastLocation(player.getUniqueId(), player.getLocation());
 
         if (plugin.core().teleports().hasCountdown(player)) {
             plugin.core().teleports().cancelCountdown(player, false);
@@ -238,6 +238,7 @@ public final class PlayerLifecycleListener implements Listener {
         plugin.utility().afk().clearAfk(uuid);
         plugin.core().blocks().unload(uuid);
         plugin.utility().nicks().unload(uuid);
+        plugin.utility().back().clearLastLocation(uuid);
     }
 
     private void handlePostRespawn(Player p) {

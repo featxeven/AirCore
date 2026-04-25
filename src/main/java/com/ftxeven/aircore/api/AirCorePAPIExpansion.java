@@ -52,7 +52,7 @@ public final class AirCorePAPIExpansion extends PlaceholderExpansion {
                 return String.valueOf(plugin.database().records().getJoinIndex(uuid));
             }
             case "player_back_available" -> {
-                return bool(plugin.utility().back().getLastDeath(uuid) != null);
+                return bool(plugin.utility().back().getLastLocation(uuid) != null);
             }
             case "player_afk_status" -> {
                 return player.isOnline() ? bool(plugin.utility().afk().isAfk(uuid)) : null;

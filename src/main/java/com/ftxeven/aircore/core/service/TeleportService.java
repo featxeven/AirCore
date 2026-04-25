@@ -40,16 +40,17 @@ public final class TeleportService {
     }
 
     public void teleport(Player player, Location loc) {
-        scheduler.runLocationTask(player.getLocation(), () ->
-                player.teleportAsync(adjustToCenter(loc))
-                        .thenAccept(success -> {
-                            if (success) {
-                                grantImmunity(player);
-                            } else {
-                                plugin.getLogger().warning("Async teleport failed for player " + player.getName());
-                            }
-                        })
-        );
+        scheduler.runLocationTask(player.getLocation(), () -> {
+            plugin.utility().back().setLastLocation(player.getUniqueId(), player.getLocation());
+            player.teleportAsync(adjustToCenter(loc))
+                    .thenAccept(success -> {
+                        if (success) {
+                            grantImmunity(player);
+                        } else {
+                            plugin.getLogger().warning("Async teleport failed for player " + player.getName());
+                        }
+                    });
+        });
     }
 
     public void startCountdown(Player sender, Player target, Runnable action, Consumer<String> onCancel) {

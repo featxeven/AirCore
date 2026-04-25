@@ -62,32 +62,32 @@ public final class BackCommand implements TabExecutor {
             return;
         }
 
-        Location deathLoc = plugin.utility().back().getLastDeath(target.getUniqueId());
-        if (deathLoc == null) {
+        Location lastLoc = plugin.utility().back().getLastLocation(target.getUniqueId());
+        if (lastLoc == null) {
             if (sender instanceof Player p) MessageUtil.send(p, "utilities.back.no-location", Map.of());
-            else sender.sendMessage(target.getName() + " has no previous death location.");
+            else sender.sendMessage(target.getName() + " has no previous location.");
             return;
         }
 
         if (useCountdown) {
-            plugin.core().teleports().startCountdown(target, target, () -> executeTeleport(sender, target, deathLoc, senderName), cancelReason -> MessageUtil.send(target, "utilities.back.cancelled", Map.of()));
+            plugin.core().teleports().startCountdown(target, target, () -> executeTeleport(sender, target, lastLoc, senderName),
+                    cancelReason -> MessageUtil.send(target, "utilities.back.cancelled", Map.of()));
 
             if (!(sender instanceof Player)) {
                 sender.sendMessage("Countdown started for " + target.getName());
             }
         } else {
-            executeTeleport(sender, target, deathLoc, senderName);
+            executeTeleport(sender, target, lastLoc, senderName);
         }
     }
 
     private void executeTeleport(CommandSender sender, Player target, Location loc, String senderName) {
         plugin.core().teleports().teleport(target, loc);
-        plugin.utility().back().clearLastDeath(target.getUniqueId());
 
         if (sender instanceof Player p) {
             MessageUtil.send(p, "utilities.back.success", Map.of());
         } else {
-            sender.sendMessage("Teleported " + target.getName() + " to death location.");
+            sender.sendMessage("Teleported " + target.getName() + " to their previous location.");
             if (plugin.config().consoleToPlayerFeedback()) {
                 MessageUtil.send(target, "utilities.back.success-by", Map.of("player", senderName));
             }
