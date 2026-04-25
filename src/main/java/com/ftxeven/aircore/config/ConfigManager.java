@@ -37,8 +37,9 @@ public final class ConfigManager {
     public String getDateFormat() { return s("date-format", "dd/MM/yy"); }
     public String messageFormat() { return s("message-format", "SMART"); }
 
-    public String nicknamePrefix() { return s("chat.nickname.prefix", ""); }
-    public int nicknameMaxLength() { return i("chat.nickname.max-length", 16); }
+    public String nicknamePrefix()          { return s("chat.nickname.prefix", "*"); }
+    public int nicknameMaxLength()          { return i("chat.nickname.max-length", 16); }
+    public String nicknameValidationRegex() { return s("chat.nickname.name-validation-regex", "^[a-zA-Z0-9_]+$"); }
     public double chatCooldown() { return d("chat.chat-cooldown", 0.0); }
     public int pmReplyExpireSeconds() { return i("chat.reply-expire-after", 30); }
     public boolean pmApplyChatCooldown() { return b("chat.apply-chat-cooldown", true); }

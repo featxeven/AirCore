@@ -201,7 +201,9 @@ public final class MessageUtil {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if (c == '&' && i + 1 < text.length()) {
-                String tag = LEGACY_TO_MINI.get(Character.toLowerCase(text.charAt(i + 1)));
+                char next = text.charAt(i + 1);
+                if (next == '&') { sb.append('&'); i++; continue; }
+                String tag = LEGACY_TO_MINI.get(Character.toLowerCase(next));
                 if (tag != null) { sb.append(tag); i++; continue; }
             }
             sb.append(c);

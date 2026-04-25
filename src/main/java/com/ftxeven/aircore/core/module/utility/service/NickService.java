@@ -36,7 +36,9 @@ public final class NickService {
 
         Player player = Bukkit.getPlayer(uuid);
         if (player != null) {
-            String nameString = getDisplayName(uuid, player.getName());
+            String nameString = (rawNick == null || rawNick.isBlank())
+                    ? player.getName()
+                    : getDisplayName(uuid, player.getName());
             player.displayName(LegacyComponentSerializer.legacyAmpersand().deserialize(nameString));
         }
     }

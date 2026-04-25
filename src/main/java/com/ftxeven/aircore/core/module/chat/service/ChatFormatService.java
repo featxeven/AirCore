@@ -14,8 +14,12 @@ import java.util.regex.Pattern;
 public final class ChatFormatService {
 
     private final AirCore plugin;
+
     private static final Pattern TAG_PATTERN = Pattern.compile("<([^>]+)>");
     private static final Pattern HEX_PATTERN = Pattern.compile("^/?#[a-f0-9]{6}([a-f0-9]{2})?$");
+    private static final Pattern LEGACY_CODE_PATTERN = Pattern.compile("&([0-9a-fk-orA-FK-OR])");
+    private static final Pattern LEGACY_HEX_PATTERN = Pattern.compile("&#([a-fA-F0-9]{6})");
+
     private static final Set<String> MINI_COLORS = Set.of(
             "black", "dark_blue", "dark_green", "dark_aqua", "dark_red", "dark_purple", "gold",
             "gray", "dark_gray", "blue", "green", "aqua", "red", "light_purple", "yellow", "white"
@@ -23,8 +27,6 @@ public final class ChatFormatService {
     private static final Set<String> MINI_FORMATS = Set.of(
             "bold", "italic", "underlined", "strikethrough", "obfuscated", "rainbow"
     );
-    private static final Pattern LEGACY_CODE_PATTERN = Pattern.compile("&([0-9a-fk-orA-FK-OR])");
-    private static final Pattern LEGACY_HEX_PATTERN  = Pattern.compile("&#([a-fA-F0-9]{6})");
     private static final Set<Character> LEGACY_COLOR_CODES = Set.of(
             '0','1','2','3','4','5','6','7','8','9',
             'a','b','c','d','e','f','A','B','C','D','E','F'
@@ -67,9 +69,18 @@ public final class ChatFormatService {
     public String sanitizeForChat(Player player, String raw) {
         if (raw == null || raw.isBlank()) return "";
         return switch (MessageUtil.getFormatMode()) {
-            case MINI   -> sanitizeMini(player, raw);
+            case MINI -> sanitizeMini(player, raw);
             case LEGACY -> sanitizeLegacy(player, raw);
-            case SMART  -> sanitizeMini(player, sanitizeLegacy(player, raw));
+            case SMART -> sanitizeMini(player, sanitizeLegacy(player, raw));
+        };
+    }
+
+    public String sanitizeForNick(Player player, String raw) {
+        if (raw == null || raw.isBlank()) return "";
+        return switch (MessageUtil.getFormatMode()) {
+            case MINI -> sanitizeMini(player, raw);
+            case LEGACY -> sanitizeLegacyForNick(player, raw);
+            case SMART -> sanitizeMini(player, sanitizeLegacyForNick(player, raw));
         };
     }
 
@@ -84,9 +95,10 @@ public final class ChatFormatService {
         return plugin.config().getGroupFormat(group);
     }
 
-    private static boolean isEffectivelyEmpty(String s) {
+    static boolean isEffectivelyEmpty(String s) {
         return s.replaceAll("<[^>]+>", "")
-                .replaceAll("&[0-9a-fk-orA-FK-OR]", "")
+                .replaceAll("(?i)&[0-9a-fk-or]", "")
+                .replaceAll("(?i)&#[0-9a-f]{6}", "")
                 .trim()
                 .isEmpty();
     }
@@ -107,9 +119,9 @@ public final class ChatFormatService {
             boolean allowed = HEX_PATTERN.matcher(lower).matches()
                     ? allColors
                     : MINI_COLORS.contains(effectiveTag)
-                    ? (allColors || player.hasPermission("aircore.chat.color." + effectiveTag))
-                    : MINI_FORMATS.contains(effectiveTag)
-                    && (allFormats || player.hasPermission("aircore.chat.format." + effectiveTag));
+                      ? (allColors || player.hasPermission("aircore.chat.color." + effectiveTag))
+                      : MINI_FORMATS.contains(effectiveTag)
+                        && (allFormats || player.hasPermission("aircore.chat.format." + effectiveTag));
 
             sb.append(allowed ? '<' + content + '>' : '\\' + ("<" + content + ">"));
             last = m.end();
@@ -140,9 +152,43 @@ public final class ChatFormatService {
             boolean allowed = LEGACY_COLOR_CODES.contains(code)
                     ? (allColors  || player.hasPermission("aircore.chat.color."  + Character.toLowerCase(code)))
                     : LEGACY_FORMAT_CODES.contains(code)
-                    && (allFormats || player.hasPermission("aircore.chat.format." + Character.toLowerCase(code)));
+                      && (allFormats || player.hasPermission("aircore.chat.format." + Character.toLowerCase(code)));
 
             if (allowed) sb.append(m.group());
+            else sb.append("&&").append(m.group(1));
+            last = m.end();
+        }
+        return sb.append(raw.substring(last)).toString();
+    }
+
+    private String sanitizeLegacyForNick(Player player, String raw) {
+        boolean allColors  = player.hasPermission("aircore.chat.color")  || player.hasPermission("aircore.chat.color.*");
+        boolean allFormats = player.hasPermission("aircore.chat.format") || player.hasPermission("aircore.chat.format.*");
+
+        Matcher hexM = LEGACY_HEX_PATTERN.matcher(raw);
+        StringBuilder hexSb = new StringBuilder();
+        int hexLast = 0;
+        while (hexM.find()) {
+            hexSb.append(raw, hexLast, hexM.start());
+            if (allColors) hexSb.append(hexM.group());
+            else hexSb.append("&&").append("#").append(hexM.group(1));
+            hexLast = hexM.end();
+        }
+        raw = hexSb.append(raw.substring(hexLast)).toString();
+
+        Matcher m = LEGACY_CODE_PATTERN.matcher(raw);
+        StringBuilder sb = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            sb.append(raw, last, m.start());
+            char code = m.group(1).charAt(0);
+            boolean allowed = LEGACY_COLOR_CODES.contains(code)
+                    ? (allColors  || player.hasPermission("aircore.chat.color."  + Character.toLowerCase(code)))
+                    : LEGACY_FORMAT_CODES.contains(code)
+                      && (allFormats || player.hasPermission("aircore.chat.format." + Character.toLowerCase(code)));
+
+            if (allowed) sb.append(m.group());
+            else sb.append("&&").append(m.group(1));
             last = m.end();
         }
         return sb.append(raw.substring(last)).toString();

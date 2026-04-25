@@ -47,8 +47,9 @@ chat:
 
   # Player nicknames
   nickname:
-    prefix: "*"                    # Prefix shown before a player's nickname in chat ("" for no prefix)
+    prefix: "*"                    # Prefix shown before nickname in chat ("" for none)
     max-length: 16
+    name-validation-regex: "^[a-zA-Z0-9_]+$"
 
   # Link detection and formatting
   url-formatting:

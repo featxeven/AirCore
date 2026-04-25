@@ -238,7 +238,7 @@ commands:
     usage: /give <item> [amount] [player]
     permission: aircore.command.give
   back:
-    description: Teleport to the last death location.
+    description: Teleport to the last location.
     usage: /back
     permission: aircore.command.back
   announcement:
@@ -259,7 +259,7 @@ commands:
     permission: aircore.command.ptime
   nick:
     description: Set or reset a player's nickname.
-    usage: /nick [player] [nick]
+    usage: /nick [nick] [player]
     permission: aircore.command.nick
 
 permissions:
@@ -339,12 +339,12 @@ permissions:
   aircore.command.tpaccept.all: {description: "Accept all.", default: op}
   aircore.command.tpdeny: {description: "Use /tpdeny.", default: op}
   aircore.command.tpdeny.all: {description: "Deny all.", default: op}
-  aircore.command.tptoggle: {description: "Toggle TP.", default: op}
-  aircore.command.tptoggle.others: {description: "Toggle TP for others.", default: op}
+  aircore.command.tptoggle: {description: "Toggle teleport.", default: op}
+  aircore.command.tptoggle.others: {description: "Toggle teleport for others.", default: op}
   aircore.command.tp: {description: "Use /tp.", default: op}
   aircore.command.tphere: {description: "Use /tphere.", default: op}
   aircore.command.tphere.all: {description: "Use /tphere @a", default: op}
-  aircore.command.tp.others: {description: "TP players to others.", default: op}
+  aircore.command.tp.others: {description: "Teleport players to others.", default: op}
   aircore.command.tppos: {description: "Use /tppos.", default: op}
   aircore.command.tpoffline: {description: "Use /tpoffline.", default: op}
   aircore.command.sethome: {description: "Use /sethome.", default: op}
@@ -416,17 +416,17 @@ permissions:
   aircore.command.give.all: {description: "Give to all.", default: op}
   aircore.command.back: {description: "Use /back.", default: op}
   aircore.command.sell: {description: "Use /sell.", default: op}
-  aircore.bypass.chat.cooldown: {description: "No chat CD.", default: op}
+  aircore.bypass.chat.cooldown: {description: "No chat cooldown.", default: op}
   aircore.bypass.chat.toggle: {description: "Bypass PM toggles.", default: op}
-  aircore.bypass.command.*: {description: "Bypass all CMD cooldowns.", default: op}
+  aircore.bypass.command.*: {description: "Bypass all command cooldowns.", default: op}
   aircore.bypass.block: {description: "Bypass blocks.", default: op}
   aircore.bypass.pay.toggle: {description: "Bypass pay toggle.", default: op}
   aircore.bypass.teleport.toggle: {description: "Bypass TP toggle.", default: op}
-  aircore.bypass.teleport.countdown: {description: "No TP warm-up.", default: op}
+  aircore.bypass.teleport.countdown: {description: "No teleport warm-up.", default: op}
   aircore.bypass.block.limit.*: {description: "No block limit.", default: op}
   aircore.bypass.home.limit.*: {description: "No home limit.", default: op}
   aircore.bypass.home.worlds: {description: "Homes everywhere.", default: op}
-  aircore.bypass.kit.cooldown: {description: "No kit CD.", default: op}
+  aircore.bypass.kit.cooldown: {description: "No kit cooldown.", default: op}
   aircore.bypass.kit.onetime: {description: "Unlimited 1-time kits.", default: op}
   aircore.command.announcement: { description: "Use /announcements.", default: op }
   aircore.command.announcetoggle: { description: "Use /announcetoggle.", default: op }

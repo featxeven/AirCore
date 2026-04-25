@@ -394,10 +394,10 @@ utilities:
     everyone: "%prefix% <green>You fed everyone.</green>"
 
   back:
-    success: "%prefix% <green>Successfully teleported you to your last death location."
-    success-by: "%prefix% <green><yellow>%player%</yellow> successfully teleported to your last death location."
-    cancelled: "%prefix% <red>Teleport to last death location cancelled.</red>"
-    no-location: "%prefix% <red>You have no previous death location.</red>"
+    success: "%prefix% <green>Successfully teleported you to your last location."
+    success-by: "%prefix% <green><yellow>%player%</yellow> successfully teleported to your last location."
+    cancelled: "%prefix% <red>Teleport to last location cancelled.</red>"
+    no-location: "%prefix% <red>You have no previous location.</red>"
 
   inventory:
     cleared: "%prefix% <green>Your inventory was cleared."
@@ -489,7 +489,9 @@ utilities:
     reset-for: "%prefix% <green>You cleared the nickname for <yellow>%player%</yellow>.</green>"
     reset-by: "%prefix% <red><yellow>%player%</yellow> cleared your nickname.</red>"
 
-    error-too-long: "%prefix% <red>That nickname is too long! (<yellow>%length%</yellow>/<yellow>%max%</yellow> characters).</red>"
+    errors:
+      too-long: "%prefix% <red>That nickname is too long! (<yellow>%length%</yellow>/<yellow>%max%</yellow> characters).</red>"
+      invalid-name: "%prefix% <red>Invalid nickname.</red>"
 
   errors:
     invsee-self: "%prefix% <red>You can only view other players' inventory.</red>"

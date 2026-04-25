@@ -215,7 +215,7 @@ commands:
   nick:
     aliases: [nickname]
     usage: "/%label% [nick]"
-    usage-others: "/%label% [player] [nick]"
+    usage-others: "/%label% [nick] [player]"
 
   # Management
   gamemode:
