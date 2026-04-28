@@ -4,7 +4,7 @@
   <groupId>com.ftxeven</groupId>
   <artifactId>AirCore</artifactId>
   <name>AirCore</name>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <description>Core commands and features for all servers</description>
   <build>
     <plugins>

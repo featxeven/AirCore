@@ -58,7 +58,7 @@ public final class MsgToggleCommand implements TabExecutor {
     }
 
     private void handleToggle(CommandSender sender, String targetName) {
-        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.PM, "toggles.messages");
+        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.PM, "chat.toggles.messages");
     }
 
     private void sendError(Player player, String label, boolean hasOthers) {

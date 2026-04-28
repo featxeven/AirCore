@@ -1,9 +1,6 @@
 package com.ftxeven.aircore.core;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -38,7 +35,7 @@ public final class ShortcutCommand implements TabExecutor {
                                       @NotNull String label,
                                       String @NotNull [] args) {
         Command original = sender.getServer().getCommandMap().getCommand(baseCommand);
-        if (!(original instanceof org.bukkit.command.PluginCommand pluginCmd)) return Collections.emptyList();
+        if (!(original instanceof PluginCommand pluginCmd)) return Collections.emptyList();
 
         TabCompleter completer = pluginCmd.getTabCompleter();
         if (completer == null && pluginCmd.getExecutor() instanceof TabCompleter tc) completer = tc;

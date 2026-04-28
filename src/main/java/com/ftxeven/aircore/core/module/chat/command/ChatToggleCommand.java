@@ -58,7 +58,7 @@ public final class ChatToggleCommand implements TabExecutor {
     }
 
     private void handleToggle(CommandSender sender, String targetName) {
-        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.CHAT, "chat");
+        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.CHAT, "chat.toggles.chat");
     }
 
     private void sendError(Player player, String label, boolean hasOthers) {

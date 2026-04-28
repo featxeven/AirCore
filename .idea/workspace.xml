@@ -4,10 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="feature: added name-validation-regex">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/BackCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/command/BackCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/service/BackService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/utility/service/BackService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/service/TeleportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/service/TeleportService.java" afterDir="false" />
+    <list default="true" id="3a3e60d5-0aba-4cd3-9bfc-025c63d22da3" name="Changes" comment="version update">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/dependency-reduced-pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/ShortcutCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/ChatToggleCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/ChatToggleCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/MentionToggleCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/MentionToggleCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgToggleCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/MsgToggleCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/SocialSpyCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ftxeven/aircore/core/module/chat/command/SocialSpyCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/config.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,22 +89,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771207328190</updated>
-    </task>
-    <task id="LOCAL-00030" summary="api changes">
-      <option name="closed" value="true" />
-      <created>1772730575636</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1772730575636</updated>
-    </task>
-    <task id="LOCAL-00031" summary="api changes">
-      <option name="closed" value="true" />
-      <created>1772734948326</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1772734948327</updated>
     </task>
     <task id="LOCAL-00032" summary="api changes">
       <option name="closed" value="true" />
@@ -477,7 +466,23 @@
       <option name="project" value="LOCAL" />
       <updated>1777087680631</updated>
     </task>
-    <option name="localTasksCounter" value="79" />
+    <task id="LOCAL-00079" summary="feat: refactor back command to track all teleport locations">
+      <option name="closed" value="true" />
+      <created>1777087961692</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1777087961692</updated>
+    </task>
+    <task id="LOCAL-00080" summary="version update">
+      <option name="closed" value="true" />
+      <created>1777088132731</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1777088132731</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -487,7 +492,6 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
-    <MESSAGE value="changed permission: to delhome: for consistency" />
     <MESSAGE value="refactor command cooldown" />
     <MESSAGE value="added per command cooldown bypass&#10;refactor command cooldown structure" />
     <MESSAGE value="removed unknown item name" />
@@ -505,13 +509,14 @@
     <MESSAGE value="added multi-format message support (MINI, LEGACY, SMART)" />
     <MESSAGE value="added configurable command shortcuts" />
     <MESSAGE value="fix: shortcut tab completion now delegates to original command" />
-    <MESSAGE value="version update" />
     <MESSAGE value="repair message keys fixed" />
     <MESSAGE value="added nick command&#10;added 2 new placeholders&#10;added new options on config" />
     <MESSAGE value="fix: stop warp cancellation checks once teleport is complete" />
     <MESSAGE value="refactor: integrate display names in command placeholders" />
     <MESSAGE value="fix: nickname cache logic" />
     <MESSAGE value="feature: added name-validation-regex" />
-    <option name="LAST_COMMIT_MESSAGE" value="feature: added name-validation-regex" />
+    <MESSAGE value="feat: refactor back command to track all teleport locations" />
+    <MESSAGE value="version update" />
+    <option name="LAST_COMMIT_MESSAGE" value="version update" />
   </component>
 </project>

@@ -58,7 +58,7 @@ public final class MentionToggleCommand implements TabExecutor {
     }
 
     private void handleToggle(CommandSender sender, String targetName) {
-        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.MENTIONS, "mentions");
+        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.MENTIONS, "chat.toggles.mentions");
     }
 
     private void sendError(Player player, String label, boolean hasOthers) {

@@ -167,7 +167,7 @@ kits:
   drop-items-when-full: false       # Drop items if inventory is full
 
 # -------------------------------------------------------------------
-# JOIN, LEAVE & DEATH MESSAGES
+# JOIN & LEAVE
 # -------------------------------------------------------------------
 player-join-leave:
   # MOTD shown only on first join
@@ -194,12 +194,12 @@ player-join-leave:
   broadcast-leave:
     _DEFAULT_: "<red>[-] <yellow>%player%</yellow> left the game.</red>"
 
-death-messages:
-  enabled: true                     # If false, vanilla death messages are used
-  disabled-worlds:
-    - "disabledworld"
-
 # -------------------------------------------------------------------
 # MISC
 # -------------------------------------------------------------------
 max-blocks: 20                      # Max players a user can ignore/block.
+
+death-messages:
+  enabled: true                     # If false, vanilla death messages are used
+  disabled-worlds:
+    - "disabledworld"

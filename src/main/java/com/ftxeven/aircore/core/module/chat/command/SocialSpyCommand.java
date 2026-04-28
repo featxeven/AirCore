@@ -58,7 +58,7 @@ public final class SocialSpyCommand implements TabExecutor {
     }
 
     private void handleToggle(CommandSender sender, String targetName) {
-        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.SOCIALSPY, "socialspy");
+        plugin.core().toggles().processCommand(sender, targetName, ToggleService.Toggle.SOCIALSPY, "chat.socialspy");
     }
 
     private void sendError(Player player, String label, boolean hasOthers) {
