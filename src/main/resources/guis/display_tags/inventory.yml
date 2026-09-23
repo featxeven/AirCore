@@ -1,0 +1,36 @@
+# AirCore - display_tags/inventory.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own.
+
+# 'role' binds this file to the display-tags logic. Rename/relocate this file freely,
+# just keep the 'role:' line.
+role: display-tag-inventory
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Inventory</bold></gradient> <dark_gray>- <white><gray>%target%</gray>'s Inventory"
+  rows: 6
+
+# --------------------------------------------------
+# LAYOUT
+# --------------------------------------------------
+layout:
+  # Slots where the previewed inventory is placed.
+  storage-slots: [18-44]
+  hotbar-slots: [45-53]
+  armor-slots: [4, 3, 2, 1]
+  offhand-slots: 6
+
+# --------------------------------------------------
+# ITEMS
+# Define the static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [0, 5, 7, 9-17]
+
+  target-head:
+    slots: 8
+    material: head-%target_realname%
+    display-name: "<white>%target%<gray>'s Inventory"

@@ -1,0 +1,30 @@
+# AirCore - input/sign.yml Configuration
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This input type requires version 1.21.7+ to work.
+
+# -----------------------------------------------
+# GLOBAL
+# Applies to all contexts unless overridden.
+# -----------------------------------------------
+# NOTE: on-cancel has no effect for sign input.
+# Due to a Minecraft limitation, pressing ESC and Done cannot be told apart.
+on-cancel: BACK   # BACK = reopen previous GUI | CLOSE = do nothing
+
+# -----------------------------------------------
+# CONTEXTS
+# Each action that opens a sign input names a context.
+# Line 0 is always reserved for player input.
+# Lines 1-3 are static decoration text.
+# -----------------------------------------------
+contexts:
+  homes:
+    search:
+      lines:
+        1: "^ Type search ^"
+        # 2: "----------"
+
+  leaderboards:
+    search:
+      lines:
+        1: "^ Type search ^"

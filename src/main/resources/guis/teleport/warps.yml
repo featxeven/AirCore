@@ -1,0 +1,102 @@
+# AirCore - teleport/warps.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own;
+# to disable this GUI, remove its GUI entry from commands.yml
+
+# No 'role' here - this GUI is plain config (static items only), so rename or restructure
+# it however you like.
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Warps</bold></gradient> <dark_gray>- <white>%aircore_teleport_warp_total% total warps"
+  rows: 5
+
+# --------------------------------------------------
+# ITEMS
+# Static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [0-8, 36-39, 41-43]
+
+  info:
+    slots: 40
+    material: BOOK
+    display-name: "<aqua><bold>Warps</bold>"
+    lore:
+      - "<dark_gray>Information"
+      - " "
+      - " <dark_gray>- <gray>Accessible warps: <white>%aircore_teleport_warp_accessible%<dark_gray>/<white>%aircore_teleport_warp_total%"
+
+  close:
+    template: close-button
+    slots: 44
+
+  special-warp:
+    slots: 19
+    material: BARRIER
+    display-name: "<gradient:#5AD1F2:#736EFE><bold>Special warp</bold></gradient>"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > teleport/ > warps.yml"
+      - " "
+      - "!=has:aircore.admin <red>Sorry! <gray>You do not have access to this warp."
+      - "!=has:aircore.admin <gray>You need <white>aircore.admin</white> permission."
+      - "=has:aircore.admin <green>Congrats! <gray>You have the right permission to access"
+      - "=has:aircore.admin <gray>this special warp."
+#     - "=has:aircore.admin  "
+#     - "=has:aircore.admin <green>Left-Click <gray>to teleport"
+#   actions:
+#     left:
+#       # You can include gui:... param if you want to add a 'confirm' GUI before teleporting.
+#       - "[teleport] type:warp id:warp_id"
+#       - "[sound] $success"
+#       - "[close]"
+    priority:
+      - conditions:
+          - "%has_permission_aircore.admin% == true"
+        animation:
+          interval: 20
+          loop: true
+          frames:
+            - material: DIAMOND_BLOCK
+            - material: GOLD_BLOCK
+            - material: IRON_BLOCK
+
+  warp-1:
+    slots: 21
+    material: GRASS_BLOCK
+    display-name: "<green>Overworld warp"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > teleport/ > warps.yml"
+#     - " "
+#     - "!=can:warp_to:warp_id <red>You don't have access to this warp."
+#     - "=can:warp_to:warp_id <green>You have access to this warp."
+#     - "=can:warp_to:warp_id  "
+#     - "=can:warp_to:warp_id <green>Left-Click <gray>to teleport"
+#   actions:
+#     left:
+#       # You can include gui:... param if you want to add a 'confirm' GUI before teleporting.
+#       - "=can:warp_to:warp_id [teleport] type:warp id:warp_id"
+#       - "=can:warp_to:warp_id [sound] $success"
+#       - "=can:warp_to:warp_id [close]"
+
+  warp-2:
+    slots: 23
+    material: NETHERRACK
+    display-name: "<red>Nether warp"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > teleport/ > warps.yml"
+    # ... You can apply the same behavior as warp-1 ...
+
+  warp-3:
+    slots: 25
+    material: END_STONE
+    display-name: "<blue>End warp"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > teleport/ > warps.yml"
+    # ...

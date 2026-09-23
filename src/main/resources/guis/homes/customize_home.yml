@@ -1,0 +1,211 @@
+# AirCore - homes/customize_home.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own.
+
+# contexts:
+#   Override any combination of fields for a specific source GUI.
+#   Key = the GUI id that opened this screen (e.g. homes/target).
+
+# 'role' binds this file to the home-browsing logic. Rename/relocate this file freely,
+# just keep the 'role:' line.
+role: homes-customize
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Customize</bold></gradient> <dark_gray>- <white>%home% <dark_gray>(%page%/%pages%)"
+  rows: 5
+
+# --------------------------------------------------
+# LAYOUT
+# Controls how selectable icons are displayed.
+# --------------------------------------------------
+layout:
+  filters:
+    # Filters excluded from this GUI.
+    excluded: [] # icon
+
+    format:
+      icon: # %filter_ICON_list%
+        selected: "<aqua>> <white>%name% <gray>(%count%)"
+        unselected: "<dark_gray>  %name% <gray>(%count%)"
+
+  # Slots where the targeted home is rendered.
+  home-slots: 4
+
+  # How each home is rendered inside home-slots.
+
+  # Material/display-name/lore/... per icon are defined in data/ > filter.yml
+  # (homes > icon > <id> > home). This is the base home item configuration.
+  home:
+    material: GRASS_BLOCK
+    display-name: "<white>Home: <gradient:#5AD1F2:#736EFE><bold>%home%"
+    lore:
+      - "=is:favorite_home  "
+      - "=is:favorite_home <yellow>You set this home as favorite."
+      - " "
+      - " <dark_gray>- <gray>World: <white>%world%"
+      - " <dark_gray>- <gray>Created on: <white>%date% %time%"
+      - " <dark_gray>- <gray>Coords: <white>%x% %y% %z%"
+      - " "
+      - "!=is:favorite_home <yellow>Left-Click <gray>to add home to favorites"
+      - "=is:favorite_home <red>Left-Click <gray>to remove home from favorites"
+    actions:
+      left:
+        - "!=is:favorite_home [favorite] type:home scope:add id:%home%"
+        - "=is:favorite_home [favorite] type:home scope:remove id:%home%"
+        - "=is:valid_home [sound] $success"
+    cooldown: 0.2
+
+  # Slots where selectable icons are rendered.
+  #
+  # Note:
+  #   Every icon declared in data/ > filter.yml (homes > icon) lands here
+  #   automatically - flat entries and bundled icons alike. Add an icon there,
+  #   and it shows up here with no edit to this file.
+  #
+  #   icon-slots expects a "home" context value.
+  icon-slots: [9-35]
+
+  # How each icon is rendered inside icon-slots.
+  #
+  # Material/display-name/lore/... per icon are defined in data/ > filter.yml
+  # (homes > icon > <id> > home) - the same block that dresses the home in
+  # homes/player, so what a player picks here is what they get there.
+  # Anything that block doesn't declare falls back to what you write below.
+  icon:
+    material: GRASS_BLOCK
+    display-name: "<white>Icon: <gradient:#5AD1F2:#736EFE><bold>%icon%"
+    lore:
+      - "<gray>Default icon item."
+      - "=is:selected_icon  "
+      - "=is:selected_icon <yellow>Currently applied to <white>%home%</white>."
+      - "=is:bundled_icon  "
+      - "=is:bundled_icon <dark_gray>- <gray>Bundle: <white>%bundle%"
+      - " "
+      - "=can:use_icon !=is:selected_icon <green>Click <gray>to apply"
+    actions:
+      any:
+        - "=can:use_icon !=is:selected_icon [customize] type:home icon:%icon_id%"
+        - "=can:use_icon !=is:selected_icon [sound] $success"
+    priority:
+      # Already applied
+      - conditions:
+          - "%icon_selected% == true"
+        glow: true
+
+      # Locked
+      - conditions:
+          - "%icon_locked% == true"
+        display-name: "<dark_gray>Icon: <gray>%icon%"
+        lore:
+          - "<red>Locked."
+          - " "
+          - "<gray>You need <white>aircore.access.home.icon.%icon_id%</white>."
+          - "=is:bundled_icon <gray>or <white>aircore.access.home.bundle.%bundle_id%</white>."
+
+# --------------------------------------------------
+# ITEMS
+# Define the static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [1-3, 5-7, 37-39, 42-43]
+
+  no-icons:
+    slots: 22
+    priority:
+      - conditions:
+          - "%total% == 0"
+        material: BARRIER
+        display-name: "<red><bold>Empty"
+        lore:
+          - "<gray>No icons configured yet."
+          - "<gray>Add them in <white>data/ > filter.yml</white>."
+      - conditions:
+          - "%current% == 0"
+        material: BARRIER
+        display-name: "<red><bold>Empty"
+        lore:
+          - "<gray>No icons match this filter configuration yet."
+
+  # --- Header ---
+  back:
+    template: back-button
+    slots: 0
+
+  filter-icons:
+    template: homes-filter-icon
+    slots: 8
+
+  # --- Footer ---
+  previous-page:
+    template: previous-page
+    slots: 36
+
+  next-page:
+    template: next-page
+    slots: 44
+
+  info:
+    slots: 40
+    material: BOOK
+    display-name: "<aqua><bold>Customize</bold>"
+    lore:
+      - "<dark_gray>Information"
+      - " "
+      - " <dark_gray>- <gray>Home: <white>%home%"
+      - "!=is:selected_icon:all <dark_gray>- <gray>Current icon: <white>%icon%"
+      - " <dark_gray>- <gray>Unlocked: <white>%aircore_home_icon_accessible%<dark_gray>/<white>%aircore_home_icon_total%"
+      - " <dark_gray>- <gray>Page: <white>%page%<dark_gray>/<white>%pages%"
+      - " "
+      - "<aqua>Click <gray>to refresh"
+    actions:
+      any:
+        - "[sound] $click"
+        - "[refresh]"
+    cooldown: 3
+    cooldown-message: "<ref:prefix> <red>Wait <white>%timeout%</white> before refreshing this GUI again!"
+
+  reset:
+    slots: 41
+    material: BARRIER
+    display-name: "<red><bold>Reset Icon</bold>"
+    lore:
+      - "<gray>Go back to the default home icon."
+      - " "
+      - "=is:selected_icon:all <red>Already using the default icon."
+      - "!=is:selected_icon:all <white>Click <gray>to reset"
+    actions:
+      any:
+        - "!=is:selected_icon:all [customize] type:home icon:all"
+        - "!=is:selected_icon:all [sound] $success"
+
+  # --- Manual placement (optional) ---
+  # icon-slots already renders every icon automatically. If you'd rather
+  # hand-place a specific one - a seasonal or promo icon, say - drop it
+  # anywhere as a normal item and point the flat action at its id.
+  #
+  # promo-icon:
+  #   slots: 40
+  #   material: SAND
+  #   display-name: "<yellow><bold>Summer Icon</bold>"
+  #   lore:
+  #     - "!=can:use_icon:beach <red>Locked."
+  #     - "=can:use_icon:beach <green>Click <gray>to apply"
+  #   actions:
+  #     any:
+  #       - "=can:use_icon:beach [customize] type:home id:%home% icon:beach"
+  #       - "=can:use_icon:beach [sound] $success"
+
+# --------------------------------------------------
+# GUI CONTEXTS
+# Override any field based on which GUI opened this screen.
+# Keys must exactly match the source GUI id.
+# --------------------------------------------------
+contexts:
+  homes/player|homes/search:
+    settings:
+      title: "<gradient:#5AD1F2:#736EFE><bold>Customize</bold></gradient> <dark_gray>- <white>%home% <dark_gray>- <white>\"%query%\" <dark_gray>(%page%/%pages%)"
+
+    # The rest is inherited from the base config above unless overridden here.

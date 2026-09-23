@@ -1,0 +1,47 @@
+# AirCore - modules/homes
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# Homes are controlled in-game via commands, not from this file.
+# To disable it, disable the commands in commands.yml instead.
+
+# --------------------------------------------------
+# GENERAL
+# --------------------------------------------------
+general:
+  max-homes: 3                # Maximum number of homes a player can set; -1 = unlimited
+                              # Override per player with aircore.bypass.home.limit.<#>
+  disabled-worlds: []
+  # - "disabled_world"        # Players cannot set or teleport to homes in these worlds
+
+# --------------------------------------------------
+# NAMING
+# --------------------------------------------------
+naming:
+  enabled: true                         # When false, homes are numbered automatically (1, 2, etc.)
+  max-length: 16                        # Max length for a home name; -1 = unlimited
+  validation-regex: "^[a-zA-Z0-9_]+$"   # Names not matching this pattern are rejected
+
+  # Home names matching any of these patterns are never allowed.
+  # Each entry can be a plain word or a Java regex pattern.
+  blacklist: []
+  # - "banned_word"
+
+  extend-profanity-words: false        # Extend filters.profanity words file to the blacklist (from chat module)
+
+# --------------------------------------------------
+# BEHAVIOUR
+# --------------------------------------------------
+behaviour:
+  overwrite-on-set: true       # When true, /sethome on an existing name updates it silently instead of erroring
+  teleport-to-bed: false       # When true, /home will fall back to bed location if no home is set yet
+
+# --------------------------------------------------
+# GUI
+# --------------------------------------------------
+gui:
+  # Order here controls the cycle order in GUIs (%sort_HOME_list%).
+  sort:
+    newest: "Newest"
+    oldest: "Oldest"
+    alphabetical: "Alphabetical"
+    favorite: "Favorites First"

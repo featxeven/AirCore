@@ -1,0 +1,111 @@
+# AirCore - kits/kits.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own;
+# to disable this GUI, remove its GUI entry from commands.yml
+
+# No 'role' here - this GUI is plain config (static items only), so rename or restructure
+# it however you like.
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Kits</bold></gradient> <dark_gray>- <white>%aircore_kit_total% total kits"
+  rows: 5
+
+# --------------------------------------------------
+# ITEMS
+# Static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [0-8, 36-39, 41-43]
+
+  info:
+    slots: 40
+    material: BOOK
+    display-name: "<aqua><bold>Kits</bold>"
+    lore:
+      - "<dark_gray>Information"
+      - " "
+      - " <dark_gray>- <gray>Accessible kits: <white>%aircore_kit_accessible%<dark_gray>/<white>%aircore_kit_total%"
+
+  close:
+    template: close-button
+    slots: 44
+
+  special-kit:
+    slots: 19
+    material: BARRIER
+    display-name: "<gradient:#5AD1F2:#736EFE><bold>Special Kit</bold></gradient>"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > kits/ > kits.yml"
+      - " "
+      - "!=has:aircore.admin <red>Sorry! <gray>You do not have access to claim this kit."
+      - "!=has:aircore.admin <gray>You need <white>aircore.admin</white> permission."
+      - "=has:aircore.admin <green>Congrats! <gray>You have the right permission to claim"
+      - "=has:aircore.admin <gray>this special kit."
+#     - " "
+#     - "=has:aircore.admin <green>Left-Click <gray>to claim"
+#     - "<gold>Right-Click <gray>to preview"
+#   actions:
+#     left:
+#       - "=has:aircore.admin [claim] type:kit gui:kits/confirm_claim id:<kit_id>"
+#       - "=has:aircore.admin =can:claim_kit:<kit_id> [sound] $click"
+#     right:
+#       - "[preview] type:kit gui:kits/preview id:<kit_id>"
+#       - "[sound] $click"
+    priority:
+      - conditions:
+          - "%has_permission_aircore.admin% == true"
+        animation:
+          interval: 20
+          loop: true
+          frames:
+            - material: NETHERITE_CHESTPLATE
+            - material: DIAMOND_CHESTPLATE
+            - material: GOLDEN_CHESTPLATE
+        item-flags:
+         - HIDE_ATTRIBUTES
+
+  kit-1:
+    slots: 21
+    material: WOODEN_AXE
+    display-name: "<green>Basic kit"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > kits/ > kits.yml"
+      - " "
+#     - "!=has:aircore.access.kit.<kid_id> <red>You don't have access to this kit"
+#     - "=can:claim_kit:<kit_id>  <dark_gray>- <gray>Cooldown: <green>Claimable now"
+#     - "=has:aircore.access.kit.<kid_id> !=can:claim_kit:<kit_id> =is:kit_on_cooldown:<kit_id> <dark_gray>- <gray>Cooldown: <red>%aircore_kit_cooldown_<kit_id>%"
+#     - " "
+#     - "=can:claim_kit:<kit_id> <green>Left-Click <gray>to claim"
+#     - "<gold>Right-Click <gray>to preview"
+    item-flags:
+      - HIDE_ATTRIBUTES
+#   actions:
+#     right:
+#       - "[preview] type:kit gui:kits/preview id:<kit_id>"
+#       - "[sound] $click"
+#     left:
+#       - "=can:claim_kit:<kit_id> [claim] type:kit gui:kits/confirm_claim id:<kit_id>"
+#       - "=can:claim_kit:<kit_id> [sound] $click"
+
+  kit-2:
+    slots: 23
+    material: COOKED_BEEF
+    display-name: "<gold>Food kit"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > kits/ > kits.yml"
+    # ... You can apply the same behavior as kit-1 ...
+
+  kit-3:
+    slots: 25
+    material: IRON_INGOT
+    display-name: "<gray>Material kit"
+    lore:
+      - "<dark_gray>This is an example. To edit this GUI, go to:"
+      - "<dark_gray>guis/ > kits/ > kits.yml"
+    # ...

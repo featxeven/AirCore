@@ -1,0 +1,33 @@
+# AirCore - Leaderboards Configuration
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# Defines the leaderboards available for GUIs.
+
+# --------------------------------------------------
+# LEADERBOARDS
+# --------------------------------------------------
+leaderboards:
+  # Richest players by Vault balance.
+  # Displayed by leaderboards/baltop.yml.
+  baltop:
+    source: balance
+    order: DESC                # DESC = highest first, ASC = lowest first
+    max-entries: 1000          # Max ranked players; -1 = no limit (setting a limit is recommended)
+    refresh-interval: 60       # Seconds between ranking refreshes
+    min-value: 0               # Players below this value are left off the leaderboard
+
+#  # Most kills, backed by the "kills" variable in modules/variables.
+#  kills:
+#    source: variable:kills
+#    order: DESC
+#    max-entries: 500
+#    refresh-interval: 120
+#    min-value: 1
+#
+#  # Best kill streak ever reached, backed by the "best_streak" variable in modules/variables.
+#  best_streak:
+#    source: variable:best_streak
+#    order: DESC
+#    max-entries: 100
+#    refresh-interval: 120
+#    min-value: 1

@@ -1,0 +1,49 @@
+# AirCore - modules/kits
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# Kits are controlled in-game via commands, not from this file.
+# To disable it, disable the commands in commands.yml instead.
+
+# --------------------------------------------------
+# GENERAL
+# --------------------------------------------------
+general:
+  first-join: ""                   # Granted automatically on first join; "" = none
+  disabled-worlds: []
+  # - "disabled_world"             # Kits cannot be claimed in these worlds
+
+  # --- Item Placeholders ---
+  # They're resolved once, at delivery, for whoever actually receives the item:
+  #   %owner%            - the recipient's display name
+  #   %owner_realname%   - the recipient's real name
+  #   %date%             - the delivery date
+  #   %time%             - the delivery time
+
+# --------------------------------------------------
+# COOLDOWNS
+# --------------------------------------------------
+cooldowns:
+  reset-on-logout: false      # When true, cooldowns reset when the player logs out
+  reset-on-death: false       # When true, cooldowns reset after death
+
+# --------------------------------------------------
+# ONE-TIME
+# --------------------------------------------------
+one-time:
+  # Kits flagged as one-time can only be claimed once per player, ever.
+  reset-on-logout: false      # When true, one-time kits can be reclaimed when the player logs out
+  reset-on-death: false       # When true, one-time kits can be reclaimed after death
+
+# --------------------------------------------------
+# PARAMETER DEFAULTS
+# Applied to a kit when it's created without the matching -param.
+# --------------------------------------------------
+defaults:
+  cooldown: 86400                  # Seconds; -cooldown:<value>. Accepts a plain number of
+                                   # seconds (10) or duration segments (10h, 10h30m).
+  one-time: false                  # -one_time:<true/false>
+  drop-on-full-inventory: false    # -drop_on_full_inventory:<true/false>
+  exact-slots: false               # -exact_slots:<true/false>. Places items in their original
+                                   # slots; occupied slots fall back to empty space.
+  requires-permission: true        # -requires_permission:<true/false>. When false, anyone can
+                                   # see and claim this kit without aircore.access.kit.<name>.

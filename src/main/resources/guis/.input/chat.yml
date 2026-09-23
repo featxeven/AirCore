@@ -1,0 +1,25 @@
+# AirCore - input/chat.yml Configuration
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# -----------------------------------------------
+# GLOBAL
+# Applies to all contexts unless overridden.
+# -----------------------------------------------
+cancel-key: "cancel"
+on-cancel: BACK   # BACK = reopen previous GUI | CLOSE = do nothing
+
+# -----------------------------------------------
+# CONTEXTS
+# Each action that opens a chat input names a context.
+# cancel-key and on-cancel can be overridden per context.
+# -----------------------------------------------
+contexts:
+  homes:
+    search:
+      # cancel-key: "exit"
+      # on-cancel: CLOSE
+      prompt: "%prefix% <gray>Type a query to search for homes, or type <red>%cancel_key% <gray>to go back."
+
+  leaderboards:
+    search:
+      prompt: "%prefix% <gray>Type a query to search for a player, or type <red>%cancel_key% <gray>to go back."
