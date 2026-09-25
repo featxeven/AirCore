@@ -1,5 +1,6 @@
 package com.ftxeven.aircore.core.message;
 
+import com.ftxeven.aircore.util.MiniText;
 import net.kyori.adventure.bossbar.BossBar;
 
 import java.util.Arrays;
@@ -15,6 +16,9 @@ public final class MessageTagParser {
 
     private static final Pattern TAG_START = Pattern.compile("<(sound|actionbar|title|subtitle|bossbar):", Pattern.CASE_INSENSITIVE);
 
+    private static final Pattern CENTER_START = Pattern.compile("<center(?::(\\d+))?>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CENTER_END = Pattern.compile("</center>", Pattern.CASE_INSENSITIVE);
+
     private final Logger logger;
 
     public MessageTagParser(Logger logger) {
@@ -27,16 +31,40 @@ public final class MessageTagParser {
     }
 
     public String scan(String line, String bossbarKey, UnaryOperator<String> resolvePlaceholders, Consumer<MessageTag> consumer) {
+        return scan(line, bossbarKey, resolvePlaceholders, consumer, true);
+    }
+
+    public String strip(String line) {
+        return scan(line, "", UnaryOperator.identity(), tag -> { }, false);
+    }
+
+    private String scan(String line, String bossbarKey, UnaryOperator<String> resolvePlaceholders,
+                        Consumer<MessageTag> consumer, boolean centerText) {
         StringBuilder result = new StringBuilder();
+        Matcher tagMatcher = TAG_START.matcher(line);
+        Matcher centerMatcher = CENTER_START.matcher(line);
         int pos = 0;
-        Matcher matcher = TAG_START.matcher(line);
-        while (matcher.find(pos)) {
-            result.append(line, pos, matcher.start());
-            String type = matcher.group(1).toLowerCase(Locale.ROOT);
-            ParsedTag parsed = parse(line, matcher, type, bossbarKey);
+
+        while (true) {
+            boolean hasTag = tagMatcher.find(pos);
+            boolean hasCenter = centerMatcher.find(pos);
+            if (!hasTag && !hasCenter) {
+                break;
+            }
+            boolean useCenter = hasCenter && (!hasTag || centerMatcher.start() < tagMatcher.start());
+
+            if (useCenter) {
+                result.append(line, pos, centerMatcher.start());
+                pos = appendCentered(line, centerMatcher, bossbarKey, resolvePlaceholders, consumer, centerText, result);
+                continue;
+            }
+
+            result.append(line, pos, tagMatcher.start());
+            String type = tagMatcher.group(1).toLowerCase(Locale.ROOT);
+            ParsedTag parsed = parse(line, tagMatcher, type, bossbarKey);
             if (parsed == null) {
-                result.append(line, matcher.start(), matcher.end());
-                pos = matcher.end();
+                result.append(line, tagMatcher.start(), tagMatcher.end());
+                pos = tagMatcher.end();
                 continue;
             }
             consumer.accept(resolveText(parsed.tag(), resolvePlaceholders));
@@ -46,8 +74,44 @@ public final class MessageTagParser {
         return result.toString();
     }
 
-    public String strip(String line) {
-        return scan(line, "", tag -> { }); // key is irrelevant here, the tag is discarded, never rendered
+    private int appendCentered(String line, Matcher centerMatcher, String bossbarKey,
+                               UnaryOperator<String> resolvePlaceholders, Consumer<MessageTag> consumer,
+                               boolean applyPadding, StringBuilder result) {
+        String widthParam = centerMatcher.group(1);
+        int contentStart = centerMatcher.end();
+
+        Matcher closeMatcher = CENTER_END.matcher(line);
+        boolean hasCloseTag = closeMatcher.find(contentStart);
+        int contentEnd = hasCloseTag ? closeMatcher.start() : line.length();
+        int nextPos = hasCloseTag ? closeMatcher.end() : line.length();
+
+        String rawInner = line.substring(contentStart, contentEnd);
+        String innerLeftover = scan(rawInner, bossbarKey, resolvePlaceholders, consumer, false);
+        String resolvedInner = resolvePlaceholders.apply(innerLeftover);
+
+        result.append(applyPadding ? centerText(resolvedInner, widthParam) : resolvedInner);
+        return nextPos;
+    }
+
+    private String centerText(String resolvedInner, String widthParam) {
+        int widthPx = widthParam != null ? parseWidth(widthParam) : ChatWidth.DEFAULT_CHAT_WIDTH;
+        String plain = MiniText.mini().stripTags(resolvedInner);
+        int textWidth = ChatWidth.measure(plain);
+        int padding = (widthPx - textWidth) / 2;
+        if (padding <= 0) {
+            return resolvedInner;
+        }
+        int spaces = padding / ChatWidth.spaceAdvance();
+        return " ".repeat(spaces) + resolvedInner;
+    }
+
+    private int parseWidth(String raw) {
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            logger.warning("Invalid <center> width '" + raw + "', using default (" + ChatWidth.DEFAULT_CHAT_WIDTH + ")");
+            return ChatWidth.DEFAULT_CHAT_WIDTH;
+        }
     }
 
     private MessageTag resolveText(MessageTag tag, UnaryOperator<String> resolvePlaceholders) {

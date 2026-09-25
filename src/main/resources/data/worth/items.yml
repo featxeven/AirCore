@@ -372,6 +372,7 @@ materials:
   #  ----Ingredients ----
   # Basic materials
   string: 0.5
+  feather: 0.2
   paper: 0.3
   leather: 2.5
   bone: 1
