@@ -139,6 +139,7 @@ public final class PayHandler {
                     Player recipient = Bukkit.getPlayer(targetUuid);
                     if (recipient != null) {
                         Map<String, String> receiverPlaceholders = new LinkedHashMap<>();
+                        players.formatDisplayName(receiverPlaceholders, "player", sender.getUniqueId());
                         formatter.formatInto(receiverPlaceholders, "amount", amount);
                         messenger.send(recipient, configs.lang().get("economy.pay.received"), receiverPlaceholders);
                     }
