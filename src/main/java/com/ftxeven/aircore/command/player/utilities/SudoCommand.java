@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.util.Scheduler;
 import org.bukkit.Bukkit;
@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public final class SudoCommand extends AbstractCommand {
+public final class SudoCommand extends BaseCommand {
 
     private static final String KEY = "sudo";
     private static final String ALL_PERMISSION = Permissions.Command.all(KEY);

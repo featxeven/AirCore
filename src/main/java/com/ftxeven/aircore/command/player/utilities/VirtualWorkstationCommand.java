@@ -1,11 +1,11 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.permission.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public final class VirtualWorkstationCommand extends AbstractCommand {
+public final class VirtualWorkstationCommand extends BaseCommand {
 
     private final VirtualWorkstation workstation;
 

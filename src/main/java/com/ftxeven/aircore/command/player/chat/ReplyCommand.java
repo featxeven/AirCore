@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.chat;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.module.chat.ChatModule;
 import com.ftxeven.aircore.permission.Permissions;
 import org.bukkit.command.CommandSender;
@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.util.function.Supplier;
 
-public final class ReplyCommand extends AbstractCommand {
+public final class ReplyCommand extends BaseCommand {
 
     private static final String KEY = "reply";
 

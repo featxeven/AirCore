@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class WarpCommand extends AbstractCommand {
+public final class WarpCommand extends BaseCommand {
 
     private static final String KEY = "warp";
     private static final String OTHERS_PERMISSION = Permissions.Command.others(KEY);

@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.kits;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.model.Kit;
 import com.ftxeven.aircore.module.kits.KitParams;
 import com.ftxeven.aircore.module.kits.KitsModule;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class EditkitCommand extends AbstractCommand {
+public final class EditkitCommand extends BaseCommand {
 
     private static final String KEY = "editkit";
 

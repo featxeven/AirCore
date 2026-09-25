@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.homes;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.module.NameValidator;
 import com.ftxeven.aircore.module.homes.HomesModule;
 import com.ftxeven.aircore.permission.PermissionTiers;
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public final class SethomeCommand extends AbstractCommand {
+public final class SethomeCommand extends BaseCommand {
 
     private static final String KEY = "sethome";
 

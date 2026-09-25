@@ -103,7 +103,7 @@ warps:
 respawn:
   prefer-bed: false             # Respawn at bed if set
   prefer-anchor: true           # Respawn at respawn anchor if charged
-  # Falls back to spawn if neither is set nor both are obstructed
+                                # Falls back to spawn if neither is set nor both are obstructed
 
 # --------------------------------------------------
 # BACK

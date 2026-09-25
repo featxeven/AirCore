@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.economy;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes.Scope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
 import com.ftxeven.aircore.core.command.CommandDispatch;
@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public final class BalanceCommand extends AbstractCommand {
+public final class BalanceCommand extends BaseCommand {
 
     private static final String KEY = "balance";
     private static final ScopeAccess ACCESS = ScopeAccess.othersOnly(KEY);

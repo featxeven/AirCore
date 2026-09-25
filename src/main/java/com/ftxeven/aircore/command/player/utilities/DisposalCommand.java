@@ -1,12 +1,12 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.permission.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public final class DisposalCommand extends AbstractCommand {
+public final class DisposalCommand extends BaseCommand {
 
     private static final String KEY = "disposal";
 

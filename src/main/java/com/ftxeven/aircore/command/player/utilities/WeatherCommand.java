@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.permission.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public final class WeatherCommand extends AbstractCommand {
+public final class WeatherCommand extends BaseCommand {
 
     private static final String KEY = "weather";
     private static final String THUNDER = "thunder";

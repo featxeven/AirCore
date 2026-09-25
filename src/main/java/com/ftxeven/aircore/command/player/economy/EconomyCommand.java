@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.economy;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.module.economy.EconomyModule;
 import com.ftxeven.aircore.module.economy.balance.BalanceLedger;
 import com.ftxeven.aircore.permission.Permissions;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class EconomyCommand extends AbstractCommand {
+public final class EconomyCommand extends BaseCommand {
 
     private static final String KEY = "economy";
 

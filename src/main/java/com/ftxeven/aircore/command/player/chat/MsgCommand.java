@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.chat;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.module.chat.ChatModule;
 import com.ftxeven.aircore.module.chat.pm.PrivateMessageHandler;
 import com.ftxeven.aircore.permission.Permissions;
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class MsgCommand extends AbstractCommand {
+public final class MsgCommand extends BaseCommand {
 
     private static final String KEY = "msg";
 

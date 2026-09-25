@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes.LiveScope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
 import com.ftxeven.aircore.core.command.CommandDispatch;
@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public final class PingCommand extends AbstractCommand {
+public final class PingCommand extends BaseCommand {
 
     private static final String KEY = "ping";
     private static final ScopeAccess ACCESS = ScopeAccess.othersOnly(KEY);

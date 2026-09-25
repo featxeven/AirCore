@@ -247,7 +247,7 @@ commands:
         usage: "/%label%"
         # Set the GUI key to "" to disable it and use chat behavior.
         gui:
-          menu: "leaderboards/baltop"     # opened by "/baltop"; empty by default falls back to a chat list of top balances
+          menu: "leaderboards/baltop"     # opened by "/baltop"; empty falls back to a chat list of top balances
 
       pay:
         enabled: true
@@ -312,7 +312,7 @@ commands:
         usage: "/%label%"
         # Set the GUI key to "" to disable it and use chat behavior.
         gui:
-          menu: "economy/sell/sell"      # opened by "/sell"; empty by default (sells the held item instantly)
+          menu: "economy/sell/sell"      # opened by "/sell"; empty sells the held item instantly
 
   # --------------------------------------------------
   # TELEPORT

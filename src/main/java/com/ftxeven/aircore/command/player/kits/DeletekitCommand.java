@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.kits;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.model.Kit;
 import com.ftxeven.aircore.module.kits.KitsModule;
 import com.ftxeven.aircore.permission.Permissions;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class DeletekitCommand extends AbstractCommand {
+public final class DeletekitCommand extends BaseCommand {
 
     private static final String KEY = "deletekit";
 

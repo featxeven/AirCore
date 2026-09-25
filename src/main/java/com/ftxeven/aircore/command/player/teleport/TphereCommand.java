@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.model.TeleportType;
 import com.ftxeven.aircore.module.teleport.DestinationSource;
@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class TphereCommand extends AbstractCommand {
+public final class TphereCommand extends BaseCommand {
 
     private static final String KEY = "tphere";
     private static final String ALL_PERMISSION = Permissions.Command.all(KEY);

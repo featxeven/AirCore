@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.economy;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.core.gui.GuiSession;
 import com.ftxeven.aircore.gui.PluginGuiManager;
@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.function.DoubleConsumer;
 import java.util.function.Supplier;
 
-public final class PayCommand extends AbstractCommand {
+public final class PayCommand extends BaseCommand {
 
     private static final String KEY = "pay";
     private static final String CONFIRMATION_TYPE = "pay";

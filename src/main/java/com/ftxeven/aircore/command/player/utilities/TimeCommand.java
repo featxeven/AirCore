@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.DurationUnits;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.util.TimeFormatter;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 
-public final class TimeCommand extends AbstractCommand {
+public final class TimeCommand extends BaseCommand {
 
     private static final String KEY = "time";
     private static final String ADD = "add";

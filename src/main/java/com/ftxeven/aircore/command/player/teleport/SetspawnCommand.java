@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.database.repository.LocationRepository;
 import com.ftxeven.aircore.module.Positions;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public final class SetspawnCommand extends AbstractCommand {
+public final class SetspawnCommand extends BaseCommand {
 
     private static final String KEY = "setspawn";
 

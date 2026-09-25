@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes.Scope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
 import com.ftxeven.aircore.config.MainConfig;
@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
-public final class GodCommand extends AbstractCommand {
+public final class GodCommand extends BaseCommand {
 
     private static final String KEY = "god";
     private static final ScopeAccess ACCESS = ScopeAccess.othersOnly(KEY);

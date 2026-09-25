@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.homes;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.gui.render.GuiFlags;
@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class DeletehomeCommand extends AbstractCommand {
+public final class DeletehomeCommand extends BaseCommand {
 
     private static final String KEY = "deletehome";
 

@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public abstract class AbstractCommand implements CommandHandler {
+public abstract class BaseCommand implements CommandHandler {
 
     public record Context(
             ConfigManager configs,
@@ -43,7 +43,7 @@ public abstract class AbstractCommand implements CommandHandler {
     protected final Context ctx;
     private final String key;
 
-    protected AbstractCommand(Context ctx, String key) {
+    protected BaseCommand(Context ctx, String key) {
         this.ctx = ctx;
         this.key = key;
     }

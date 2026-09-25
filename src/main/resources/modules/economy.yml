@@ -39,6 +39,10 @@ balance:
 # BALTOP
 # --------------------------------------------------
 baltop:
+  # Baltop command is controlled in-game, not from this file.
+  # To disable /baltop, disable the command in commands.yml instead.
+  # This is only meaningful when GUI is disabled.
+
   entries: 10           # How many top balances to list; -1 = show everyone (not recommended)
   min-balance: -1       # Players below this balance are excluded from the list; -1 = no minimum
 

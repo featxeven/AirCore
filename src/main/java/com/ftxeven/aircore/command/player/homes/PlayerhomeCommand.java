@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.homes;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class PlayerhomeCommand extends AbstractCommand {
+public final class PlayerhomeCommand extends BaseCommand {
 
     private static final String KEY = "playerhome";
     private static final String TELEPORT_PERMISSION = Permissions.Command.teleport(KEY);

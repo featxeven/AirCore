@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.extras;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.player.PlayerTargetResolver;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public final class NicknameCommand extends AbstractCommand {
+public final class NicknameCommand extends BaseCommand {
 
     private static final String KEY = "nickname";
     private static final String ACTION_RESET = "reset";

@@ -35,7 +35,7 @@ public final class CommandManager {
 
     private final CommandDispatcher dispatcher;
     private final DynamicCommandRegistry dynamicCommands;
-    private final AbstractCommand.Context ctx;
+    private final BaseCommand.Context ctx;
     private final DurationUnits durationUnits;
     private final Map<String, CommandHandler> commandHandlersByName = new LinkedHashMap<>();
 
@@ -52,7 +52,7 @@ public final class CommandManager {
         Feedback feedback = new Feedback(plugin.configs(), plugin.messenger(), plugin.services());
         Scopes scopes = new Scopes(plugin.configs(), plugin.messenger(), plugin.services(), resolver, selectors, feedback);
 
-        this.ctx = new AbstractCommand.Context(plugin.configs(), plugin.messenger(), plugin.services(),
+        this.ctx = new BaseCommand.Context(plugin.configs(), plugin.messenger(), plugin.services(),
                 plugin.modules(), resolver, tabCompleteEngine, selectors, feedback, scopes);
     }
 

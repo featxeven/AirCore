@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.extras;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.module.extras.block.BlockHandler;
 import com.ftxeven.aircore.permission.PermissionTiers;
 import com.ftxeven.aircore.permission.Permissions;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public abstract class BlockActionCommand extends AbstractCommand {
+public abstract class BlockActionCommand extends BaseCommand {
 
     private final String key;
 

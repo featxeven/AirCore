@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes.LiveScope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
 import com.ftxeven.aircore.core.command.CommandDispatch;
@@ -17,7 +17,7 @@ import java.util.Optional;
 /**
  * The shape shared by /heal, /feed, /repair, /repairall, /clearinventory and /kill
  */
-public abstract class LiveActionCommand extends AbstractCommand {
+public abstract class LiveActionCommand extends BaseCommand {
 
     /** lang keys for one action. {@code errorBase} is prefixed to the reason a target was skipped. */
     public record Keys(String self, String other, String by, String all, String errorBase) {}

@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.homes;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.core.gui.OpenOptions;
 import com.ftxeven.aircore.core.gui.flag.FlagGate;
@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.function.Supplier;
 
-public final class HomeCommand extends AbstractCommand {
+public final class HomeCommand extends BaseCommand {
 
     private static final String KEY = "home";
 

@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command;
 
-import com.ftxeven.aircore.command.AbstractCommand.Context;
+import com.ftxeven.aircore.command.BaseCommand.Context;
 import com.ftxeven.aircore.core.gui.OpenOptions;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.gui.action.GuiActions;

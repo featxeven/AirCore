@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.database.repository.LocationRepository;
 import com.ftxeven.aircore.model.NamedLocation;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class DeletespawnCommand extends AbstractCommand {
+public final class DeletespawnCommand extends BaseCommand {
 
     private static final String KEY = "deletespawn";
 

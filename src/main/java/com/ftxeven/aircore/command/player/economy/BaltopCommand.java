@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.economy;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.database.repository.PlayerRepository;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.gui.action.GuiActions;
@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class BaltopCommand extends AbstractCommand {
+public final class BaltopCommand extends BaseCommand {
 
     private static final String KEY = "baltop";
 

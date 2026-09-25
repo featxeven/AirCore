@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.player.PlayerTargetResolver;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.util.TimeFormatter;
@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public final class SeenCommand extends AbstractCommand {
+public final class SeenCommand extends BaseCommand {
 
     private static final String KEY = "seen";
 

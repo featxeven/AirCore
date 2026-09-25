@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes;
 import com.ftxeven.aircore.command.Scopes.Scope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public final class GamemodeCommand extends AbstractCommand {
+public final class GamemodeCommand extends BaseCommand {
 
     private static final String KEY = "gamemode";
     private static final ScopeAccess ACCESS = ScopeAccess.of(KEY);

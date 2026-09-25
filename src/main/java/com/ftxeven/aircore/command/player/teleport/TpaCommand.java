@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.gui.PluginGuiManager;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class TpaCommand extends AbstractCommand {
+public final class TpaCommand extends BaseCommand {
 
     private static final String KEY = "tpa";
     private static final String CONFIRMATION_TYPE = "tpa";

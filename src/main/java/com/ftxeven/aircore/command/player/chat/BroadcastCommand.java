@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.chat;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.config.MainConfig;
 import com.ftxeven.aircore.module.chat.PlayerTextRenderer;
 import com.ftxeven.aircore.permission.Permissions;
@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.Map;
 
-public final class BroadcastCommand extends AbstractCommand {
+public final class BroadcastCommand extends BaseCommand {
 
     private static final String KEY = "broadcast";
     private static final String MESSAGE_TAG = "message";

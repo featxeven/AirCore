@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.service.inventory.InventoryKind;
@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Optional;
 
-public final class EnderseeCommand extends AbstractCommand {
+public final class EnderseeCommand extends BaseCommand {
 
     private static final String KEY = "endersee";
     private static final String MODIFY_PERMISSION = Permissions.Command.modify(KEY);

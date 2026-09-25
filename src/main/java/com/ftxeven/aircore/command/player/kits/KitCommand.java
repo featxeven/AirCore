@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.kits;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class KitCommand extends AbstractCommand {
+public final class KitCommand extends BaseCommand {
 
     private static final String KEY = "kit";
 

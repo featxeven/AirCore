@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.model.TeleportType;
 import com.ftxeven.aircore.module.teleport.DestinationSource;
@@ -21,7 +21,7 @@ import java.util.OptionalDouble;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class TpposCommand extends AbstractCommand {
+public final class TpposCommand extends BaseCommand {
 
     private static final String KEY = "tppos";
     private static final String OTHERS_PERMISSION = Permissions.Command.others(KEY);

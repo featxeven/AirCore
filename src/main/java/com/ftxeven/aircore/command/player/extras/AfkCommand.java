@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.extras;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.module.extras.afk.AfkHandler;
 import com.ftxeven.aircore.permission.Permissions;
@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public final class AfkCommand extends AbstractCommand {
+public final class AfkCommand extends BaseCommand {
 
     private static final String KEY = "afk";
 

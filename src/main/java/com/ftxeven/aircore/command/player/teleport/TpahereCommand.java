@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.ConfirmationFlow;
 import com.ftxeven.aircore.command.player.Selectors;
 import com.ftxeven.aircore.core.command.CommandDispatch;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Supplier;
 
-public final class TpahereCommand extends AbstractCommand {
+public final class TpahereCommand extends BaseCommand {
 
     private static final String KEY = "tpahere";
     private static final String ALL_PERMISSION = Permissions.Command.all(KEY);

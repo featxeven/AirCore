@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.economy;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.gui.OpenOptions;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.gui.action.GuiActions;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public final class SellCommand extends AbstractCommand {
+public final class SellCommand extends BaseCommand {
 
     private static final String KEY = "sell";
 

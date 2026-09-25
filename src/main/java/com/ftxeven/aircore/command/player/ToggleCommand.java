@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes.Scope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
 import com.ftxeven.aircore.core.command.CommandDispatch;
@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
-public final class ToggleCommand extends AbstractCommand {
+public final class ToggleCommand extends BaseCommand {
 
     private final ToggleKey toggle;
     private final ScopeAccess access;

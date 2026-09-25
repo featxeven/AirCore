@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.Scopes;
 import com.ftxeven.aircore.command.Scopes.Scope;
 import com.ftxeven.aircore.command.Scopes.ScopeAccess;
@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
 
-public final class PlayertimeCommand extends AbstractCommand {
+public final class PlayertimeCommand extends BaseCommand {
 
     private static final String KEY = "playertime";
     private static final String ADD = "add";

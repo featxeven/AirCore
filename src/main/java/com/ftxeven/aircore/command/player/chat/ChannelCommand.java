@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.chat;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
 import com.ftxeven.aircore.module.chat.ChatConfig;
@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.function.Supplier;
 
-public final class ChannelCommand extends AbstractCommand {
+public final class ChannelCommand extends BaseCommand {
 
     private static final String KEY = "channel";
 

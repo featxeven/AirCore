@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.command.player.teleport;
 
-import com.ftxeven.aircore.command.AbstractCommand;
+import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.player.PlayerTargetResolver;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.model.Position;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public final class TpofflineCommand extends AbstractCommand {
+public final class TpofflineCommand extends BaseCommand {
 
     private static final String KEY = "tpoffline";
 
