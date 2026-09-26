@@ -1,6 +1,6 @@
 name: AirCore
 main: com.ftxeven.aircore.AirCore
-version: 2.0.0
+version: 2.0.1
 api-version: '1.21'
 author: ftxeven
 description: A modern, modular core plugin focused on performance, flexibility, and customization.
