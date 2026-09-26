@@ -67,7 +67,7 @@ public final class AirCore extends JavaPlugin {
 
         modules = new ModuleManager(this);
 
-        guis = PluginGuiManager.create(this, messenger, configs, services, modules, animations);
+        guis = PluginGuiManager.create(this, messenger, configs, hooks, services, modules, animations);
         if (guis == null) {
             getLogger().severe("One or more GUI files failed to load, disabling plugin");
             getServer().getPluginManager().disablePlugin(this);
@@ -82,10 +82,8 @@ public final class AirCore extends JavaPlugin {
 
         services.load();
 
-        getServer().getPluginManager().registerEvents(
-                new PlayerListener(services, configs, messenger, modules, guis), this);
-        getServer().getPluginManager().registerEvents(
-                new GuiListener(guis.guis()), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(services, configs, messenger, modules, guis), this);
+        getServer().getPluginManager().registerEvents(new GuiListener(guis.guis()), this);
 
         commands = new CommandManager(this);
         commands.registerAll();

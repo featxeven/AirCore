@@ -9,6 +9,7 @@ import com.ftxeven.aircore.core.gui.GuiSession;
 import com.ftxeven.aircore.core.gui.OpenOptions;
 import com.ftxeven.aircore.core.gui.input.InputRegistry;
 import com.ftxeven.aircore.core.gui.render.GuiRenderer;
+import com.ftxeven.aircore.core.hook.HookRegistry;
 import com.ftxeven.aircore.gui.action.*;
 import com.ftxeven.aircore.gui.config.LayoutConfig;
 import com.ftxeven.aircore.gui.impl.*;
@@ -49,8 +50,9 @@ public final class PluginGuiManager {
     }
 
     public static @Nullable PluginGuiManager create(JavaPlugin plugin, Messenger messenger, ConfigManager configs,
-                                                    ServiceManager services, ModuleManager modules, AnimationManager animations) {
+                                                    HookRegistry hooks, ServiceManager services, ModuleManager modules, AnimationManager animations) {
         GuiManager guis = GuiManager.builder(plugin, messenger, animations)
+                .hooks(hooks)
                 .heads(new PlayerHeadResolver(services.players()))
                 .players(name -> services.players().findByRealName(name).map(PlayerProfile::uuid).orElse(null))
                 .reservedPaths(RESERVED_PATHS)
