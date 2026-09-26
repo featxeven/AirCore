@@ -1,0 +1,82 @@
+# AirCore - Filter Configuration
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# Defines the filters available for certain GUIs.
+# The order of sections here controls the cycle order in the filter menu.
+
+# The "all" key/section represents the unfiltered "show everything" option in the filter cycles.
+
+# --------------------------------------------------
+# HOME FILTERS
+# --------------------------------------------------
+homes:
+  # --- World filter ---
+  worlds:
+    all: "All"
+    world: "Overworld"
+    world_nether: "Nether"
+    world_the_end: "The End"
+
+  # --- Icon filter ---
+  # Entries are either a real icon ("home:" block - assignable)
+  # or a bundle ("bundle:" block - groups icons under one filter entry).
+  #
+  # An icon inside a bundle is unlocked by EITHER of:
+  #   aircore.access.home.icon.<icon_id>
+  #   aircore.access.home.bundle.<bundle_id>
+  icons:
+    # Not a real home or icon. Used to "show everything".
+    all:
+      label: "All"
+
+    # Individual icon entry. Appears as "City" in the filter.
+    city:
+      label: "City"
+      # Used to render home-slots.
+      home:
+        material: BRICKS
+        display-name: "<white>Home: <gray><bold>%home%</bold> <dark_gray>(City)"
+        # lore:
+        #   - "<white>This will override 'lore: ...' block from"
+        #   - "<white>layout.home"
+
+      # Used to render icon-slots.
+      icon:
+        material: BRICKS
+        display-name: "<yellow>Icon: <gray><bold>City</bold>"
+        # lore:
+        #   - "<white>This will override 'lore: ...' block from"
+        #   - "<white>layout.icon"
+
+    # Multiple icons under a single entry. Appears as "Biomes" in the filter.
+    # Selecting "Biomes" will show all icons in this bundle.
+    biomes:
+      label: "Biomes"
+      bundle:
+        beach:
+          label: "Beach"
+          home:
+            material: SAND
+            display-name: "<white>Home: <yellow><bold>%home%</bold> <gray>(Beach)"
+          icon:
+            material: SAND
+            display-name: "<yellow>Icon: <bold>Beach</bold>"
+
+        desert:
+          label: "Desert"
+          home:
+            material: SANDSTONE
+            display-name: "<white>Home: <gold><bold>%home%</bold> <gray>(Desert)"
+          icon:
+            material: SANDSTONE
+            display-name: "<yellow>Icon: <gold><bold>Desert</bold>"
+
+        jungle:
+          label: "Jungle"
+          home:
+            material: JUNGLE_LOG
+            display-name: "<white>Home: <dark_green><bold>%home%</bold> <gray>(Jungle)"
+          # if no icon: block - falls back to the default item defined in layout.icon
+          icon:
+            material: JUNGLE_LOG
+            display-name: "<yellow>Icon: <dark_green><bold>Jungle</bold>"

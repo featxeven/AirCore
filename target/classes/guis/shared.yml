@@ -1,0 +1,298 @@
+# AirCore - Shared GUI Configuration
+# Docs: https://airdevelopment.gitbook.io/docs/
+#
+# Shared resources applied across all GUIs.
+# Individual GUIs can override any value defined here.
+
+# ---------------------------------------------------------------
+# DEFAULTS
+# These values apply to every GUI unless that GUI overrides them.
+# ---------------------------------------------------------------
+defaults:
+  # Trim consecutive empty lore lines.
+  trim-lore: true
+
+  # Re-open the GUI instead of refreshing in place.
+  # Recommended when the title contains placeholders (e.g. %page%).
+  force-reopen: true
+
+  # How often the GUI auto-refreshes. -1 = disabled.
+  # Value is in ticks (20 ticks = 1 second).
+  refresh-interval: -1
+
+  # Input method used when a player types a value (search query, amount, etc.).
+  # CHAT    - player types in chat
+  # SIGN    - player writes on a sign (1.20+)
+  # DIALOG  - players writes on a dialog box (1.21.6+) < recommended
+  input-type: DIALOG
+
+  # Actions fired when any GUI opens or closes.
+  open-actions:
+    - "[sound] ui.toast.in 1 2"
+    # - "[message] <rainbow>GUI opened!"
+  close-actions:
+    - "[sound] ui.toast.out 1 2"
+
+# --------------------------------------------------
+# ALIASES
+# Named strings reusable anywhere on GUIs via $name.
+# --------------------------------------------------
+aliases:
+  click: "ui.button.click 1 1.2"
+  success: "entity.player.levelup 1 2"
+  deny: "entity.villager.no 1 1"
+  page: "item.book.page_turn 1 0.8"
+  # message: "<rainbow>Hello!"
+
+# --------------------------------------------------
+# TEMPLATES
+# Reusable item definitions. Reference in any GUI
+# item via: template: <name>
+# --------------------------------------------------
+templates:
+
+  # ---------------------------------------------------
+  # Structural / filler
+  # ---------------------------------------------------
+
+  filler:
+    material: BLACK_STAINED_GLASS_PANE
+    hide-tooltip: true
+
+  close-button:
+    material: RED_STAINED_GLASS_PANE
+    display-name: "<red><bold>Close"
+    lore:
+      - "<gray>Click to go back to game."
+    actions:
+      any:
+        - "[close]"
+        - "[sound] $click"
+
+  cancel-button:
+    material: RED_STAINED_GLASS_PANE
+    display-name: "<red><bold>Cancel</bold>"
+    lore:
+      - "<gray>Click to cancel this action."
+    actions:
+      any:
+        - "[open] context:true"
+        - "[sound] $deny"
+
+  back-button:
+    material: DARK_OAK_DOOR
+    display-name: "<white><bold>Back</bold>"
+    lore:
+      - "<gray>Return to the previous menu."
+    actions:
+      any:
+        - "[sound] $click"
+        - "[open] context:true"
+
+  target-head:
+    material: head-%target_realname%
+    display-name: "<white>%target%"
+
+  # --- Pagination ---
+  previous-page:
+    material: ARROW
+    display-name: "<dark_gray>Previous Page"
+    lore:
+      - "<red>First page reached."
+    priority:
+      - conditions:
+          - "%has_previous_page% == true"
+        material: SPECTRAL_ARROW
+        display-name: "<aqua>Previous Page"
+        lore:
+          - "<gray>Return to the previous page."
+        actions:
+          any:
+            - "[sound] $page"
+            - "[page] to:previous"
+        cooldown: 0.2
+
+  next-page:
+    material: ARROW
+    display-name: "<dark_gray>Next Page"
+    lore:
+      - "<red>Last page reached."
+    priority:
+      - conditions:
+          - "%has_next_page% == true"
+        material: SPECTRAL_ARROW
+        display-name: "<aqua>Next Page"
+        lore:
+          - "<gray>Navigate to the next page."
+        actions:
+          any:
+            - "[sound] $page"
+            - "[page] to:next"
+        cooldown: 0.2
+
+  search-button:
+    material: SPYGLASS
+    display-name: "<white><bold>Search</bold>"
+    lore:
+      - "<dark_gray>Query"
+      - " "
+      - "<gray>Search within this GUI."
+      - " "
+      - "<white>Click <gray>to search"
+
+  # ---------------------------------------------------
+  # HOMES (used by homes/player, homes/target, homes/search)
+  # ---------------------------------------------------
+
+  homes-no-homes:
+    priority:
+      - conditions:
+          - "%total% == 0"
+        material: BARRIER
+        display-name: "<red><bold>Empty"
+        lore:
+          - "<gray>No homes set yet."
+      - conditions:
+          - "%current% == 0"
+        material: BARRIER
+        display-name: "<red><bold>Empty"
+        lore:
+          - "<gray>No homes set with this filter configuration yet."
+
+  homes-filter-world:
+    material: JUNGLE_HANGING_SIGN
+    display-name: "<aqua><bold>World</bold>"
+    lore:
+      - "<dark_gray>Filter by World"
+      - " "
+      - "<gray>Showing: <white>%filter_WORLD%"
+      - " "
+      - "%filter_WORLD_list%"
+      - " "
+      - "<aqua>Click <gray>to cycle"
+    actions:
+      left:
+        - "[sound] $click"
+        - "[filter] type:home by:world to:next"
+      right:
+        - "[sound] $click"
+        - "[filter] type:home by:world to:previous"
+    cooldown: 0.2
+
+  homes-filter-icon:
+    material: ACACIA_HANGING_SIGN
+    display-name: "<aqua><bold>Icon</bold>"
+    lore:
+      - "<dark_gray>Filter by Icon"
+      - " "
+      - "<gray>Showing: <white>%filter_ICON%"
+      - " "
+      - "%filter_ICON_list%"
+      - " "
+      - "<aqua>Click <gray>to cycle"
+    actions:
+      left:
+        - "[sound] $click"
+        - "[filter] type:home by:icon to:next"
+      right:
+        - "[sound] $click"
+        - "[filter] type:home by:icon to:previous"
+    cooldown: 0.2
+
+  homes-sort:
+    material: COMPARATOR
+    display-name: "<aqua><bold>Sort</bold>"
+    lore:
+      - "<dark_gray>Order"
+      - " "
+      - "<gray>Sorting: <white>%sort_HOME%"
+      - " "
+      - "%sort_HOME_list%"
+      - " "
+      - "<aqua>Click <gray>to cycle"
+    actions:
+      left:
+        - "[sound] $click"
+        - "[sort] type:home by:home to:next"
+      right:
+        - "[sound] $click"
+        - "[sort] type:home by:home to:previous"
+    cooldown: 0.2
+
+  homes-info:
+    material: BOOK
+    display-name: "<aqua><bold>Homes</bold>"
+    lore:
+      - "<dark_gray>Information"
+      - " "
+      - " <dark_gray>- <gray>Homes: <white>%current% <gray>out of <white>%total%"
+      - " <dark_gray>- <gray>Page: <white>%page%<dark_gray>/<white>%pages%"
+      - " "
+      - "<aqua>Click <gray>to refresh"
+    actions:
+      any:
+        - "[sound] $click"
+        - "[refresh]"
+    cooldown: 3
+    cooldown-message: "<ref:prefix> <red>Wait <white>%timeout%</white> before refreshing this GUI again!"
+
+  # ---------------------------------------------------
+  # LEADERBOARDS (used by leaderboards/baltop, leaderboards/search)
+  # ---------------------------------------------------
+
+  leaderboards-entry:
+    material: head-%holder_realname%
+    display-name: "<white>#%rank% <gradient:#5AD1F2:#736EFE><bold>%holder%"
+    lore:
+      - " <dark_gray>- <gray>Score: %value%"
+      - "=is:self  "
+      - "=is:self <green>This is you!"
+    priority:
+      - conditions:
+          - "%rank% == 1"
+        display-name: "<gold><bold>#1 <white>%holder%"
+        glow: true
+
+      - conditions:
+          - "%rank% == 2"
+        display-name: "<gray><bold>#2 <white>%holder%"
+
+      - conditions:
+          - "%rank% == 3"
+        display-name: "<dark_gray><bold>#3 <white>%holder%"
+
+  leaderboards-no-entries:
+    priority:
+      - conditions:
+          - "%total% == 0"
+        material: BARRIER
+        display-name: "<red><bold>Empty"
+        lore:
+          - "<gray>Nobody is ranked on this leaderboard yet."
+          - "<gray>Rankings refresh every <white>%interval%</white>."
+      - conditions:
+          - "%current% == 0"
+        material: BARRIER
+        display-name: "<red><bold>No matches"
+        lore:
+          - "<gray>Nobody on this leaderboard matches"
+          - "<white>%query%</white><gray>."
+
+  leaderboards-info:
+    material: BOOK
+    display-name: "<aqua><bold>Your Position</bold>"
+    lore:
+      - "<dark_gray>Information"
+      - " "
+      - " <dark_gray>- <gray>Your rank: <white>%viewer_rank%"
+      - " <dark_gray>- <gray>Your score: <white>%viewer_value%"
+      - " <dark_gray>- <gray>Ranked players: <white>%total%"
+      - " <dark_gray>- <gray>Page: <white>%page%<dark_gray>/<white>%pages%"
+      - " "
+      - "<aqua>Click <gray>to refresh"
+    actions:
+      any:
+        - "[sound] $click"
+        - "[refresh]"
+    cooldown: 3
+    cooldown-message: "<ref:prefix> <red>Wait <white>%timeout%</white> before refreshing this GUI again!"

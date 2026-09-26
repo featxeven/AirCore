@@ -1,0 +1,117 @@
+# AirCore - homes/confirm_delete.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own.
+
+# contexts:
+#   Override any combination of fields for a specific source GUI.
+#   Key = the GUI id that opened the search (e.g. homes/target).
+
+# 'role' binds this file to the home-browsing logic. Rename/relocate this file freely,
+# just keep the 'role:' line.
+role: homes-confirm
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Delete</bold></gradient>"
+  rows: 3
+
+# --------------------------------------------------
+# LAYOUT
+# --------------------------------------------------
+layout:
+  # Slots where the targeted home is rendered.
+  home-slots: 13
+
+  # How the targeted home is rendered inside home-slots.
+
+  # Material/display-name/lore/... per icon are defined in data/ > filter.yml
+  # (homes > icon > <id> > home). This is the base home item configuration.
+  home:
+    material: GRASS_BLOCK
+    display-name: "<white>Home: <gradient:#5AD1F2:#736EFE><bold>%home%"
+    lore:
+      - "=is:favorite_home  "
+      - "=is:owned_home =is:favorite_home <yellow>You set this home as favorite."
+      - "!=is:owned_home =is:favorite_home <yellow><white>%target%</white> set this home as favorite."
+      - " "
+      - " <dark_gray>- <gray>World: <white>%world%"
+      - " <dark_gray>- <gray>Created on: <white>%date% %time%"
+      - " <dark_gray>- <gray>Coords: <white>%x% %y% %z%"
+      - "!=is:selected_icon:all  <dark_gray>- <gray>Icon: <white>%icon%"
+      - "=is:bundled_icon  "
+      - "=is:bundled_icon  <dark_gray>- <gray>Bundle: <white>%bundle%"
+
+# --------------------------------------------------
+# ITEMS
+# Define the static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [0-8, 18-26]
+
+  confirm:
+    slots: 11
+    material: LIME_STAINED_GLASS_PANE
+    display-name: "<green><bold>Confirm</bold>"
+    lore:
+      - "=is:owned_home <gray>Click to confirm and delete your"
+      - "=is:owned_home <gray>home <white>%home%</white>."
+      - "!=is:owned_home <gray>Click to confirm and delete <white>%target%</white>'s"
+      - "!=is:owned_home <gray>home <white>%home%</white>."
+    actions:
+      any:
+        # Note:
+        #   flat [delete] type:home action expects a "home" context value to work.
+        - "[delete] type:home"
+        - "=is:valid_home [sound] $success"
+        - "[open] context:true"
+    priority:
+      # No screen to return to when this GUI was opened directly (e.g. /deletehome <home>)
+      - conditions:
+          - "%previous_gui% == null"
+        actions:
+          any:
+            - "[delete] type:home"
+            - "=is:valid_home [sound] $success"
+            - "[close]"
+
+  close:
+    slots: 15
+    material: RED_STAINED_GLASS_PANE
+    display-name: "<white><bold>Back</bold>"
+    lore:
+      - "<gray>Return to the previous menu."
+    actions:
+      any:
+        - "[open] context:true"
+        - "[sound] $deny"
+    priority:
+      # No screen to return to when this GUI was opened directly (e.g. /kit <kitname>)
+      - conditions:
+          - "%previous_gui% == null"
+        template: close-button
+
+# --------------------------------------------------
+# GUI CONTEXTS
+# Override any field based on which GUI triggered the overlay.
+# Keys must exactly match the source GUI id.
+# --------------------------------------------------
+contexts:
+  homes/player:
+    settings:
+      title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Delete</bold></gradient> <dark_gray>- <white>Your Homes"
+
+    # The rest is inherited from the base config above unless overridden here.
+
+  homes/player|homes/search:
+    settings:
+      title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Delete</bold></gradient> <dark_gray>- <white>Your Homes <dark_gray>- <white>\"%query%\""
+
+  homes/target:
+    settings:
+      title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Delete</bold></gradient> <dark_gray>- <white>%target%</white>'s Homes"
+
+  homes/target|homes/search:
+    settings:
+      title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Delete</bold></gradient> <dark_gray>- <white>%target%</white>'s Homes <dark_gray>- <white>\"%query%\""

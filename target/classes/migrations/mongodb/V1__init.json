@@ -1,0 +1,54 @@
+{
+  "collections": [
+    {
+      "name": "{prefix}players",
+      "indexes": [
+        { "keys": { "name": 1 }, "options": { "name": "idx_name" } },
+        { "keys": { "joinNumber": 1 }, "options": { "unique": true, "name": "uk_join_number" } },
+        { "keys": { "balance": 1, "_id": 1 }, "options": { "name": "idx_balance" } },
+        { "keys": { "nicknameNormalized": 1 }, "options": { "unique": true, "name": "uk_nickname_normalized", "partialFilterExpression": { "nicknameNormalized": { "$type": "string" } } } }
+      ]
+    },
+    { "name": "{prefix}player_inventories", "indexes": [] },
+    {
+      "name": "{prefix}homes",
+      "indexes": [
+        { "keys": { "owner": 1, "name": 1 }, "options": { "unique": true, "name": "uk_owner_name" } },
+        { "keys": { "owner": 1, "createdAt": 1 }, "options": { "name": "idx_owner_created" } },
+        { "keys": { "owner": 1, "position.world": 1 }, "options": { "name": "idx_owner_world" } },
+        { "keys": { "owner": 1, "favorite": 1 }, "options": { "name": "idx_owner_favorite" } },
+        { "keys": { "owner": 1, "icon": 1 }, "options": { "name": "idx_owner_icon" } }
+      ]
+    },
+    {
+      "name": "{prefix}cooldowns",
+      "indexes": [
+        { "keys": { "owner": 1, "scope": 1, "key": 1, "arg": 1 }, "options": { "unique": true, "name": "uk_owner_scope_key_arg" } },
+        { "keys": { "expiresAt": 1 }, "options": { "name": "idx_expires" } },
+        { "keys": { "scope": 1, "key": 1 }, "options": { "name": "idx_scope_key" } }
+      ]
+    },
+    {
+      "name": "{prefix}blocks",
+      "indexes": [
+        { "keys": { "owner": 1, "blocked": 1 }, "options": { "unique": true, "name": "uk_owner_blocked" } }
+      ]
+    },
+    { "name": "{prefix}counters", "indexes": [] },
+    {
+      "name": "{prefix}variables",
+      "indexes": [
+        { "keys": { "owner": 1, "key": 1 }, "options": { "unique": true, "name": "uk_owner_key" } },
+        { "keys": { "key": 1, "numeric": 1, "owner": 1 }, "options": { "name": "idx_key_numeric" } }
+      ]
+    },
+    {
+      "name": "{prefix}locations",
+      "indexes": [
+        { "keys": { "category": 1, "key": 1 }, "options": { "unique": true, "name": "uk_category_key" } }
+      ]
+    },
+    { "name": "{prefix}kits", "indexes": [] },
+    { "name": "{prefix}persistent_bossbar", "indexes": [] }
+  ]
+}

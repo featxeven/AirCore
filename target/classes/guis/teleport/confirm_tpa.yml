@@ -1,0 +1,42 @@
+# AirCore - teleport/confirm_tpa.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own;
+# to disable this GUI, remove its GUI entry from commands.yml
+
+# No 'role' here - this GUI is plain config (static items only), so rename or restructure
+# it however you like.
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Request</bold></gradient>"
+  rows: 3
+
+# --------------------------------------------------
+# ITEMS
+# Define the static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [0-8, 18-26]
+
+  target-head:
+    template: target-head
+    slots: 13
+
+  confirm:
+    slots: 11
+    material: LIME_STAINED_GLASS_PANE
+    display-name: "<green><bold>Confirm</bold>"
+    lore:
+      - "<gray>Click to confirm and send a teleport"
+      - "<gray>request to <white>%target%</white>."
+    actions:
+      any:
+        - "[request] type:tpa target:%target_realname%"
+        - "=is:online:%target_realname% [sound] $success"
+        - "[close]"
+
+  close:
+    template: close-button
+    slots: 15

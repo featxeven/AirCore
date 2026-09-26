@@ -1,0 +1,94 @@
+# AirCore - modules/economy
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# When set to false, the entire economy module is disabled.
+# Only turn this off if you want to handle economy with a different plugin entirely.
+#
+# You may still need to manually disable certain commands related to this module (in commands.yml).
+enabled: true
+
+# --------------------------------------------------
+# GENERAL
+# --------------------------------------------------
+general:
+  format: "<green>$%amount%</green>"
+  allow-decimals: true            # Allow noninteger balances (e.g. 12.50)
+
+  # How amounts are displayed across messages, placeholders, and GUIs
+  # SHORT      - 1250000   > 1.25M
+  # FORMATTED  - 1250000   > 1,250,000
+  # RAW        - 1250000   > 1250000
+  number-format: FORMATTED
+  format-short-suffix: ["", "k", "M", "B", "T", "Q"]
+  allow-shorthand-input: true     # Allow shorthand in commands (e.g. /ah sell 1.5k instead of 1500)
+
+  # Only applies when allow-decimals is false.
+  # FLOOR  - silently truncate to the nearest whole number
+  # REJECT - treat decimal prices as invalid price
+  decimal-handling: REJECT
+
+# --------------------------------------------------
+# BALANCE
+# --------------------------------------------------
+balance:
+  default-balance: 500            # Balance given to players on first join
+  min-balance: 0                  # Lowest a balance can go; set negative to allow debt; -1 = no limit
+  max-balance: 1000000000         # Highest a balance can reach; -1 = no limit
+
+# --------------------------------------------------
+# BALTOP
+# --------------------------------------------------
+baltop:
+  # Baltop command is controlled in-game, not from this file.
+  # To disable /baltop, disable the command in commands.yml instead.
+  # This is only meaningful when GUI is disabled.
+
+  entries: 10           # How many top balances to list; -1 = show everyone (not recommended)
+  min-balance: -1       # Players below this balance are excluded from the list; -1 = no minimum
+
+# --------------------------------------------------
+# PAY
+# --------------------------------------------------
+pay:
+  # Pay command is controlled in-game, not from this file.
+  # To disable /pay, disable the command in commands.yml instead.
+
+  require-confirmation: true        # Requires confirmation before paying another player
+  confirmation-timeout: 60          # Seconds the player has to re-run the command to confirm
+  allow-self-pay: false             # Allow players to pay themselves
+  min-pay-amount: 3                 # Minimum amount per transaction
+  max-pay-amount: 1000000           # Maximum amount per transaction; -1 = no limit
+
+  # --------------------------------------------------
+  # NOTIFICATIONS
+  # Shown to a player when they rejoin after receiving /pay while offline.
+  # --------------------------------------------------
+  notifications:
+    enabled: true           # Notify a player on join if they received /pay while offline
+    join-delay: 40          # Ticks after join before showing the notification. 0 = show immediately. 20 ticks = 1 second
+    min-amount: 0           # Minimum total pending amount required to trigger the notification. 0 = always notify
+
+# --------------------------------------------------
+# TAX
+# Applies to both /pay and /sell.
+# --------------------------------------------------
+tax:
+  enabled: true
+  type: PERCENTAGE         # PERCENTAGE of the amount sent/sold | FIXED flat amount
+
+  # Default values used when the player has no matching
+  # aircore.bypass.economy.tax.<value> permission node.
+  # min-fee and max-fee are ignored when type is FIXED.
+  default-value: 10        # 10% or $10 depending on type
+  min-tax: 1               # Minimum charge; prevents near-zero taxes on small payments/sales
+  max-tax: 1000             # Maximum charge; -1 = no cap
+
+# --------------------------------------------------
+# GUI
+# --------------------------------------------------
+gui:
+  # This applies to the sell GUI only, where multiple items are sold in one go.
+  sell:
+    skip-invalid-items: false     # When true, selling multiple items at once sells every
+                                  # sellable one and skips invalid ones instead of aborting
+                                  # the wholesale.

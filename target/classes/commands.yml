@@ -1,0 +1,1024 @@
+# AirCore - Commands Configuration
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# --------------------------------------------------
+# SHORTCUTS
+# Maps a short alias to a full command string.
+#
+# Requires restart to reflect changes.
+#
+# Note: 'runs' MUST reference a command defined in
+#        the bundles section by its 'name'.
+# --------------------------------------------------
+shortcuts:
+  # Gamemode
+  gmc:
+    runs: "gamemode creative"
+    aliases: [gm1]
+  gms:
+    runs: "gamemode survival"
+    aliases: [gm2]
+  gma:
+    runs: "gamemode adventure"
+    aliases: [gm3]
+  gmsp:
+    runs: "gamemode spectator"
+    aliases: [gm4]
+
+  # Time
+  day:
+    runs: "time set day"
+    aliases: [setday]
+  night:
+    runs: "time set night"
+    aliases: [setnight]
+  noon:
+    runs: "time set noon"
+    aliases: []
+  midnight:
+    runs: "time set midnight"
+    aliases: []
+
+# # Weather
+# sun:
+#   runs: "weather clear"
+#   aliases: [sunny]
+# rain:
+#   runs: "weather rain"
+#   aliases: [storm]
+# thunder:
+#   runs: "weather thunder"
+#   aliases: []
+
+# --------------------------------------------------
+# SELECTORS
+# Reusable selector tokens referenced in tab-complete sources.
+# --------------------------------------------------
+selectors:
+  all: "@a"      # All online players
+  server: "@s"   # All players (including from database)
+
+# --------------------------------------------------
+# DURATION UNITS
+# Suffixes accepted by duration arguments.
+# --------------------------------------------------
+duration-units:
+  # A value typed with no suffix (e.g. "200") uses whichever unit is listed
+  # first in this section (or filtered in command tab-complete).
+  t:
+    ticks: 1
+  s:
+    ticks: 20
+  m:
+    ticks: 1200
+  h:
+    ticks: 72000
+  d:
+    ticks: 1728000
+# w:
+#   ticks: 12096000
+
+# --------------------------------------------------
+# COOLDOWNS
+# Per-player cooldowns applied after a command is executed.
+# --------------------------------------------------
+cooldowns: []
+#  repair:
+#    seconds: 60
+#    strict: true
+#
+#  repairall:
+#    seconds: 120
+#    strict: true
+#
+#  heal:
+#    seconds: 120
+#
+#  feed:
+#    seconds: 90
+#
+#  fly:
+#    seconds: 5
+#    strict: true
+#
+#  pay:
+#    seconds: 30
+#    message: "<red>You can send another payment in <white>%timeout%</white>."
+#
+#  home:
+#    seconds: 3
+#    strict: true
+#
+#  warp:
+#    seconds: 5
+#    per-arg: true
+
+# --------------------------------------------------
+# COMMANDS
+# Each entry below is either a bundle - a named group of commands nested
+# under 'bundle' - or a single command defined directly at this level.
+#
+# You can create, rename, delete, or reorganize bundles.
+# Move commands in and out of bundles freely to customize your setup.
+#
+# Requires restart to reflect changes.
+# --------------------------------------------------
+commands:
+  # --------------------------------------------------
+  # CHAT
+  # --------------------------------------------------
+  chat:
+    # Gate to enable/disable every command inside this bundle.
+    enabled: true
+    bundle:
+      channel:
+        enabled: true
+        name: "channel"
+        aliases: [channels]
+        usage: "/%label% <channel>"
+        usage-others: "/%label% <channel> [player]"
+        tab-complete:
+          1: [CHANNEL_IDS]
+          2:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.channel.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.channel.all
+
+      msg:
+        enabled: true
+        name: "msg"
+        aliases: [pm, tell, whisper, w]
+        usage: "/%label% <player> <message>"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.msg.all
+
+      reply:
+        enabled: true
+        name: "reply"
+        aliases: [r]
+        usage: "/%label% <message>"
+
+      msgtoggle:
+        enabled: true
+        name: "msgtoggle"
+        aliases: [msgt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.msgtoggle.others
+
+      socialspy:
+        enabled: true
+        name: "socialspy"
+        aliases: [spy, msgspy]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.socialspy.others
+
+      chattoggle:
+        enabled: true
+        name: "chattoggle"
+        aliases: [chatt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.chattoggle.others
+
+      mentiontoggle:
+        enabled: true
+        name: "mentiontoggle"
+        aliases: [mentiont]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.mentiontoggle.others
+
+      announcetoggle:
+        enabled: true
+        name: "announcetoggle"
+        aliases: [annt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.announcetoggle.others
+
+      broadcast:
+        enabled: true
+        name: "broadcast"
+        aliases: [bc]
+        usage: "/%label% <message>"
+
+  # --------------------------------------------------
+  # ECONOMY
+  # --------------------------------------------------
+  economy:
+    enabled: true
+    bundle:
+      balance:
+        enabled: true
+        name: "balance"
+        aliases: [bal, money]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.balance.others
+
+      baltop:
+        enabled: true
+        name: "baltop"
+        aliases: [balancetop, topbal]
+        usage: "/%label%"
+        # Set the GUI key to "" to disable it and use chat behavior.
+        gui:
+          menu: "leaderboards/baltop"     # opened by "/baltop"; empty falls back to a chat list of top balances
+
+      pay:
+        enabled: true
+        name: "pay"
+        aliases: [transfer]
+        usage: "/%label% <player> <amount>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+          2: [100, 500, 1000, 5000, 10000]
+        gui:
+          confirm: "economy/confirm_pay"      # opened before confirming, when pay confirmation preference is enabled
+
+      paytoggle:
+        enabled: true
+        name: "paytoggle"
+        aliases: [payt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.paytoggle.others
+
+      payconfirmtoggle:
+        enabled: true
+        name: "payconfirmtoggle"
+        aliases: [payconfirmt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.payconfirmtoggle.others
+
+      economy:
+        enabled: true
+        name: "economy"
+        aliases: [eco]
+        usage: "/%label% <action> <player> [amount]"
+        actions:
+          give: "give"
+          take: "take"
+          set: "set"
+          reset: "reset"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: "aircore.command.economy.%arg_1%.all"
+            - sources: [SELECTOR:SERVER]
+              requires: "aircore.command.economy.%arg_1%.server"
+          3:
+            sources: [100, 500, 1000, 5000, 10000]
+            conditions:
+              - "%arg_1% != reset"
+
+      sell:
+        enabled: true
+        name: "sell"
+        aliases: []
+        usage: "/%label%"
+        # Set the GUI key to "" to disable it and use chat behavior.
+        gui:
+          menu: "economy/sell/sell"      # opened by "/sell"; empty sells the held item instantly
+
+  # --------------------------------------------------
+  # TELEPORT
+  # --------------------------------------------------
+  teleport:
+    enabled: true
+    bundle:
+      tp:
+        enabled: true
+        name: "tp"
+        aliases: []
+        usage: "/%label% <player>"
+        usage-others: "/%label% <player> [target]"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+          2:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.tp.others
+
+      tppos:
+        enabled: true
+        name: "tppos"
+        aliases: []
+        usage: "/%label% <x> <y> <z>"
+        usage-others: "/%label% <x> <y> <z> [player]"
+        tab-complete:
+          1: [COORDS_X, COORDS_X COORDS_Y, COORDS_X COORDS_Y COORDS_Z]
+          2: [COORDS_Y, COORDS_Y COORDS_Z]
+          3: [COORDS_Z]
+          4:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.tppos.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.tppos.all
+
+      tphere:
+        enabled: true
+        name: "tphere"
+        aliases: []
+        usage: "/%label% <player>"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.tphere
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.tphere.all
+
+      tpoffline:
+        enabled: true
+        name: "tpoffline"
+        aliases: [tpoff]
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+
+      tpa:
+        enabled: true
+        name: "tpa"
+        aliases: [tpask]
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+        gui:
+          confirm: "teleport/confirm_tpa"     # opened before confirming, when teleport confirmation preference is enabled
+
+      tpahere:
+        enabled: true
+        name: "tpahere"
+        aliases: []
+        usage: "/%label% <player>"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.tpahere.all
+        gui:
+          confirm: "teleport/confirm_tpahere"          # opened for a single target
+          confirm-all: "teleport/confirm_tpahereall"   # opened for "/tpahere <all-selector>"
+
+      tpaccept:
+        enabled: true
+        name: "tpaccept"
+        aliases: [tpyes, tpac]
+        usage: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.tpaccept.all
+
+      tpdeny:
+        enabled: true
+        name: "tpdeny"
+        aliases: [tpno]
+        usage: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.tpdeny.all
+
+      tpcancel:
+        enabled: true
+        name: "tpcancel"
+        aliases: []
+        usage: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.tpcancel.all
+
+      tptoggle:
+        enabled: true
+        name: "tptoggle"
+        aliases: [tpt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.tptoggle.others
+
+      tpautoaccept:
+        enabled: true
+        name: "tpautoaccept"
+        aliases: [tpauto]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.tpautoaccept.others
+
+      tpconfirmtoggle:
+        enabled: true
+        name: "tpconfirmtoggle"
+        aliases: [tpconfirmt]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.tpconfirmtoggle.others
+
+      back:
+        enabled: true
+        name: "back"
+        aliases: []
+        usage: "/%label%"
+        gui:
+          confirm: ""         # opened before teleporting to a previous location; empty by default
+
+      spawn:
+        enabled: true
+        name: "spawn"
+        aliases: []
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.spawn.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.spawn.all
+
+      setspawn:
+        enabled: true
+        name: "setspawn"
+        aliases: []
+        usage: "/%label% [params]"
+
+      warp:
+        enabled: true
+        name: "warp"
+        aliases: [warps]
+        usage: "/%label% <name>"
+        usage-others: "/%label% <name> [player]"
+        tab-complete:
+          1: [WARP_IDS:ACCESSIBLE]
+          2:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.warp.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.warp.all
+        # Set the GUI key to "" to disable it and use chat behavior.
+        gui:
+          menu: "teleport/warps"          # opened by "/warps" with no arguments
+          confirm: ""                     # opened before teleporting to a warp, once a warp name is given; empty by default
+                                          # you can include %arg_1% if you want to add a 'confirm' GUI per warp
+
+      setwarp:
+        enabled: true
+        name: "setwarp"
+        aliases: [createwarp]
+        usage: "/%label% <name> [params]"
+
+      deletespawn:
+        enabled: true
+        name: "deletespawn"
+        aliases: [delspawn, removespawn]
+        usage: "/%label% [params]"
+
+      deletewarp:
+        enabled: true
+        name: "deletewarp"
+        aliases: [delwarp, removewarp]
+        usage: "/%label% <name>"
+        tab-complete:
+          1: [WARP_IDS:ALL]
+
+  # --------------------------------------------------
+  # HOMES
+  # --------------------------------------------------
+  homes:
+    enabled: true
+    bundle:
+      home:
+        enabled: true
+        name: "home"
+        aliases: [homes]
+        usage: "/%label% [name]"
+        tab-complete:
+          1: [HOME_IDS]
+        # Set the GUI key to "" to disable it and use chat behavior.
+        gui:
+          menu: "homes/player"            # opened by "/home" with no arguments
+          confirm: ""                     # opened before teleporting to a home; empty by default
+
+      sethome:
+        enabled: true
+        name: "sethome"
+        aliases: [createhome]
+        usage: "/%label% <name>"
+
+      deletehome:
+        enabled: true
+        name: "deletehome"
+        aliases: [delhome, removehome]
+        usage: "/%label% <name>"
+        tab-complete:
+          1: [HOME_IDS]
+        gui:
+          confirm: ""                     # opened before confirming; empty by default
+
+      playerhome:
+        enabled: true
+        name: "playerhome"
+        aliases: [phome]
+        usage: "/%label% <player>"
+        usage-others: "/%label% <player> [name]"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+          2:
+            sources: [HOME_IDS:%arg_1%]
+            requires: aircore.command.playerhome.teleport
+        gui:
+          menu: "homes/target"            # GUI is required for command to work
+          confirm: ""                     # opened before teleporting to a target's home; empty by default
+
+  # --------------------------------------------------
+  # KITS
+  # --------------------------------------------------
+  kits:
+    enabled: true
+    bundle:
+      kit:
+        enabled: true
+        name: "kit"
+        aliases: [kits]
+        usage: "/%label% <name>"
+        usage-others: "/%label% <name> [player]"
+        tab-complete:
+          1: [KIT_IDS:ACCESSIBLE]
+          2:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.kit.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.kit.all
+        # Set the GUI key to "" to disable it and use chat behavior.
+        gui:
+          menu: "kits/kits"               # opened by "/kits" with no arguments
+          confirm: ""                     # opened before claiming, once a kit name is given; empty by default
+                                          # you can include %arg_1% if you want to add a 'confirm' GUI per kit
+
+      createkit:
+        enabled: true
+        name: "createkit"
+        aliases: []
+        usage: "/%label% <name> [params]"
+
+      editkit:
+        enabled: true
+        name: "editkit"
+        aliases: []
+        usage: "/%label% <name> [params]"
+        tab-complete:
+          1: [KIT_IDS:ALL]
+
+      deletekit:
+        enabled: true
+        name: "deletekit"
+        aliases: [delkit, removekit]
+        usage: "/%label% <name>"
+        tab-complete:
+          1: [KIT_IDS:ALL]
+
+  # --------------------------------------------------
+  # EXTRAS
+  # --------------------------------------------------
+  extras:
+    enabled: true
+    bundle:
+      nickname:
+        enabled: true
+        name: "nickname"
+        aliases: [nick]
+        usage: "/%label% <set|reset> [nick]"
+        usage-others: "/%label% <set|reset> [nick] [player]"
+        actions:
+          set: "set"
+          reset: "reset"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.nickname.others
+            conditions:
+              - "%arg_1% == reset"
+          3:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.nickname.others
+            conditions:
+              - "%arg_1% == set"
+
+      block:
+        enabled: true
+        name: "block"
+        aliases: [ignore]
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+
+      unblock:
+        enabled: true
+        name: "unblock"
+        aliases: [unignore]
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [BLOCKED_PLAYERS:20]
+
+      afk:
+        enabled: true
+        name: "afk"
+        aliases: []
+        usage: "/%label% [reason]"
+
+  # --------------------------------------------------
+  # UTILITIES
+  # --------------------------------------------------
+  utilities:
+    enabled: true
+    bundle:
+      heal:
+        enabled: true
+        name: "heal"
+        aliases: []
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.heal.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.heal.all
+
+      feed:
+        enabled: true
+        name: "feed"
+        aliases: []
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.feed.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.feed.all
+
+      fly:
+        enabled: true
+        name: "fly"
+        aliases: []
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.fly.others
+
+      god:
+        enabled: true
+        name: "god"
+        aliases: [godmode]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.god.others
+
+      speed:
+        enabled: true
+        name: "speed"
+        aliases: []
+        usage: "/%label% <1-10> [fly|walk]"
+        usage-others: "/%label% <1-10> [fly|walk] [player]"
+        actions:
+          fly: "fly"
+          walk: "walk"
+        tab-complete:
+          1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+          2:
+            - sources: [ACTIONS]
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.speed.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.speed.all
+            - sources: [SELECTOR:SERVER]
+              requires: aircore.command.speed.server
+          3:
+            copy-arg: 2
+            exclude-sources: [ACTIONS]
+
+      repair:
+        enabled: true
+        name: "repair"
+        aliases: [fix]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.repair.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.repair.all
+
+      repairall:
+        enabled: true
+        name: "repairall"
+        aliases: [fixall]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.repairall.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.repairall.all
+
+      clearinventory:
+        enabled: true
+        name: "clearinventory"
+        aliases: [clear, clearinv, ci]
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.clearinventory.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.clearinventory.all
+
+      disposal:
+        enabled: true
+        name: "disposal"
+        aliases: [trash]
+        usage: "/%label%"
+        gui:
+          menu: "inventory/disposal/disposal"            # GUI is required for command to work
+
+      kill:
+        enabled: true
+        name: "kill"
+        aliases: []
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.kill.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.kill.all
+
+      sudo:
+        enabled: true
+        name: "sudo"
+        aliases: []
+        usage: "/%label% <player> <command>"
+        tab-complete:
+          1:
+            - sources: [ONLINE_PLAYERS:20]
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.sudo.all
+
+      ping:
+        enabled: true
+        name: "ping"
+        aliases: []
+        usage: "/%label%"
+        usage-others: "/%label% [player]"
+        tab-complete:
+          1:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.ping.others
+
+      seen:
+        enabled: true
+        name: "seen"
+        aliases: []
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+
+      gamemode:
+        enabled: true
+        name: "gamemode"
+        aliases: [gm]
+        usage: "/%label% <mode>"
+        usage-others: "/%label% <mode> [player]"
+        actions:
+          survival: "survival"
+          adventure: "adventure"
+          creative: "creative"
+          spectator: "spectator"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.gamemode.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.gamemode.all
+            - sources: [SELECTOR:SERVER]
+              requires: aircore.command.gamemode.server
+
+      time:
+        enabled: true
+        name: "time"
+        aliases: []
+        usage: "/%label% <set|add> <time> [world]"
+        actions:
+          set: "set"
+          add: "add"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            sources: [day, noon, night, midnight]
+          3: [WORLD_IDS]
+
+      playertime:
+        enabled: true
+        name: "playertime"
+        aliases: [ptime]
+        usage: "/%label% <set|add|reset> [time]"
+        usage-others: "/%label% <set|add|reset> [time] [player]"
+        actions:
+          set: "set"
+          add: "add"
+          reset: "reset"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            - sources: [day, noon, night, midnight]
+              conditions:
+                - "%arg_1% != reset"
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.playertime.others
+              conditions:
+                - "%arg_1% == reset"
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.playertime.all
+              conditions:
+                - "%arg_1% == reset"
+            - sources: [SELECTOR:SERVER]
+              requires: aircore.command.playertime.server
+              conditions:
+                - "%arg_1% == reset"
+          3:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.playertime.others
+              conditions:
+                - "%arg_1% != reset"
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.playertime.all
+              conditions:
+                - "%arg_1% != reset"
+            - sources: [SELECTOR:SERVER]
+              requires: aircore.command.playertime.server
+              conditions:
+                - "%arg_1% != reset"
+
+      weather:
+        enabled: true
+        name: "weather"
+        aliases: []
+        usage: "/%label% <clear|rain|thunder> [world]"
+        actions:
+          clear: "clear"
+          rain: "rain"
+          thunder: "thunder"
+        tab-complete:
+          1: [ACTIONS]
+          2: [WORLD_IDS]
+
+      playerweather:
+        enabled: true
+        name: "playerweather"
+        aliases: [pweather]
+        usage: "/%label% <clear|thunder|reset>"
+        usage-others: "/%label% <clear|thunder|reset> [player]"
+        actions:
+          clear: "clear"
+          thunder: "thunder"
+          reset: "reset"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.playerweather.others
+            - sources: [SELECTOR:ALL]
+              requires: aircore.command.playerweather.all
+            - sources: [SELECTOR:SERVER]
+              requires: aircore.command.playerweather.server
+
+      craftingtable:
+        enabled: true
+        name: "craftingtable"
+        aliases: [craft, workbench]
+        usage: "/%label%"
+
+      enchantingtable:
+        enabled: true
+        name: "enchantingtable"
+        aliases: [enchanting]
+        usage: "/%label%"
+
+      anvil:
+        enabled: true
+        name: "anvil"
+        aliases: []
+        usage: "/%label%"
+
+      cartography:
+        enabled: true
+        name: "cartography"
+        aliases: []
+        usage: "/%label%"
+
+      loom:
+        enabled: true
+        name: "loom"
+        aliases: []
+        usage: "/%label%"
+
+      smithingtable:
+        enabled: true
+        name: "smithingtable"
+        aliases: [smithing]
+        usage: "/%label%"
+
+      stonecutter:
+        enabled: true
+        name: "stonecutter"
+        aliases: []
+        usage: "/%label%"
+
+      grindstone:
+        enabled: true
+        name: "grindstone"
+        aliases: []
+        usage: "/%label%"
+
+      invsee:
+        enabled: true
+        name: "invsee"
+        aliases: [inv, inventorysee]
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+        gui:
+          menu: "inventory/invsee"       # GUI is required for command to work
+
+      endersee:
+        enabled: true
+        name: "endersee"
+        aliases: [esee, endsee]
+        usage: "/%label% <player>"
+        tab-complete:
+          1: [ONLINE_PLAYERS:20]
+        gui:
+          menu: "inventory/endersee"     # GUI is required for command to work
+
+      enderchest:
+        enabled: true
+        name: "enderchest"
+        aliases: [ec]
+        usage: "/%label%"
+        gui:
+          menu: "inventory/enderchest"   # GUI is required for command to work

@@ -52,6 +52,11 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
                 plugin.modules().extras().afk(), plugin.configs())::resolve);
         sections.put("leaderboard_", new LeaderboardPlaceholders(
                 plugin.services().leaderboards(), plugin.configs(), plugin.modules().economy(), plugin.services().players())::resolve);
+
+        GuiPlaceholders gui = new GuiPlaceholders(plugin.guis(), plugin.configs(), plugin.services().players());
+        sections.put("gui_", (viewer, key) ->
+                viewer != null && viewer.isOnline() ? gui.resolve(viewer.getPlayer(), key) : null);
+
         return Map.copyOf(sections);
     }
 
