@@ -2,23 +2,32 @@ name: AirCore
 main: com.ftxeven.aircore.AirCore
 version: 2.0.1
 api-version: '1.21'
-author: ftxeven
+authors: [ftxeven]
 description: A modern, modular core plugin focused on performance, flexibility, and customization.
 folia-supported: true
 
-softdepend:
-  - Vault
-  - PlaceholderAPI
-  - Nexo
-  - ItemsAdder
-  - CraftEngine
-
-commands:
-  aircore:
-    description: Plugin management command.
-    aliases: []
-    usage: /aircore reload|open|version|migrate|variable|announcement|placeholder
-    permission: aircore.admin
+dependencies:
+  server:
+    Vault:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    PlaceholderAPI:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    Nexo:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    ItemsAdder:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    CraftEngine:
+      required: false
+      load: BEFORE
+      join-classpath: true
 
 permissions:
   aircore.admin:

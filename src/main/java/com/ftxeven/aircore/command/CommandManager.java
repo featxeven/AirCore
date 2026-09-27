@@ -23,7 +23,6 @@ import com.ftxeven.aircore.core.command.Shortcuts;
 import com.ftxeven.aircore.core.command.Shortcuts.Shortcut;
 import com.ftxeven.aircore.core.command.tabcomplete.TabCompleteEngine;
 import com.ftxeven.aircore.core.condition.ConditionEvaluator;
-import org.bukkit.command.PluginCommand;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -64,11 +63,8 @@ public final class CommandManager {
     }
 
     private void registerAdminCommand() {
-        PluginCommand command = plugin.getCommand("aircore");
-
         AdminCommand executor = new AdminCommand(plugin);
-        command.setExecutor(executor);
-        command.setTabCompleter(executor);
+        plugin.registerCommand("aircore", "Plugin management command.", executor);
     }
 
     private void registerPlayerCommands() {
