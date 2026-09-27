@@ -116,15 +116,14 @@ public final class CommandDispatcher {
     // Tab-complete
 
     public List<String> tabComplete(CommandRegistry registry, CommandSender sender, String[] args) {
-        if (args.length == 0) {
-            return List.of();
-        }
-        if (args.length == 1) {
-            return matchingNames(registry, sender, args[0]);
+        String[] effectiveArgs = args.length == 0 ? new String[]{""} : args;
+
+        if (effectiveArgs.length == 1) {
+            return matchingNames(registry, sender, effectiveArgs[0]);
         }
 
-        return registry.match(args[0])
-                .map(commandHandler -> tabCompleteDirect(commandHandler, sender, tail(args)))
+        return registry.match(effectiveArgs[0])
+                .map(subCommand -> subCommand.tabComplete(sender, tail(effectiveArgs)))
                 .orElse(List.of());
     }
 
