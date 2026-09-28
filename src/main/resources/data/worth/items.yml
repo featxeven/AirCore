@@ -270,6 +270,7 @@ materials:
   mangrove_boat: 5
   cherry_boat: 5
   pale_oak_boat: 5.5
+  poplar_boat: 5.5
   bamboo_raft: 3.5
 
   # Minecarts
@@ -289,6 +290,7 @@ materials:
   mangrove_chest_boat: 9
   cherry_chest_boat: 9
   pale_oak_chest_boat: 9.5
+  poplar_chest_boat: 8
   bamboo_chest_raft: 7
 
   # Music discs
@@ -734,6 +736,7 @@ materials:
   mangrove_sign: 2
   cherry_sign: 2
   pale_oak_sign: 2
+  poplar_sign: 2
   bamboo_sign: 2
   crimson_sign: 2
   warped_sign: 2
@@ -748,6 +751,7 @@ materials:
   mangrove_hanging_sign: 3
   cherry_hanging_sign: 3
   pale_oak_hanging_sign: 3
+  poplar_hanging_sign: 3
   bamboo_hanging_sign: 3
   crimson_hanging_sign: 3
   warped_hanging_sign: 3
@@ -783,6 +787,7 @@ materials:
   mangrove_shelf: 5
   cherry_shelf: 5
   pale_oak_shelf: 5
+  poplar_shelf: 5
   bamboo_shelf: 5
   crimson_shelf: 5
   warped_shelf: 5
@@ -887,6 +892,7 @@ materials:
   mangrove_log: 1
   cherry_log: 1
   pale_oak_log: 1
+  poplar_log: 1
   crimson_stem: 1
   warped_stem: 1
   bamboo_block: 1
@@ -903,6 +909,9 @@ materials:
   mangrove_leaves: 0.2
   cherry_leaves: 0.2
   pale_oak_leaves: 0.2
+  red_poplar_leaves: 0.2
+  orange_poplar_leaves: 0.2
+  yellow_poplar_leaves: 0.2
   azalea_leaves: 0.2
   flowering_azalea_leaves: 0.3
 
@@ -926,8 +935,10 @@ materials:
   closed_eyeblossom: 1
   firefly_bush: 1.2
   bush: 2
+  red_shrub: 2
   brown_mushroom: 0.5
   red_mushroom: 0.5
+  shelf_mushroom: 0.5
   mushroom_stem: 1
   red_mushroom_block: 1
   brown_mushroom_block: 1
@@ -961,6 +972,7 @@ materials:
   acacia_sapling: 0.6
   dark_oak_sapling: 0.7
   cherry_sapling: 1
+  poplar_sapling: 1
   mangrove_propagule: 0.8
 
   # Coral & Sea Life
@@ -1052,6 +1064,42 @@ materials:
   red_wool: 1
   black_wool: 1
 
+  # Wool Stairs
+  white_wool_stairs: 1.5
+  orange_wool_stairs: 1.5
+  magenta_wool_stairs: 1.5
+  light_blue_wool_stairs: 1.5
+  yellow_wool_stairs: 1.5
+  lime_wool_stairs: 1.5
+  pink_wool_stairs: 1.5
+  gray_wool_stairs: 1.5
+  light_gray_wool_stairs: 1.5
+  cyan_wool_stairs: 1.5
+  purple_wool_stairs: 1.5
+  blue_wool_stairs: 1.5
+  brown_wool_stairs: 1.5
+  green_wool_stairs: 1.5
+  red_wool_stairs: 1.5
+  black_wool_stairs: 1.5
+
+  # Wool Slabs
+  white_wool_slab: 1.2
+  orange_wool_slab: 1.2
+  magenta_wool_slab: 1.2
+  light_blue_wool_slab: 1.2
+  yellow_wool_slab: 1.2
+  lime_wool_slab: 1.2
+  pink_wool_slab: 1.2
+  gray_wool_slab: 1.2
+  light_gray_wool_slab: 1.2
+  cyan_wool_slab: 1.2
+  purple_wool_slab: 1.2
+  blue_wool_slab: 1.2
+  brown_wool_slab: 1.2
+  green_wool_slab: 1.2
+  red_wool_slab: 1.2
+  black_wool_slab: 1.2
+
   # Terracotta
   terracotta: 1
   white_terracotta: 1.2
@@ -1125,6 +1173,42 @@ materials:
   red_concrete_powder: 1.2
   black_concrete_powder: 1.2
 
+  # Concrete Stairs
+  white_concrete_stairs: 1.2
+  orange_concrete_stairs: 1.2
+  magenta_concrete_stairs: 1.2
+  light_blue_concrete_stairs: 1.2
+  yellow_concrete_stairs: 1.2
+  lime_concrete_stairs: 1.2
+  pink_concrete_stairs: 1.2
+  gray_concrete_stairs: 1.2
+  light_gray_concrete_stairs: 1.2
+  cyan_concrete_stairs: 1.2
+  purple_concrete_stairs: 1.2
+  blue_concrete_stairs: 1.2
+  brown_concrete_stairs: 1.2
+  green_concrete_stairs: 1.2
+  red_concrete_stairs: 1.2
+  black_concrete_stairs: 1.2
+
+  # Concrete Slabs
+  white_concrete_slab: 1.2
+  orange_concrete_slab: 1.2
+  magenta_concrete_slab: 1.2
+  light_blue_concrete_slab: 1.2
+  yellow_concrete_slab: 1.2
+  lime_concrete_slab: 1.2
+  pink_concrete_slab: 1.2
+  gray_concrete_slab: 1.2
+  light_gray_concrete_slab: 1.2
+  cyan_concrete_slab: 1.2
+  purple_concrete_slab: 1.2
+  blue_concrete_slab: 1.2
+  brown_concrete_slab: 1.2
+  green_concrete_slab: 1.2
+  red_concrete_slab: 1.2
+  black_concrete_slab: 1.2
+
   # Glass Blocks
   white_stained_glass: 1
   orange_stained_glass: 1
@@ -1197,6 +1281,25 @@ materials:
   green_bed: 3
   red_bed: 3
   black_bed: 3
+  straw_bed: 1.5
+
+  # Cushions
+  white_cushion: 2.5
+  orange_cushion: 2.5
+  magenta_cushion: 2.5
+  light_blue_cushion: 2.5
+  yellow_cushion: 2.5
+  lime_cushion: 2.5
+  pink_cushion: 2.5
+  gray_cushion: 2.5
+  light_gray_cushion: 2.5
+  cyan_cushion: 2.5
+  purple_cushion: 2.5
+  blue_cushion: 2.5
+  brown_cushion: 2.5
+  green_cushion: 2.5
+  red_cushion: 2.5
+  black_cushion: 2.5
 
   # Banners
   white_banner: 2
@@ -1352,6 +1455,19 @@ materials:
   pale_oak_pressure_plate: 1
   stripped_pale_oak_log: 1
   stripped_pale_oak_wood: 1
+
+  poplar_wood: 3
+  poplar_planks: 1
+  poplar_stairs: 1
+  poplar_slab: 0.5
+  poplar_fence: 1
+  poplar_fence_gate: 1.2
+  poplar_trapdoor: 1
+  poplar_door: 1
+  poplar_button: 0.5
+  poplar_pressure_plate: 1
+  stripped_poplar_log: 1
+  stripped_poplar_wood: 1
 
   bamboo_planks: 1
   stripped_bamboo_block: 1
