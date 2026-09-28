@@ -20,31 +20,60 @@ public final class VaultEconomyProvider implements Economy {
     private static final EconomyResponse NOT_IMPLEMENTED =
             new EconomyResponse(0, 0, EconomyResponse.ResponseType.NOT_IMPLEMENTED, "AirCore does not support bank accounts.");
 
-    private final ConfigManager configs;
-    private final PlayerService players;
-    private final BalanceLedger balances;
-    private final AmountFormatter formatter;
+    private static final EconomyResponse NOT_LOADED =
+            new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "AirCore's economy is not available right now.");
 
-    public VaultEconomyProvider(ConfigManager configs, PlayerService players, BalanceLedger balances, AmountFormatter formatter) {
+    private record Backend(PlayerService players, BalanceLedger balances, AmountFormatter formatter) {}
+
+    private final ConfigManager configs;
+    private volatile Backend backend;
+    private boolean registered;
+
+    public VaultEconomyProvider(ConfigManager configs) {
         this.configs = configs;
-        this.players = players;
-        this.balances = balances;
-        this.formatter = formatter;
     }
 
-    // Service registration
+    // Lifecycle
 
-    public void register(Plugin plugin) {
-        Bukkit.getServicesManager().register(Economy.class, this, plugin, ServicePriority.Highest);
+    public void bind(PlayerService players, BalanceLedger balances, AmountFormatter formatter) {
+        backend = new Backend(players, balances, formatter);
+    }
+
+    public void unbind() {
+        backend = null;
+    }
+
+    /** registers with Vault while the economy is enabled in config, unregisters otherwise */
+    public void sync(Plugin plugin) {
+        if (configs.economy().enabled()) {
+            register(plugin);
+        } else {
+            unregister();
+        }
     }
 
     public void unregister() {
+        if (!registered) {
+            return;
+        }
         Bukkit.getServicesManager().unregister(Economy.class, this);
+        registered = false;
     }
+
+    private void register(Plugin plugin) {
+        if (registered) {
+            return;
+        }
+        Bukkit.getServicesManager().register(Economy.class, this, plugin, ServicePriority.Highest);
+        registered = true;
+        plugin.getLogger().info("Successfully hooked into Vault for economy support");
+    }
+
+    // Economy metadata
 
     @Override
     public boolean isEnabled() {
-        return configs.economy().enabled();
+        return backend != null && configs.economy().enabled();
     }
 
     @Override
@@ -64,7 +93,8 @@ public final class VaultEconomyProvider implements Economy {
 
     @Override
     public String format(double amount) {
-        return MiniText.plain(formatter.format(amount));
+        Backend b = backend;
+        return b == null ? String.valueOf(amount) : MiniText.plain(b.formatter().format(amount));
     }
 
     @Override
@@ -81,7 +111,8 @@ public final class VaultEconomyProvider implements Economy {
 
     @Override
     public boolean hasAccount(OfflinePlayer player) {
-        return players.find(player.getUniqueId()).isPresent();
+        Backend b = backend;
+        return b != null && accountExists(b, player);
     }
 
     @Override
@@ -103,7 +134,7 @@ public final class VaultEconomyProvider implements Economy {
 
     @Override
     public boolean createPlayerAccount(OfflinePlayer player) {
-        return true;
+        return backend != null;
     }
 
     @Override
@@ -123,11 +154,16 @@ public final class VaultEconomyProvider implements Economy {
         return createPlayerAccount(playerName);
     }
 
+    private boolean accountExists(Backend b, OfflinePlayer player) {
+        return b.players().find(player.getUniqueId()).isPresent();
+    }
+
     // Balance
 
     @Override
     public double getBalance(OfflinePlayer player) {
-        return balances.balance(player.getUniqueId());
+        Backend b = backend;
+        return b == null ? 0 : b.balances().balance(player.getUniqueId());
     }
 
     @Override
@@ -149,7 +185,8 @@ public final class VaultEconomyProvider implements Economy {
 
     @Override
     public boolean has(OfflinePlayer player, double amount) {
-        return getBalance(player) >= amount;
+        Backend b = backend;
+        return b != null && b.balances().balance(player.getUniqueId()) >= amount;
     }
 
     @Override
@@ -173,8 +210,12 @@ public final class VaultEconomyProvider implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
-        EconomyResponse rejected = reject(player, amount, "withdraw");
-        return rejected != null ? rejected : toResponse(balances.withdraw(player.getUniqueId(), amount), amount);
+        Backend b = backend;
+        if (b == null) {
+            return NOT_LOADED;
+        }
+        EconomyResponse rejected = reject(b, player, amount, "withdraw");
+        return rejected != null ? rejected : toResponse(b.balances().withdraw(player.getUniqueId(), amount), amount);
     }
 
     @Override
@@ -196,8 +237,12 @@ public final class VaultEconomyProvider implements Economy {
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
-        EconomyResponse rejected = reject(player, amount, "deposit");
-        return rejected != null ? rejected : toResponse(balances.deposit(player.getUniqueId(), amount), amount);
+        Backend b = backend;
+        if (b == null) {
+            return NOT_LOADED;
+        }
+        EconomyResponse rejected = reject(b, player, amount, "deposit");
+        return rejected != null ? rejected : toResponse(b.balances().deposit(player.getUniqueId(), amount), amount);
     }
 
     @Override
@@ -217,12 +262,12 @@ public final class VaultEconomyProvider implements Economy {
         return depositPlayer(playerName, amount);
     }
 
-    private @Nullable EconomyResponse reject(OfflinePlayer player, double amount, String action) {
+    private @Nullable EconomyResponse reject(Backend b, OfflinePlayer player, double amount, String action) {
         if (!Double.isFinite(amount) || amount < 0) {
-            return new EconomyResponse(0, balances.balance(player.getUniqueId()), EconomyResponse.ResponseType.FAILURE,
+            return new EconomyResponse(0, b.balances().balance(player.getUniqueId()), EconomyResponse.ResponseType.FAILURE,
                     "Cannot " + action + " a negative or invalid amount");
         }
-        if (!hasAccount(player)) {
+        if (!accountExists(b, player)) {
             return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account not found");
         }
         return null;

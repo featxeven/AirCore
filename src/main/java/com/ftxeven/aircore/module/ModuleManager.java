@@ -50,7 +50,7 @@ public final class ModuleManager {
                 && loadModule("kits", () -> kits = new KitsModule(plugin, plugin.configs(), plugin.cache(), plugin.services()))
                 && loadModule("chat", () -> chat = new ChatModule(plugin, plugin.configs(), plugin.messenger(), groups, plugin.services(), extras, plugin.guis()))
                 && loadModule("homes", () -> homes = new HomesModule(plugin.configs(), plugin.cache().homes(), () -> chat))
-                && loadModule("economy", () -> economy = new EconomyModule(plugin, plugin.configs(), plugin.messenger(), plugin.services(), extras, plugin.hooks()))
+                && loadModule("economy", () -> economy = new EconomyModule(plugin, plugin.configs(), plugin.messenger(), plugin.services(), extras, plugin.hooks(), plugin.vaultEconomy()))
                 && loadModule("teleport", () -> teleport = new TeleportModule(plugin.configs(), plugin.cache().locations(), plugin.services(), extras, groups, plugin.messenger()))
                 && loadModule("announcements", () -> {
             announcements = new AnnouncementsModule(plugin, plugin.configs(), plugin.messenger(), plugin.database().persistentBossbar(), plugin.services());

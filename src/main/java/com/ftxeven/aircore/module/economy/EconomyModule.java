@@ -15,6 +15,7 @@ import com.ftxeven.aircore.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +33,16 @@ public final class EconomyModule {
     private final PayHandler pay;
     private final WorthCalculator worth;
     private final SellHandler sell;
-
-    private VaultEconomyProvider vaultProvider;
+    private final @Nullable VaultEconomyProvider vault;
 
     public EconomyModule(JavaPlugin plugin, ConfigManager configs, Messenger messenger,
-                         ServiceManager services, ExtrasModule extras, HookRegistry hooks) {
+                         ServiceManager services, ExtrasModule extras, HookRegistry hooks,
+                         @Nullable VaultEconomyProvider vault) {
         this.plugin = plugin;
         this.configs = configs;
         this.messenger = messenger;
         this.services = services;
+        this.vault = vault;
 
         this.formatter = new AmountFormatter(configs::economy, configs::lang);
 
@@ -52,7 +54,11 @@ public final class EconomyModule {
         this.worth = new WorthCalculator(configs::worthItems, configs::worthModifiers, hooks);
         this.sell = new SellHandler(configs::economy, worth, balances, taxCalculator);
 
-        registerVault();
+        if (vault != null) {
+            vault.bind(services.players(), balances, formatter);
+        } else {
+            warnIfVaultMissing();
+        }
     }
 
     public boolean enabled() {
@@ -77,47 +83,29 @@ public final class EconomyModule {
     // Lifecycle
 
     public void reload() {
-        if (enabled()) {
-            registerVault();
+        if (vault != null) {
+            vault.sync(plugin);
         } else {
-            unregisterVault();
+            warnIfVaultMissing();
         }
     }
 
     public void stop() {
-        unregisterVault();
-    }
-
-    // Vault registration
-
-    private void registerVault() {
-        if (vaultProvider != null || !enabled()) {
-            return;
-        }
-
-        if (!Bukkit.getPluginManager().isPluginEnabled("Vault")) {
-            plugin.getLogger().severe("The economy module is enabled but Vault is not installed.");
-            plugin.getLogger().severe("Commands (/balance, /pay, /sell...) still work, but other plugins cannot use it.");
-            plugin.getLogger().severe("Install Vault, or set 'enabled: false' in modules/economy.yml if another plugin handles the economy.");
-            return;
-        }
-
-        try {
-            VaultEconomyProvider provider = new VaultEconomyProvider(configs, services.players(), balances, formatter);
-            provider.register(plugin);
-            vaultProvider = provider;
-            plugin.getLogger().info("Successfully hooked into Vault for economy support");
-        } catch (LinkageError | RuntimeException e) {
-            plugin.getLogger().severe("Vault is installed but its economy API could not be used, the Vault hook was skipped: " + e);
+        if (vault != null) {
+            vault.unregister();
+            vault.unbind();
         }
     }
 
-    private void unregisterVault() {
-        if (vaultProvider == null) {
+    // Vault
+
+    private void warnIfVaultMissing() {
+        if (!enabled() || Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             return;
         }
-        vaultProvider.unregister();
-        vaultProvider = null;
+        plugin.getLogger().severe("The economy module is enabled but Vault is not installed.");
+        plugin.getLogger().severe("Commands (/balance, /pay, /sell...) still work, but other plugins cannot use it.");
+        plugin.getLogger().severe("Install Vault, or set 'enabled: false' in modules/economy.yml if another plugin handles the economy.");
     }
 
     // Join handling

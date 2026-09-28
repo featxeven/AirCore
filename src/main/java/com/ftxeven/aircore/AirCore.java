@@ -11,6 +11,7 @@ import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.listener.GuiListener;
 import com.ftxeven.aircore.listener.PlayerListener;
 import com.ftxeven.aircore.module.ModuleManager;
+import com.ftxeven.aircore.module.economy.vault.VaultEconomyProvider;
 import com.ftxeven.aircore.service.ServiceManager;
 import com.ftxeven.aircore.util.Messenger;
 import com.ftxeven.aircore.util.Placeholders;
@@ -23,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class AirCore extends JavaPlugin {
 
     private ConfigManager configs;
+    private VaultEconomyProvider vault;
     private DatabaseManager database;
     private CacheManager cache;
     private HookRegistry hooks;
@@ -36,11 +38,37 @@ public final class AirCore extends JavaPlugin {
     private Metrics metrics;
 
     @Override
+    public void onLoad() {
+        ConfigManager loaded = new ConfigManager(this);
+        if (!loaded.load()) {
+            return;
+        }
+        configs = loaded;
+
+        hookVaultEconomy();
+    }
+
+    private void hookVaultEconomy() {
+        try {
+            Class.forName("net.milkbowl.vault.economy.Economy");
+        } catch (ClassNotFoundException e) {
+            return;
+        }
+
+        try {
+            VaultEconomyProvider provider = new VaultEconomyProvider(configs);
+            provider.sync(this);
+            vault = provider;
+        } catch (LinkageError | RuntimeException e) {
+            getLogger().severe("Vault is installed but its economy API could not be used, the Vault hook was skipped: " + e);
+        }
+    }
+
+    @Override
     public void onEnable() {
         getLogger().info("Running on " + Bukkit.getName() + " - " + Bukkit.getVersion());
 
-        configs = new ConfigManager(this);
-        if (!configs.load()) {
+        if (configs == null) {
             getLogger().severe("One or more config files failed to load, disabling plugin");
             getServer().getPluginManager().disablePlugin(this);
             return;
@@ -125,6 +153,8 @@ public final class AirCore extends JavaPlugin {
     }
 
     public ConfigManager configs() { return configs; }
+
+    public VaultEconomyProvider vaultEconomy() { return vault; }
 
     public DatabaseManager database() { return database; }
 
