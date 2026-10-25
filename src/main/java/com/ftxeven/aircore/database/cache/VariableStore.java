@@ -165,6 +165,11 @@ public final class VariableStore {
         }
     }
 
+    // completes once everything queued so far has been written; false when a batch failed and was re-queued
+    public CompletableFuture<Boolean> flushNow() {
+        return CompletableFuture.supplyAsync(this::flush, io);
+    }
+
     // io thread only. Returns false when a batch failed (its keys are re-queued for the next flush)
     private boolean flush() {
         List<VariableRepository.Change> changes = new ArrayList<>();

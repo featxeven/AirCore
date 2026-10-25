@@ -75,6 +75,13 @@ public final class CacheManager {
         }, RESIDENT_SWEEP_INTERVAL_MINUTES, RESIDENT_SWEEP_INTERVAL_MINUTES, TimeUnit.MINUTES);
     }
 
+    public void flush() {
+        writes.flush();
+        if (!variables.flushNow().join()) {
+            throw new IllegalStateException("Some variable changes could not be written to the database");
+        }
+    }
+
     public void close() {
         writes.close();
         variables.close();

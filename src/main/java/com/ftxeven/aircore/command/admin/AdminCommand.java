@@ -24,7 +24,8 @@ public final class AdminCommand implements BasicCommand {
                 .register(new SubAnnouncement(plugin))
                 .register(new SubVariable(plugin))
                 .register(new SubOpen(plugin))
-                .register(new SubMigrate(plugin));
+                .register(new SubMigrate(plugin))
+                .register(new SubTransfer(plugin));
         this.dispatcher = new CommandDispatcher(plugin.messenger(), plugin.configs(), plugin.services());
     }
 

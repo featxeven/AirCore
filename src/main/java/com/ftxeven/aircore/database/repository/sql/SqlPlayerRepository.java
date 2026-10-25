@@ -21,6 +21,17 @@ public final class SqlPlayerRepository implements PlayerRepository {
 
     private static final int IDENTITY_CHUNK = 1_000;
 
+    private static final List<String> PROFILE_COLUMNS = List.of(
+            "name", "nickname", "nickname_normalized", "skin_value", "skin_signature", "join_number",
+            "first_join_at", "last_seen_at", "last_world", "last_x", "last_y", "last_z", "last_yaw", "last_pitch",
+            "chat_channel", "game_mode", "god_mode", "allow_flight", "flying", "walk_speed", "fly_speed",
+            "player_time", "player_weather", "toggles", "pending_payment", "balance");
+    private static final String PROFILE_ASSIGNMENTS = PROFILE_COLUMNS.stream()
+            .map(column -> column + " = ?")
+            .collect(Collectors.joining(", "));
+    private static final String PROFILE_INSERT_COLUMNS = "uuid, " + String.join(", ", PROFILE_COLUMNS);
+    private static final String PROFILE_INSERT_VALUES = "?" + ", ?".repeat(PROFILE_COLUMNS.size());
+
     private final DataSource dataSource;
     private final String table;
     private final String sequences;
@@ -194,7 +205,7 @@ public final class SqlPlayerRepository implements PlayerRepository {
     }
 
     private PlayerProfile insertNew(Connection connection, UUID uuid, String name, PlayerProfile.Skin skin, PlayerProfile.Toggles toggles, double defaultBalance) throws SQLException {
-        int joinNumber = SqlSequence.next(connection, sequences, "player_join_number");
+        int joinNumber = SqlSequence.next(connection, sequences, JOIN_SEQUENCE);
         Instant now = Instant.now();
         PlayerProfile profile = new PlayerProfile(uuid, name, null, skin, joinNumber, now, now, null, null,
                 GameMode.SURVIVAL, false, PlayerProfile.Flight.GROUNDED, 0.2f, 0.1f, null, null, toggles, 0d, defaultBalance);
@@ -393,6 +404,94 @@ public final class SqlPlayerRepository implements PlayerRepository {
         } catch (SQLException e) {
             throw new IllegalStateException("Could not bulk-delete players", e);
         }
+    }
+
+    // Storage transfer
+
+    @Override
+    public void importProfile(PlayerProfile profile, @Nullable String normalizedNickname) {
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement update = connection.prepareStatement(
+                    "UPDATE " + table + " SET " + PROFILE_ASSIGNMENTS + " WHERE uuid = ?")) {
+                bindProfile(update, 1, profile, normalizedNickname);
+                update.setString(PROFILE_COLUMNS.size() + 1, profile.uuid().toString());
+                if (update.executeUpdate() > 0) {
+                    return;
+                }
+            }
+            try (PreparedStatement insert = connection.prepareStatement(
+                    "INSERT INTO " + table + " (" + PROFILE_INSERT_COLUMNS + ") VALUES (" + PROFILE_INSERT_VALUES + ")")) {
+                insert.setString(1, profile.uuid().toString());
+                bindProfile(insert, 2, profile, normalizedNickname);
+                insert.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not import player " + profile.uuid(), e);
+        }
+    }
+
+    @Override
+    public void syncJoinSequence() {
+        try (Connection connection = dataSource.getConnection()) {
+            int highest;
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT COALESCE(MAX(join_number), 0) FROM " + table);
+                 ResultSet result = statement.executeQuery()) {
+                result.next();
+                highest = result.getInt(1);
+            }
+            SqlSequence.raiseTo(connection, sequences, JOIN_SEQUENCE, highest);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not realign the join number sequence", e);
+        }
+    }
+
+    // binds every PROFILE_COLUMNS value, in that order, starting at offset
+    private void bindProfile(PreparedStatement statement, int offset, PlayerProfile profile,
+                             @Nullable String normalizedNickname) throws SQLException {
+        int i = offset;
+        statement.setString(i++, profile.name());
+        statement.setString(i++, profile.nickname());
+        statement.setString(i++, normalizedNickname);
+        statement.setString(i++, profile.skin().value());
+        statement.setString(i++, profile.skin().signature());
+        statement.setInt(i++, profile.joinNumber());
+        statement.setLong(i++, profile.firstJoinAt().toEpochMilli());
+        statement.setLong(i++, profile.lastSeenAt().toEpochMilli());
+
+        Position last = profile.lastLocation();
+        if (last != null) {
+            statement.setString(i++, last.world());
+            statement.setDouble(i++, last.x());
+            statement.setDouble(i++, last.y());
+            statement.setDouble(i++, last.z());
+            statement.setFloat(i++, last.yaw());
+            statement.setFloat(i++, last.pitch());
+        } else {
+            statement.setNull(i++, Types.VARCHAR);
+            statement.setNull(i++, Types.DOUBLE);
+            statement.setNull(i++, Types.DOUBLE);
+            statement.setNull(i++, Types.DOUBLE);
+            statement.setNull(i++, Types.FLOAT);
+            statement.setNull(i++, Types.FLOAT);
+        }
+
+        statement.setString(i++, profile.chatChannel());
+        statement.setString(i++, profile.gameMode().name());
+        statement.setBoolean(i++, profile.godMode());
+        statement.setBoolean(i++, profile.flight().allowed());
+        statement.setBoolean(i++, profile.flight().flying());
+        statement.setFloat(i++, profile.walkSpeed());
+        statement.setFloat(i++, profile.flySpeed());
+        if (profile.playerTime() != null) {
+            statement.setInt(i++, profile.playerTime());
+        } else {
+            statement.setNull(i++, Types.INTEGER);
+        }
+        statement.setString(i++, profile.playerWeather() != null ? profile.playerWeather().name() : null);
+        statement.setInt(i++, profile.toggles().toBits());
+        statement.setDouble(i++, profile.pendingPayment());
+        statement.setDouble(i, profile.balance());
     }
 
     // Bulk balance operations

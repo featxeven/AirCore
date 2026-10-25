@@ -276,7 +276,7 @@ public final class PlayerService {
                 () -> database.players().updateNickname(uuid, nickname, normalized));
     }
 
-    private @Nullable String normalizedNickname(@Nullable String nickname) {
+    public static @Nullable String normalizedNickname(@Nullable String nickname) {
         if (nickname == null || nickname.isEmpty()) {
             return null;
         }

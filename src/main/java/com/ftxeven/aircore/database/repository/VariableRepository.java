@@ -18,6 +18,8 @@ public interface VariableRepository {
 
     Map<String, String> loadPlayer(UUID owner);
 
+    List<Change> export(String owner);
+
     void apply(List<Change> changes);
 
     int deleteAll(UUID owner);

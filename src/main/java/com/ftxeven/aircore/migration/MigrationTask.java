@@ -77,17 +77,7 @@ public final class MigrationTask {
     private void summarize(long elapsedMillis) {
         feedback.accept("Migration finished in " + (elapsedMillis / 1000.0) + "s"
                 + (options.dryRun() ? " (dry run)" : ""));
-        report.lines().forEach(feedback);
-
-        List<String> warnings = report.warnings();
-        if (!warnings.isEmpty()) {
-            feedback.accept(warnings.size() + " warning(s):");
-            warnings.stream().limit(WARNINGS_SHOWN).forEach(warning -> feedback.accept("  - " + warning));
-            if (warnings.size() > WARNINGS_SHOWN || report.droppedWarnings() > 0) {
-                feedback.accept("  ... the full list is in the server log.");
-            }
-            warnings.forEach(warning -> logger.warning("[migration] " + warning));
-        }
+        report.summarize(feedback, logger);
 
         if (!source.notMigrated().isEmpty()) {
             feedback.accept("Not carried over: " + String.join(", ", source.notMigrated()));

@@ -104,7 +104,7 @@ public final class MongoPlayerRepository implements PlayerRepository {
             return new JoinResult(mapProfile(existing), false);
         }
 
-        int joinNumber = MongoSequence.next(counters, "player_join_number");
+        int joinNumber = MongoSequence.next(counters, JOIN_SEQUENCE);
         Instant now = Instant.now();
 
         Document doc = new Document("_id", uuid.toString())
@@ -141,10 +141,7 @@ public final class MongoPlayerRepository implements PlayerRepository {
 
     @Override
     public void updateLastLocation(UUID uuid, Position location) {
-        Document loc = new Document("world", location.world())
-                .append("x", location.x()).append("y", location.y()).append("z", location.z())
-                .append("yaw", (double) location.yaw()).append("pitch", (double) location.pitch());
-        set(uuid, "lastLocation", loc);
+        set(uuid, "lastLocation", positionDoc(location));
     }
 
     @Override
@@ -255,6 +252,46 @@ public final class MongoPlayerRepository implements PlayerRepository {
         return (int) players.deleteMany(Filters.in("_id", ids)).getDeletedCount();
     }
 
+    // Storage transfer
+
+    @Override
+    public void importProfile(PlayerProfile profile, @Nullable String normalizedNickname) {
+        Document doc = new Document("_id", profile.uuid().toString())
+                .append("name", profile.name())
+                .append("nickname", profile.nickname())
+                .append("nicknameNormalized", normalizedNickname)
+                .append("skinValue", profile.skin().value())
+                .append("skinSignature", profile.skin().signature())
+                .append("joinNumber", profile.joinNumber())
+                .append("firstJoinAt", Date.from(profile.firstJoinAt()))
+                .append("lastSeenAt", Date.from(profile.lastSeenAt()))
+                .append("lastLocation", profile.lastLocation() != null ? positionDoc(profile.lastLocation()) : null)
+                .append("chatChannel", profile.chatChannel())
+                .append("gameMode", profile.gameMode().name())
+                .append("godMode", profile.godMode())
+                .append("allowFlight", profile.flight().allowed())
+                .append("flying", profile.flight().flying())
+                .append("walkSpeed", (double) profile.walkSpeed())
+                .append("flySpeed", (double) profile.flySpeed())
+                .append("playerTime", profile.playerTime())
+                .append("playerWeather", profile.playerWeather() != null ? profile.playerWeather().name() : null)
+                .append("toggles", profile.toggles().toBits())
+                .append("pendingPayment", profile.pendingPayment())
+                .append("balance", profile.balance());
+        players.replaceOne(eq("_id", profile.uuid().toString()), doc, new ReplaceOptions().upsert(true));
+    }
+
+    @Override
+    public void syncJoinSequence() {
+        Document highest = players.find()
+                .projection(Projections.include("joinNumber"))
+                .sort(Sorts.descending("joinNumber"))
+                .first();
+        if (highest != null) {
+            MongoSequence.raiseTo(counters, JOIN_SEQUENCE, highest.getInteger("joinNumber"));
+        }
+    }
+
     // Bulk balance operations
 
     @Override
@@ -298,6 +335,12 @@ public final class MongoPlayerRepository implements PlayerRepository {
     }
 
     // Row mapping
+
+    private static Document positionDoc(Position position) {
+        return new Document("world", position.world())
+                .append("x", position.x()).append("y", position.y()).append("z", position.z())
+                .append("yaw", (double) position.yaw()).append("pitch", (double) position.pitch());
+    }
 
     private Identity mapIdentity(Document doc) {
         return new Identity(

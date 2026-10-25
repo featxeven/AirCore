@@ -74,7 +74,7 @@ public final class AirCore extends JavaPlugin {
             return;
         }
 
-        database = new DatabaseManager(this, configs);
+        database = new DatabaseManager(this, configs.storage().database());
         if (!database.connect()) {
             getLogger().severe("Failed to connect to the database, disabling plugin");
             getServer().getPluginManager().disablePlugin(this);

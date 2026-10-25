@@ -1,6 +1,5 @@
 package com.ftxeven.aircore.database;
 
-import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.config.StorageConfig;
 import com.ftxeven.aircore.database.migration.MigrationLoader;
 import com.ftxeven.aircore.database.migration.MigrationRunner;
@@ -24,10 +23,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public final class DatabaseManager {
+public final class DatabaseManager implements AutoCloseable {
 
     private final JavaPlugin plugin;
-    private final ConfigManager configs;
+    private final StorageConfig.Database settings;
 
     private HikariDataSource dataSource;
     private MongoClient mongoClient;
@@ -42,18 +41,17 @@ public final class DatabaseManager {
     private KitRepository kits;
     private PersistentBossbarRepository persistentBossbar;
 
-    public DatabaseManager(JavaPlugin plugin, ConfigManager configs) {
+    public DatabaseManager(JavaPlugin plugin, StorageConfig.Database settings) {
         this.plugin = plugin;
-        this.configs = configs;
+        this.settings = settings;
     }
 
     public boolean connect() {
         try {
-            StorageConfig.Database db = configs.storage().database();
-            String prefix = db.tablePrefix();
+            String prefix = settings.tablePrefix();
 
-            if (db.driver() == StorageConfig.Driver.MONGODB) {
-                MongoDatabase database = connectMongo(db.mongodb());
+            if (settings.driver() == StorageConfig.Driver.MONGODB) {
+                MongoDatabase database = connectMongo(settings.mongodb());
                 runMigrations(new MongoMigrationRunner(plugin, database, prefix), StorageConfig.Driver.MONGODB);
 
                 players = new MongoPlayerRepository(database, prefix);
@@ -66,8 +64,8 @@ public final class DatabaseManager {
                 kits = new MongoKitRepository(database, prefix);
                 persistentBossbar = new MongoPersistentBossbarRepository(database, prefix);
             } else {
-                connectSql(db);
-                runMigrations(new SqlMigrationRunner(plugin, dataSource, prefix), db.driver());
+                connectSql();
+                runMigrations(new SqlMigrationRunner(plugin, dataSource, prefix), settings.driver());
 
                 players = new SqlPlayerRepository(dataSource, prefix);
                 inventories = new SqlPlayerInventoryRepository(dataSource, prefix);
@@ -88,6 +86,7 @@ public final class DatabaseManager {
         }
     }
 
+    @Override
     public void close() {
         if (dataSource != null) {
             dataSource.close();
@@ -112,16 +111,16 @@ public final class DatabaseManager {
         runner.migrate(migrations);
     }
 
-    private void connectSql(StorageConfig.Database db) {
+    private void connectSql() {
         HikariConfig hikari = new HikariConfig();
-        if (db.driver() == StorageConfig.Driver.SQLITE) {
-            File file = new File(plugin.getDataFolder(), db.sqlite().file());
+        if (settings.driver() == StorageConfig.Driver.SQLITE) {
+            File file = new File(plugin.getDataFolder(), settings.sqlite().file());
             file.getParentFile().mkdirs();
             hikari.setJdbcUrl("jdbc:sqlite:" + file.getAbsolutePath());
             hikari.setMaximumPoolSize(1);
             hikari.setConnectionInitSql("PRAGMA foreign_keys = ON");
         } else {
-            StorageConfig.Mysql mysql = db.mysql();
+            StorageConfig.Mysql mysql = settings.mysql();
             hikari.setJdbcUrl("jdbc:mysql://" + mysql.host() + ":" + mysql.port() + "/" + mysql.database()
                     + "?useSSL=" + mysql.ssl() + "&autoReconnect=" + mysql.autoReconnect());
             hikari.setUsername(mysql.user());

@@ -78,6 +78,26 @@ public final class SqlVariableRepository implements VariableRepository {
     }
 
     @Override
+    public List<Change> export(String owner) {
+        String sql = "SELECT var_key, value, numeric_value FROM " + table + " WHERE owner = ?";
+        List<Change> rows = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, owner);
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    double numeric = result.getDouble(3);
+                    Double score = result.wasNull() ? null : numeric;
+                    rows.add(new Change(owner, result.getString(1), result.getString(2), score));
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not export variables of " + owner, e);
+        }
+        return rows;
+    }
+
+    @Override
     public void apply(List<Change> changes) {
         if (changes.isEmpty()) {
             return;

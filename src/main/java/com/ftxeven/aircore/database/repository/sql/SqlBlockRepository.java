@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,6 +40,24 @@ public final class SqlBlockRepository implements BlockRepository {
             throw new IllegalStateException("Could not load blocked players for " + owner, e);
         }
         return blocked;
+    }
+
+    @Override
+    public List<Entry> export(UUID owner) {
+        String sql = "SELECT blocked, blocked_at FROM " + table + " WHERE owner = ?";
+        List<Entry> entries = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, owner.toString());
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    entries.add(new Entry(UUID.fromString(result.getString(1)), Instant.ofEpochMilli(result.getLong(2))));
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not export blocked players for " + owner, e);
+        }
+        return entries;
     }
 
     @Override
@@ -71,7 +91,7 @@ public final class SqlBlockRepository implements BlockRepository {
     }
 
     @Override
-    public boolean block(UUID owner, UUID target) {
+    public boolean block(UUID owner, UUID target, Instant blockedAt) {
         if (isBlocked(owner, target)) {
             return false;
         }
@@ -80,7 +100,7 @@ public final class SqlBlockRepository implements BlockRepository {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, owner.toString());
             statement.setString(2, target.toString());
-            statement.setLong(3, Instant.now().toEpochMilli());
+            statement.setLong(3, blockedAt.toEpochMilli());
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {

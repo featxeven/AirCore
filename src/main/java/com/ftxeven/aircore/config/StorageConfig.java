@@ -88,7 +88,13 @@ public final class StorageConfig extends BaseConfig {
 
     // Section types
 
-    public enum Driver { SQLITE, MYSQL, MARIADB, MONGODB }
+    public enum Driver {
+        SQLITE, MYSQL, MARIADB, MONGODB;
+
+        public Driver canonical() {
+            return this == MARIADB ? MYSQL : this;
+        }
+    }
 
     public record Sqlite(String file) {}
 
@@ -100,5 +106,10 @@ public final class StorageConfig extends BaseConfig {
 
     public record Mongodb(String uri, String host, int port, String database, String user, String password, String authSource, boolean ssl, MongodbPool pool) {}
 
-    public record Database(Driver driver, String tablePrefix, Sqlite sqlite, Mysql mysql, Mongodb mongodb) {}
+    public record Database(Driver driver, String tablePrefix, Sqlite sqlite, Mysql mysql, Mongodb mongodb) {
+
+        public Database withDriver(Driver driver) {
+            return new Database(driver, tablePrefix, sqlite, mysql, mongodb);
+        }
+    }
 }

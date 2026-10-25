@@ -52,6 +52,17 @@ public final class MongoVariableRepository implements VariableRepository {
     }
 
     @Override
+    public List<Change> export(String owner) {
+        List<Change> rows = new ArrayList<>();
+        for (Document doc : variables.find(eq("owner", owner)).projection(include("key", "value", "numeric"))) {
+            Number numeric = doc.get("numeric", Number.class);
+            rows.add(new Change(owner, doc.getString("key"), doc.getString("value"),
+                    numeric != null ? numeric.doubleValue() : null));
+        }
+        return rows;
+    }
+
+    @Override
     public void apply(List<Change> changes) {
         if (changes.isEmpty()) {
             return;

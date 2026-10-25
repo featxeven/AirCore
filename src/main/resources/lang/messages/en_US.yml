@@ -30,7 +30,7 @@ general:
       - "  <yellow>/aircore announcement <dark_gray>- <gray>Manage plugin announcements"
       - "  <yellow>/aircore placeholder <dark_gray>- <gray>Manage plugin placeholders"
       - "  <yellow>/aircore migrate <dark_gray>- <gray>Migrate database from other plugins"
-
+      - "  <yellow>/aircore transfer <dark_gray>- <gray>Move all data to another storage backend"
     reload:
       - "<ref:prefix> <green>Configuration reloaded successfully in <white>%time%ms</white>."
       - "<sound:block.note_block.chime:1:2>"

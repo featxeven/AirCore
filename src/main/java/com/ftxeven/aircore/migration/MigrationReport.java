@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public final class MigrationReport {
 
@@ -16,7 +18,10 @@ public final class MigrationReport {
         KIT_CLAIMS("kit claims"),
         WARPS("warps"),
         SPAWNS("spawn points"),
-        KITS("kits");
+        KITS("kits"),
+        COOLDOWNS("cooldowns"),
+        VARIABLES("variables"),
+        BOSSBARS("persistent bossbars");
 
         private final String label;
 
@@ -30,6 +35,7 @@ public final class MigrationReport {
     }
 
     private static final int MAX_WARNINGS = 500;
+    private static final int WARNINGS_SHOWN = 10;
 
     private final Map<Category, int[]> counters = new EnumMap<>(Category.class);
     private final List<String> warnings = new ArrayList<>();
@@ -64,6 +70,10 @@ public final class MigrationReport {
         return droppedWarnings;
     }
 
+    public boolean hasFailures() {
+        return counters.values().stream().anyMatch(values -> values[2] > 0);
+    }
+
     public List<String> lines() {
         List<String> lines = new ArrayList<>();
         for (Category category : Category.values()) {
@@ -75,6 +85,20 @@ public final class MigrationReport {
                     + values[1] + " skipped, " + values[2] + " failed");
         }
         return lines;
+    }
+
+    public void summarize(Consumer<String> feedback, Logger logger) {
+        lines().forEach(feedback);
+
+        if (warnings.isEmpty()) {
+            return;
+        }
+        feedback.accept(warnings.size() + " warning(s):");
+        warnings.stream().limit(WARNINGS_SHOWN).forEach(warning -> feedback.accept("  - " + warning));
+        if (warnings.size() > WARNINGS_SHOWN || droppedWarnings > 0) {
+            feedback.accept("  ... the full list is in the server log.");
+        }
+        warnings.forEach(warning -> logger.warning("[migration] " + warning));
     }
 
     private int[] counter(Category category) {

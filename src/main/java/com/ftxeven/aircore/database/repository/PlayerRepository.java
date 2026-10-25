@@ -15,6 +15,8 @@ import java.util.UUID;
 
 public interface PlayerRepository {
 
+    String JOIN_SEQUENCE = "player_join_number";
+
     record JoinResult(PlayerProfile profile, boolean firstJoin) {}
 
     record Identity(UUID uuid, String name, @Nullable String nickname, PlayerProfile.Skin skin) {}
@@ -35,6 +37,10 @@ public interface PlayerRepository {
     Set<UUID> findAllUuids();
 
     JoinResult upsert(UUID uuid, String name, PlayerProfile.Skin skin, PlayerProfile.Toggles defaultToggles, double defaultBalance);
+
+    void importProfile(PlayerProfile profile, @Nullable String normalizedNickname);
+
+    void syncJoinSequence();
 
     void updateLastSeen(UUID uuid, Instant lastSeenAt);
 

@@ -7,8 +7,10 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,6 +35,15 @@ public final class MongoBlockRepository implements BlockRepository {
     }
 
     @Override
+    public List<Entry> export(UUID owner) {
+        List<Entry> entries = new ArrayList<>();
+        for (Document doc : blocks.find(eq("owner", owner.toString()))) {
+            entries.add(new Entry(UUID.fromString(doc.getString("blocked")), doc.getDate("blockedAt").toInstant()));
+        }
+        return entries;
+    }
+
+    @Override
     public boolean isBlocked(UUID owner, UUID target) {
         return blocks.find(and(eq("owner", owner.toString()), eq("blocked", target.toString()))).first() != null;
     }
@@ -43,13 +54,13 @@ public final class MongoBlockRepository implements BlockRepository {
     }
 
     @Override
-    public boolean block(UUID owner, UUID target) {
+    public boolean block(UUID owner, UUID target, Instant blockedAt) {
         if (isBlocked(owner, target)) {
             return false;
         }
         Document doc = new Document("owner", owner.toString())
                 .append("blocked", target.toString())
-                .append("blockedAt", Date.from(Instant.now()));
+                .append("blockedAt", Date.from(blockedAt));
         try {
             blocks.insertOne(doc);
             return true;
