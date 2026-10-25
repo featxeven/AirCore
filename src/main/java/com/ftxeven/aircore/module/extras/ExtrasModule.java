@@ -105,7 +105,7 @@ public final class ExtrasModule {
         players.formatDisplayName(placeholders, "player", player);
 
         event.deathMessage(null);
-        messenger.broadcast(configs.lang().get(result.langKey()), placeholders);
+        messenger.broadcast(player, configs.lang().get(result.langKey()), placeholders);
     }
 
     // Internal
@@ -144,7 +144,7 @@ public final class ExtrasModule {
         Map<String, String> placeholders = new HashMap<>();
         players.formatDisplayName(placeholders, profile);
         placeholders.put("join_number", String.valueOf(profile.joinNumber()));
-        messenger.broadcast(List.of(template), placeholders);
+        messenger.broadcast(player, List.of(template), placeholders);
     }
 
     private void broadcastLeave(Player player) {
@@ -154,6 +154,6 @@ public final class ExtrasModule {
         }
         Map<String, String> placeholders = new HashMap<>();
         players.formatDisplayName(placeholders, "player", player);
-        messenger.broadcast(List.of(template), placeholders);
+        messenger.broadcast(player, List.of(template), placeholders);
     }
 }

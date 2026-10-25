@@ -198,6 +198,15 @@ public final class Messenger {
         send(Bukkit.getConsoleSender(), lines, placeholders);
     }
 
+    // resolves every line once per recipient, with the recipient as the PlaceholderAPI context
+    public void broadcast(Player subject, List<String> lines, Map<String, String> placeholders) {
+        List<String> bound = new ArrayList<>(lines.size());
+        for (String line : lines) {
+            bound.add(Placeholders.apply(subject, line, placeholders));
+        }
+        broadcast(bound, Map.of());
+    }
+
     public void broadcastWithInsertion(List<String> lines, Map<String, String> placeholders, String insertionTag, Component insertion) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             Component resolved = resolveWithInsertion(player, lines, placeholders, insertionTag, insertion);
