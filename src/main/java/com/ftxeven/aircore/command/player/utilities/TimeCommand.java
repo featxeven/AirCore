@@ -3,6 +3,7 @@ package com.ftxeven.aircore.command.player.utilities;
 import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.DurationUnits;
 import com.ftxeven.aircore.permission.Permissions;
+import com.ftxeven.aircore.util.Scheduler;
 import com.ftxeven.aircore.util.TimeFormatter;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -65,19 +66,28 @@ public final class TimeCommand extends BaseCommand {
             world = ((Player) sender).getWorld();
         }
 
-        try {
-            if (isAdd) {
-                world.setFullTime(world.getFullTime() + ticks);
-            } else {
-                world.setTime(ticks);
+        Scheduler.runGlobal(() -> {
+            boolean applied = true;
+            try {
+                if (isAdd) {
+                    world.setFullTime(world.getFullTime() + ticks);
+                } else {
+                    world.setTime(ticks);
+                }
+            } catch (IllegalArgumentException ex) {
+                applied = false;
             }
-        } catch (IllegalArgumentException ex) {
-            messenger().send(sender, configs().lang().get("errors.general.world-no-clock"), Map.of("world", world.getName()));
-            return;
-        }
 
-        completeCooldown(sender, args);
-        sendResult(sender, isAdd, worldArg != null, ticks, world);
+            boolean success = applied;
+            Scheduler.runTargetAware(sender, () -> {
+                if (!success) {
+                    messenger().send(sender, configs().lang().get("errors.general.world-no-clock"), Map.of("world", world.getName()));
+                    return;
+                }
+                completeCooldown(sender, args);
+                sendResult(sender, isAdd, worldArg != null, ticks, world);
+            });
+        });
     }
 
     private String timeFilter() {

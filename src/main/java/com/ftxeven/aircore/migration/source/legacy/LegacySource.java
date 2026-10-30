@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public final class LegacyAirCoreSource implements MigrationSource {
+public final class LegacySource implements MigrationSource {
 
     @Override
     public String id() {

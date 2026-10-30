@@ -1,7 +1,7 @@
 package com.ftxeven.aircore.migration;
 
 import com.ftxeven.aircore.migration.source.essentials.EssentialsSource;
-import com.ftxeven.aircore.migration.source.legacy.LegacyAirCoreSource;
+import com.ftxeven.aircore.migration.source.legacy.LegacySource;
 
 import java.util.List;
 import java.util.Locale;
@@ -11,7 +11,7 @@ public final class MigrationSources {
 
     private static final List<MigrationSource> SOURCES = List.of(
             new EssentialsSource(),
-            new LegacyAirCoreSource()
+            new LegacySource()
     );
 
     private MigrationSources() {

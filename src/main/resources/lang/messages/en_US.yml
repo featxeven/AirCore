@@ -1026,7 +1026,7 @@ utilities:
       already-empty: "<ref:prefix> <red>Your inventory is already empty."
       already-empty-for: "<ref:prefix> <red><white>%target%</white>'s inventory is already empty."
 
-    # --------------------------------------------------
+  # --------------------------------------------------
   # UTILITIES - DISPOSAL
   # --------------------------------------------------
   disposal:
