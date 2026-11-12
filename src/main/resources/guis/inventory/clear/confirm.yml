@@ -1,0 +1,45 @@
+# AirCore - inventory/clear/confirm.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own;
+# to disable this GUI, remove its GUI entry from commands.yml
+
+# No 'role' here - this GUI is plain config (static items only), so rename or restructure
+# it however you like.
+
+# Opened by "/clearinventory" (for yourself) and "/clearinventory <player>". The player being
+# cleared comes from the screen itself, so the [clear] action below needs no 'target:'.
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Confirm Clear</bold></gradient>"
+  rows: 3
+
+# --------------------------------------------------
+# ITEMS
+# Define the static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [0-8, 18-26]
+
+  target-head:
+    template: target-head
+    slots: 13
+
+  confirm:
+    slots: 11
+    material: LIME_STAINED_GLASS_PANE
+    display-name: "<green><bold>Confirm</bold>"
+    lore:
+      - "=is:self <gray>Click to confirm and clear your inventory."
+      - "!=is:self <gray>Click to confirm and clear <white>%target%</white>'s inventory."
+    actions:
+      any:
+        - "[clear] type:inventory"
+        - "=is:online:%target_realname% [sound] $success"
+        - "[close]"
+
+  cancel:
+    template: cancel-button
+    slots: 15

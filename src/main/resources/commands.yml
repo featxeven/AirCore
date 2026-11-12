@@ -785,6 +785,9 @@ commands:
               requires: aircore.command.clearinventory.others
             - sources: [SELECTOR:ALL]
               requires: aircore.command.clearinventory.all
+        gui:
+          confirm: "inventory/clear/confirm"             # opened before clearing, for yourself or a single player
+          confirm-all: "inventory/clear/confirm_all"     # opened for "/clearinventory <all-selector>"
 
       disposal:
         enabled: true

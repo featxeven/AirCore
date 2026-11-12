@@ -1,7 +1,10 @@
 package com.ftxeven.aircore.gui;
 
+import com.ftxeven.aircore.command.Feedback;
+import com.ftxeven.aircore.command.Scopes;
 import com.ftxeven.aircore.command.player.PlayerTargetResolver;
 import com.ftxeven.aircore.command.player.Selectors;
+import com.ftxeven.aircore.command.player.utilities.LiveActionRunner;
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.core.animation.AnimationManager;
 import com.ftxeven.aircore.core.gui.GuiManager;
@@ -69,7 +72,7 @@ public final class PluginGuiManager {
         layouts.load();
 
         PluginGuiManager manager = new PluginGuiManager(guis, layouts, services, plugin.getLogger());
-        manager.registerActions(configs, services, modules);
+        manager.registerActions(configs, services, modules, messenger);
         manager.registerGuis(services, configs, modules);
         return manager;
     }
@@ -82,9 +85,11 @@ public final class PluginGuiManager {
         return layouts;
     }
 
-    private void registerActions(ConfigManager configs, ServiceManager services, ModuleManager modules) {
+    private void registerActions(ConfigManager configs, ServiceManager services, ModuleManager modules, Messenger messenger) {
         PlayerTargetResolver resolver = new PlayerTargetResolver(services.players(), configs::main);
         Selectors selectors = new Selectors(() -> configs.commands().selectors());
+        Feedback feedback = new Feedback(configs, messenger, services);
+        Scopes scopes = new Scopes(configs, messenger, services, resolver, selectors, feedback);
 
         ClaimAction claim = new ClaimAction(configs, modules::kits, logger);
         TeleportAction teleport = new TeleportAction(configs, modules::teleport, modules::homes, services, logger);
@@ -97,6 +102,7 @@ public final class PluginGuiManager {
         SortAction sort = new SortAction(configs, this);
         SearchAction search = new SearchAction(this);
         ItemAction item = new ItemAction(configs, services, modules::economy);
+        ClearAction clear = new ClearAction(configs, services, scopes, new LiveActionRunner(configs, messenger, feedback));
 
         guis.actions().register("claim", claim.dispatcher(configs));
         guis.actions().register("teleport", teleport.dispatcher(configs));
@@ -109,6 +115,7 @@ public final class PluginGuiManager {
         guis.actions().register("sort", sort);
         guis.actions().register("search", search);
         guis.actions().register("item", item.dispatcher(configs));
+        guis.actions().register("clear", clear);
     }
 
     private void registerGuis(ServiceManager services, ConfigManager configs, ModuleManager modules) {

@@ -141,7 +141,7 @@ public final class CommandManager {
         register(new PlayerweatherCommand(ctx));
         register(new RepairCommand(ctx));
         register(new RepairallCommand(ctx));
-        register(new ClearinventoryCommand(ctx));
+        register(new ClearinventoryCommand(ctx, plugin.guis()));
         register(new SudoCommand(ctx));
         register(new SeenCommand(ctx));
         register(new KillCommand(ctx));

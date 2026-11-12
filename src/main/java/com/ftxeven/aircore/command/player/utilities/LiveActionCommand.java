@@ -6,12 +6,9 @@ import com.ftxeven.aircore.command.Scopes.ScopeAccess;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
 import com.ftxeven.aircore.permission.Permissions;
-import com.ftxeven.aircore.util.Scheduler;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -25,12 +22,14 @@ public abstract class LiveActionCommand extends BaseCommand {
     private final String key;
     private final Keys keys;
     private final ScopeAccess access;
+    private final LiveActionRunner runner;
 
     protected LiveActionCommand(Context ctx, String key, Keys keys) {
         super(ctx, key);
         this.key = key;
         this.keys = keys;
         this.access = ScopeAccess.othersAndAll(key);
+        this.runner = new LiveActionRunner(ctx.configs(), ctx.messenger(), ctx.feedback());
     }
 
     /** runs on the target's own thread. Empty = done; otherwise the reason (lang suffix) the target was skipped */
@@ -57,38 +56,14 @@ public abstract class LiveActionCommand extends BaseCommand {
     @Override
     public final void execute(CommandSender sender, String label, String subLabel, String[] args) {
         String typed = args.length > 0 ? args[0] : null;
-        resolveLiveScope(sender, typed, access, scope -> {
-            switch (scope) {
-                case LiveScope.Single single -> actOnOne(sender, single, args);
-                case LiveScope.Online online -> actOnAll(sender, online.players(), args);
-            }
-        });
+        resolveLiveScope(sender, typed, access, scope -> onResolved(sender, scope, args));
     }
 
-    private void actOnOne(CommandSender sender, LiveScope.Single single, String[] args) {
-        Player target = single.player();
-        boolean self = single.self();
-        Scheduler.runEntity(target, () -> {
-            Optional<String> skipped = apply(target);
-            if (skipped.isPresent()) {
-                String errorKey = keys.errorBase() + skipped.get() + (self ? "" : "-for");
-                messenger().send(sender, configs().lang().get(errorKey), self ? Map.of() : targetPlaceholders(target));
-                return;
-            }
-            completeCooldown(sender, args);
-            announce(sender, target.getUniqueId(), self, keys.self(), keys.other(), keys.by(), Map.of());
-        });
+    protected void onResolved(CommandSender sender, LiveScope scope, String[] args) {
+        act(sender, scope, args);
     }
 
-    private void actOnAll(CommandSender sender, List<Player> targets, String[] args) {
-        for (Player online : targets) {
-            Scheduler.runEntity(online, () -> {
-                if (apply(online).isEmpty()) {
-                    notifyTarget(sender, online.getUniqueId(), configs().lang().get(keys.by()), Map.of());
-                }
-            });
-        }
-        completeCooldown(sender, args);
-        messenger().send(sender, configs().lang().get(keys.all()));
+    protected final void act(CommandSender sender, LiveScope scope, String[] args) {
+        runner.run(sender, scope, keys, this::apply, () -> completeCooldown(sender, args));
     }
 }

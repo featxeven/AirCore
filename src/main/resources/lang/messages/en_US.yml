@@ -718,6 +718,7 @@ homes:
     separator: "<gray>, "
     empty: "<ref:prefix> <red>You don't have any homes yet."
 
+  # Confirmation prompt used when confirmation GUI is disabled.
   confirmation:
     request:
       - "<ref:prefix> <gray>You are about to delete home <white>%name%</white>."
