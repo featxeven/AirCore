@@ -3,6 +3,9 @@ package com.ftxeven.aircore.command.admin;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.command.CommandDispatcher;
 import com.ftxeven.aircore.transfer.TransferOptions;
+import com.ftxeven.aircore.transfer.importer.ImportSource;
+import com.ftxeven.aircore.transfer.importer.ImportSources;
+import com.ftxeven.aircore.transfer.importer.ImportTask;
 import org.bukkit.command.CommandSender;
 
 import java.nio.file.Files;
@@ -25,19 +28,19 @@ public final class SubMigrate extends DataTaskCommand {
     public int minArgs() { return 1; }
 
     @Override
-    public String usage() { return "/aircore migrate <" + String.join("|", MigrationSources.ids()) + "> [path] [flags]"; }
+    public String usage() { return "/aircore migrate <" + String.join("|", ImportSources.ids()) + "> [path] [flags]"; }
 
     @Override
     protected String onlineConsequence() { return "Their data would be overwritten when they disconnect."; }
 
     @Override
     protected void handle(CommandSender sender, String[] args) {
-        Optional<MigrationSource> maybeSource = MigrationSources.byId(args[0]);
+        Optional<ImportSource> maybeSource = ImportSources.byId(args[0]);
         if (maybeSource.isEmpty()) {
-            reply(sender, "Unknown migration source '" + args[0] + "'. Available: " + String.join(", ", MigrationSources.ids()));
+            reply(sender, "Unknown migration source '" + args[0] + "'. Available: " + String.join(", ", ImportSources.ids()));
             return;
         }
-        MigrationSource source = maybeSource.get();
+        ImportSource source = maybeSource.get();
 
         String pathArg = null;
         List<String> flags = new ArrayList<>();
@@ -73,12 +76,12 @@ public final class SubMigrate extends DataTaskCommand {
             if (!options.dryRun()) {
                 feedback.accept("Back up your database before continuing if you haven't already.");
             }
-            new MigrationTask(plugin, source, root, options, feedback).run();
+            new ImportTask(plugin, source, root, options, feedback).run();
         });
     }
 
     // plugins/AirCore -> plugins -> server root
-    private Path resolvePath(MigrationSource source, String pathArg) {
+    private Path resolvePath(ImportSource source, String pathArg) {
         Path serverRoot = plugin.getDataFolder().getAbsoluteFile().toPath().getParent().getParent();
         Path path = Path.of(pathArg == null ? source.defaultPath() : pathArg);
         return (path.isAbsolute() ? path : serverRoot.resolve(path)).normalize();
@@ -87,7 +90,7 @@ public final class SubMigrate extends DataTaskCommand {
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return CommandDispatcher.filterPrefix(MigrationSources.ids(), args[0]);
+            return CommandDispatcher.filterPrefix(ImportSources.ids(), args[0]);
         }
         return completeFlags(args, 1);
     }
