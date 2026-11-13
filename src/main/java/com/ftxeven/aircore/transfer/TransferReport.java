@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.migration;
+package com.ftxeven.aircore.transfer;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-public final class MigrationReport {
+public final class TransferReport {
 
     public enum Category {
         PLAYERS("players"),
@@ -98,7 +98,7 @@ public final class MigrationReport {
         if (warnings.size() > WARNINGS_SHOWN || droppedWarnings > 0) {
             feedback.accept("  ... the full list is in the server log.");
         }
-        warnings.forEach(warning -> logger.warning("[migration] " + warning));
+        warnings.forEach(warning -> logger.warning("[transfer] " + warning));
     }
 
     private int[] counter(Category category) {

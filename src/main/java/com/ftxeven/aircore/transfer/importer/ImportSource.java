@@ -1,14 +1,14 @@
-package com.ftxeven.aircore.migration;
+package com.ftxeven.aircore.transfer.importer;
 
-import com.ftxeven.aircore.migration.model.LegacyPlayer;
-import com.ftxeven.aircore.migration.model.LegacyServerData;
+import com.ftxeven.aircore.transfer.importer.model.ImportedPlayer;
+import com.ftxeven.aircore.transfer.importer.model.ImportedServerData;
 
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface MigrationSource {
+public interface ImportSource {
 
     String id();
 
@@ -26,7 +26,7 @@ public interface MigrationSource {
 
     Reader open(Path path) throws Exception;
 
-    // identity + ordering info, kept cheap so millions of records don't have to sit in memory at once
+    // identity + ordering info
     record Candidate(UUID uuid, String name, long order, String origin) {}
 
     interface Reader extends AutoCloseable {
@@ -34,9 +34,9 @@ public interface MigrationSource {
         // oldest first, so join numbers are handed out in roughly the original order
         List<Candidate> players() throws Exception;
 
-        Optional<LegacyPlayer> load(Candidate candidate) throws Exception;
+        Optional<ImportedPlayer> load(Candidate candidate) throws Exception;
 
-        LegacyServerData serverData() throws Exception;
+        ImportedServerData serverData() throws Exception;
 
         @Override
         void close();

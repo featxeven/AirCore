@@ -2,10 +2,7 @@ package com.ftxeven.aircore.command.admin;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.command.CommandDispatcher;
-import com.ftxeven.aircore.migration.MigrationOptions;
-import com.ftxeven.aircore.migration.MigrationSource;
-import com.ftxeven.aircore.migration.MigrationSources;
-import com.ftxeven.aircore.migration.MigrationTask;
+import com.ftxeven.aircore.transfer.TransferOptions;
 import org.bukkit.command.CommandSender;
 
 import java.nio.file.Files;
@@ -52,11 +49,11 @@ public final class SubMigrate extends DataTaskCommand {
             }
         }
 
-        Optional<MigrationOptions> parsed = parseOptions(sender, flags);
+        Optional<TransferOptions> parsed = parseOptions(sender, flags);
         if (parsed.isEmpty()) {
             return;
         }
-        MigrationOptions options = parsed.get();
+        TransferOptions options = parsed.get();
 
         Path root;
         try {

@@ -96,7 +96,7 @@ public final class BalanceLedger {
         return future;
     }
 
-    /** Prepares several owners at once - used ahead of a transfer that touches two accounts. */
+    /** Prepares several owners at once - used ahead of a backend that touches two accounts. */
     public CompletableFuture<Void> prepare(UUID... owners) {
         CompletableFuture<?>[] futures = new CompletableFuture<?>[owners.length];
         for (int i = 0; i < owners.length; i++) {

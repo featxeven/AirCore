@@ -1,11 +1,11 @@
-package com.ftxeven.aircore.migration.source.essentials;
+package com.ftxeven.aircore.transfer.importer.source.essentials;
 
 import com.ftxeven.aircore.command.player.ToggleKey;
 import com.ftxeven.aircore.database.repository.LocationRepository;
-import com.ftxeven.aircore.migration.MigrationSource;
-import com.ftxeven.aircore.migration.model.LegacyPlayer;
-import com.ftxeven.aircore.migration.model.LegacyServerData;
-import com.ftxeven.aircore.migration.util.MigrationLocations;
+import com.ftxeven.aircore.transfer.importer.ImportSource;
+import com.ftxeven.aircore.transfer.importer.model.ImportedPlayer;
+import com.ftxeven.aircore.transfer.importer.model.ImportedServerData;
+import com.ftxeven.aircore.transfer.importer.util.YamlPositions;
 import com.ftxeven.aircore.model.Position;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -28,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-public final class EssentialsSource implements MigrationSource {
+public final class EssentialsSource implements ImportSource {
 
     @Override
     public String id() {
@@ -122,7 +122,7 @@ public final class EssentialsSource implements MigrationSource {
         }
 
         @Override
-        public Optional<LegacyPlayer> load(Candidate candidate) {
+        public Optional<ImportedPlayer> load(Candidate candidate) {
             Path file = userdata.resolve(candidate.origin());
             YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file.toFile());
 
@@ -135,7 +135,7 @@ public final class EssentialsSource implements MigrationSource {
                 return Optional.empty();
             }
 
-            LegacyPlayer.Builder builder = LegacyPlayer.builder(candidate.uuid(), name.strip())
+            ImportedPlayer.Builder builder = ImportedPlayer.builder(candidate.uuid(), name.strip())
                     .balance(money(yaml.get("money")))
                     .nickname(yaml.getString("nickname"))
                     .godMode(bool(yaml, "godmode"))
@@ -146,15 +146,15 @@ public final class EssentialsSource implements MigrationSource {
                     .toggle(ToggleKey.PAY, bool(yaml, "accepting-pay", "acceptingPay"))
                     .toggle(ToggleKey.MSG, bool(yaml, "accepting-messages", "acceptingMessages"));
 
-            MigrationLocations.read(yaml.getConfigurationSection("logoutlocation"))
-                    .or(() -> MigrationLocations.read(yaml.getConfigurationSection("lastlocation")))
+            YamlPositions.read(yaml.getConfigurationSection("logoutlocation"))
+                    .or(() -> YamlPositions.read(yaml.getConfigurationSection("lastlocation")))
                     .ifPresent(builder::lastLocation);
 
             ConfigurationSection homes = yaml.getConfigurationSection("homes");
             if (homes != null) {
                 for (String key : homes.getKeys(false)) {
-                    MigrationLocations.read(homes.getConfigurationSection(key)).ifPresent(position ->
-                            builder.home(new LegacyPlayer.Home(key, position, Instant.now())));
+                    YamlPositions.read(homes.getConfigurationSection(key)).ifPresent(position ->
+                            builder.home(new ImportedPlayer.Home(key, position, Instant.now())));
                 }
             }
 
@@ -169,17 +169,17 @@ public final class EssentialsSource implements MigrationSource {
         }
 
         @Override
-        public LegacyServerData serverData() throws IOException {
-            return new LegacyServerData(warps(), spawns(), List.of());
+        public ImportedServerData serverData() throws IOException {
+            return new ImportedServerData(warps(), spawns(), List.of());
         }
 
-        private List<LegacyServerData.NamedPosition> warps() throws IOException {
+        private List<ImportedServerData.NamedPosition> warps() throws IOException {
             Path warps = root.resolve("warps");
             if (!Files.isDirectory(warps)) {
                 return List.of();
             }
 
-            List<LegacyServerData.NamedPosition> result = new ArrayList<>();
+            List<ImportedServerData.NamedPosition> result = new ArrayList<>();
             try (Stream<Path> files = Files.list(warps)) {
                 for (Path file : files.toList()) {
                     String fileName = file.getFileName().toString();
@@ -188,14 +188,14 @@ public final class EssentialsSource implements MigrationSource {
                     }
                     YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file.toFile());
                     String key = yaml.getString("name", fileName.substring(0, fileName.length() - 4));
-                    MigrationLocations.read(yaml).ifPresent(position ->
-                            result.add(new LegacyServerData.NamedPosition(key, position)));
+                    YamlPositions.read(yaml).ifPresent(position ->
+                            result.add(new ImportedServerData.NamedPosition(key, position)));
                 }
             }
             return result;
         }
 
-        private List<LegacyServerData.NamedPosition> spawns() {
+        private List<ImportedServerData.NamedPosition> spawns() {
             Path file = root.resolve("spawn.yml");
             if (!Files.isRegularFile(file)) {
                 return List.of();
@@ -207,13 +207,13 @@ public final class EssentialsSource implements MigrationSource {
                 return List.of();
             }
 
-            List<LegacyServerData.NamedPosition> result = new ArrayList<>();
+            List<ImportedServerData.NamedPosition> result = new ArrayList<>();
             for (String group : spawns.getKeys(false)) {
-                Optional<Position> position = MigrationLocations.read(spawns.getConfigurationSection(group));
+                Optional<Position> position = YamlPositions.read(spawns.getConfigurationSection(group));
                 if (position.isEmpty()) {
                     continue;
                 }
-                result.add(new LegacyServerData.NamedPosition(spawnKey(group), position.get()));
+                result.add(new ImportedServerData.NamedPosition(spawnKey(group), position.get()));
             }
             return result;
         }

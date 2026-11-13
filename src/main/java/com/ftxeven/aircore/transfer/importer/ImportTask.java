@@ -1,8 +1,10 @@
-package com.ftxeven.aircore.migration;
+package com.ftxeven.aircore.transfer.importer;
 
 import com.ftxeven.aircore.AirCore;
-import com.ftxeven.aircore.migration.model.LegacyPlayer;
-import com.ftxeven.aircore.migration.model.LegacyServerData;
+import com.ftxeven.aircore.transfer.TransferOptions;
+import com.ftxeven.aircore.transfer.TransferReport;
+import com.ftxeven.aircore.transfer.importer.model.ImportedPlayer;
+import com.ftxeven.aircore.transfer.importer.model.ImportedServerData;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -11,26 +13,25 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class MigrationTask {
+public final class ImportTask {
 
     private static final int PROGRESS_INTERVAL = 250;
-    private static final int WARNINGS_SHOWN = 10;
 
-    private final MigrationSource source;
+    private final ImportSource source;
     private final Path root;
-    private final MigrationOptions options;
+    private final TransferOptions options;
     private final Consumer<String> feedback;
     private final Logger logger;
-    private final MigrationReport report = new MigrationReport();
-    private final MigrationWriter writer;
+    private final TransferReport report = new TransferReport();
+    private final ImportWriter writer;
 
-    public MigrationTask(AirCore plugin, MigrationSource source, Path root, MigrationOptions options, Consumer<String> feedback) {
+    public ImportTask(AirCore plugin, ImportSource source, Path root, TransferOptions options, Consumer<String> feedback) {
         this.source = source;
         this.root = root;
         this.options = options;
         this.feedback = feedback;
         this.logger = plugin.getLogger();
-        this.writer = new MigrationWriter(plugin.database(), plugin.cache(), plugin.configs(), options, report);
+        this.writer = new ImportWriter(plugin.database(), plugin.cache(), plugin.configs(), options, report);
     }
 
     public void run() {
@@ -38,21 +39,21 @@ public final class MigrationTask {
         feedback.accept("Reading " + source.displayName() + " data from " + root
                 + (options.dryRun() ? " (dry run, nothing will be written)" : ""));
 
-        try (MigrationSource.Reader reader = source.open(root)) {
-            List<MigrationSource.Candidate> candidates = reader.players();
+        try (ImportSource.Reader reader = source.open(root)) {
+            List<ImportSource.Candidate> candidates = reader.players();
             feedback.accept("Found " + candidates.size() + " player record(s).");
 
             int processed = 0;
-            for (MigrationSource.Candidate candidate : candidates) {
+            for (ImportSource.Candidate candidate : candidates) {
                 try {
-                    Optional<LegacyPlayer> legacy = reader.load(candidate);
+                    Optional<ImportedPlayer> legacy = reader.load(candidate);
                     if (legacy.isEmpty()) {
-                        report.skipped(MigrationReport.Category.PLAYERS);
+                        report.skipped(TransferReport.Category.PLAYERS);
                     } else {
                         writer.writePlayer(legacy.get());
                     }
                 } catch (Exception e) {
-                    report.failed(MigrationReport.Category.PLAYERS, candidate.origin() + ": " + e.getMessage());
+                    report.failed(TransferReport.Category.PLAYERS, candidate.origin() + ": " + e.getMessage());
                     logger.log(Level.WARNING, "Migration failed for " + candidate.origin(), e);
                 }
 
@@ -61,7 +62,7 @@ public final class MigrationTask {
                 }
             }
 
-            LegacyServerData serverData = reader.serverData();
+            ImportedServerData serverData = reader.serverData();
             writer.writeServerData(serverData);
             writer.finish();
         } catch (Exception e) {

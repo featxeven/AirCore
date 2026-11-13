@@ -252,7 +252,7 @@ public final class MongoPlayerRepository implements PlayerRepository {
         return (int) players.deleteMany(Filters.in("_id", ids)).getDeletedCount();
     }
 
-    // Storage transfer
+    // Storage backend
 
     @Override
     public void importProfile(PlayerProfile profile, @Nullable String normalizedNickname) {

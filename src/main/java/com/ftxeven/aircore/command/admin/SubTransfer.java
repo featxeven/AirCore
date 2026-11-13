@@ -3,8 +3,8 @@ package com.ftxeven.aircore.command.admin;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.command.CommandDispatcher;
 import com.ftxeven.aircore.config.StorageConfig;
-import com.ftxeven.aircore.migration.MigrationOptions;
-import com.ftxeven.aircore.migration.transfer.TransferTask;
+import com.ftxeven.aircore.transfer.TransferOptions;
+import com.ftxeven.aircore.transfer.backend.TransferTask;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
@@ -19,17 +19,17 @@ public final class SubTransfer extends DataTaskCommand {
             .toList();
 
     public SubTransfer(AirCore plugin) {
-        super(plugin, "transfer");
+        super(plugin, "backend");
     }
 
     @Override
-    public String name() { return "transfer"; }
+    public String name() { return "backend"; }
 
     @Override
     public int minArgs() { return 2; }
 
     @Override
-    public String usage() { return "/aircore transfer <from> <to> [flags]"; }
+    public String usage() { return "/aircore backend <from> <to> [flags]"; }
 
     @Override
     protected String onlineConsequence() { return "Their data can still change while it is copied."; }
@@ -49,11 +49,11 @@ public final class SubTransfer extends DataTaskCommand {
             return;
         }
 
-        Optional<MigrationOptions> parsed = parseOptions(sender, Arrays.asList(args).subList(2, args.length));
+        Optional<TransferOptions> parsed = parseOptions(sender, Arrays.asList(args).subList(2, args.length));
         if (parsed.isEmpty()) {
             return;
         }
-        MigrationOptions options = parsed.get();
+        TransferOptions options = parsed.get();
 
         // both ends use the settings of storage.yml, each with its own driver section
         StorageConfig.Database active = plugin.configs().storage().database();

@@ -1,13 +1,13 @@
-package com.ftxeven.aircore.migration.transfer;
+package com.ftxeven.aircore.transfer.backend;
 
 import com.ftxeven.aircore.database.DatabaseManager;
 import com.ftxeven.aircore.database.repository.BlockRepository;
 import com.ftxeven.aircore.database.repository.LocationRepository;
 import com.ftxeven.aircore.database.repository.PersistentBossbarRepository;
 import com.ftxeven.aircore.database.repository.VariableRepository;
-import com.ftxeven.aircore.migration.MigrationOptions;
-import com.ftxeven.aircore.migration.MigrationReport;
-import com.ftxeven.aircore.migration.MigrationReport.Category;
+import com.ftxeven.aircore.transfer.TransferOptions;
+import com.ftxeven.aircore.transfer.TransferReport;
+import com.ftxeven.aircore.transfer.TransferReport.Category;
 import com.ftxeven.aircore.model.Cooldown;
 import com.ftxeven.aircore.model.Home;
 import com.ftxeven.aircore.model.Kit;
@@ -27,11 +27,11 @@ final class StorageCopier {
 
     private final DatabaseManager source;
     private final DatabaseManager target;
-    private final MigrationOptions options;
-    private final MigrationReport report;
+    private final TransferOptions options;
+    private final TransferReport report;
     private final Instant now = Instant.now();
 
-    StorageCopier(DatabaseManager source, DatabaseManager target, MigrationOptions options, MigrationReport report) {
+    StorageCopier(DatabaseManager source, DatabaseManager target, TransferOptions options, TransferReport report) {
         this.source = source;
         this.target = target;
         this.options = options;

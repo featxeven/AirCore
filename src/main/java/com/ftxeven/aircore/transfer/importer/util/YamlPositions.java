@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.migration.util;
+package com.ftxeven.aircore.transfer.importer.util;
 
 import com.ftxeven.aircore.model.Position;
 import org.bukkit.Bukkit;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-public final class MigrationLocations {
+public final class YamlPositions {
 
-    private MigrationLocations() {
+    private YamlPositions() {
     }
 
     public static Optional<Position> read(@Nullable ConfigurationSection section) {

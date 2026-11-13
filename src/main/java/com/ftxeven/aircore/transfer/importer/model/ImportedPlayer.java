@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.migration.model;
+package com.ftxeven.aircore.transfer.importer.model;
 
 import com.ftxeven.aircore.command.player.ToggleKey;
 import com.ftxeven.aircore.model.PlayerProfile;
@@ -8,17 +8,19 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public record LegacyPlayer(
+public record ImportedPlayer(
         UUID uuid,
         String name,
         @Nullable PlayerProfile.Skin skin,
         @Nullable Double balance,
-        LegacyToggles toggles,
+        Map<ToggleKey, Boolean> toggles, // only the toggles the source actually had a value for
         @Nullable String nickname, // raw legacy text, converted by the writer
         @Nullable Boolean godMode,
         @Nullable Boolean flightAllowed,
@@ -48,7 +50,7 @@ public record LegacyPlayer(
 
         private final UUID uuid;
         private final String name;
-        private final LegacyToggles toggles = new LegacyToggles();
+        private final Map<ToggleKey, Boolean> toggles = new EnumMap<>(ToggleKey.class);
         private final List<Home> homes = new ArrayList<>();
         private final Set<UUID> blocked = new LinkedHashSet<>();
         private final List<KitClaim> kitClaims = new ArrayList<>();
@@ -82,8 +84,11 @@ public record LegacyPlayer(
         public Builder lastLocation(@Nullable Position position) { this.lastLocation = position; return this; }
         public Builder inventory(@Nullable Inventory inventory) { this.inventory = inventory; return this; }
 
+        // a null value means the source had nothing for this toggle, so the default is left alone
         public Builder toggle(ToggleKey key, @Nullable Boolean value) {
-            toggles.set(key, value);
+            if (value != null) {
+                toggles.put(key, value);
+            }
             return this;
         }
 
@@ -102,8 +107,8 @@ public record LegacyPlayer(
             return this;
         }
 
-        public LegacyPlayer build() {
-            return new LegacyPlayer(uuid, name, skin, balance, toggles, nickname, godMode, flightAllowed,
+        public ImportedPlayer build() {
+            return new ImportedPlayer(uuid, name, skin, balance, Map.copyOf(toggles), nickname, godMode, flightAllowed,
                     walkSpeed, flySpeed, playerTime, playerWeather, lastLocation,
                     List.copyOf(homes), Set.copyOf(blocked), inventory, List.copyOf(kitClaims));
         }

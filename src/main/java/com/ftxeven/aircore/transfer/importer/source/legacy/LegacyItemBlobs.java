@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.migration.source.legacy;
+package com.ftxeven.aircore.transfer.importer.source.legacy;
 
 import org.bukkit.inventory.ItemStack;
 

@@ -1,11 +1,11 @@
-package com.ftxeven.aircore.migration.source.legacy;
+package com.ftxeven.aircore.transfer.importer.source.legacy;
 
 import com.ftxeven.aircore.command.player.ToggleKey;
 import com.ftxeven.aircore.database.repository.LocationRepository;
-import com.ftxeven.aircore.migration.MigrationSource;
-import com.ftxeven.aircore.migration.model.LegacyPlayer;
-import com.ftxeven.aircore.migration.model.LegacyServerData;
-import com.ftxeven.aircore.migration.util.MigrationLocations;
+import com.ftxeven.aircore.transfer.importer.ImportSource;
+import com.ftxeven.aircore.transfer.importer.model.ImportedPlayer;
+import com.ftxeven.aircore.transfer.importer.model.ImportedServerData;
+import com.ftxeven.aircore.transfer.importer.util.YamlPositions;
 import com.ftxeven.aircore.model.PlayerInventory;
 import com.ftxeven.aircore.model.PlayerProfile;
 import com.ftxeven.aircore.model.Position;
@@ -33,8 +33,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-public final class LegacySource implements MigrationSource {
+public final class LegacySource implements ImportSource {
 
+    // the id stays "legacy" so /aircore migrate legacy <path> keeps working for existing admins and docs
     @Override
     public String id() {
         return "legacy";
@@ -71,7 +72,7 @@ public final class LegacySource implements MigrationSource {
             // modern drivers register themselves
         }
         Connection connection = DriverManager.getConnection("jdbc:sqlite:" + database.toAbsolutePath());
-        return new LegacyReader(connection, database.getParent());
+        return new AirCore1Reader(connection, database.getParent());
     }
 
     private Path resolveDatabase(Path path) throws IOException {
@@ -88,13 +89,13 @@ public final class LegacySource implements MigrationSource {
         throw new IOException("No database.db found at " + path);
     }
 
-    private static final class LegacyReader implements Reader {
+    private static final class AirCore1Reader implements Reader {
 
         private final Connection connection;
         private final Path base;
         private final Set<String> recordColumns = new HashSet<>();
 
-        private LegacyReader(Connection connection, Path base) throws SQLException {
+        private AirCore1Reader(Connection connection, Path base) throws SQLException {
             this.connection = connection;
             this.base = base;
             try (ResultSet columns = connection.getMetaData().getColumns(null, null, "player_records", null)) {
@@ -127,7 +128,7 @@ public final class LegacySource implements MigrationSource {
         }
 
         @Override
-        public Optional<LegacyPlayer> load(Candidate candidate) throws SQLException {
+        public Optional<ImportedPlayer> load(Candidate candidate) throws SQLException {
             UUID uuid = candidate.uuid();
 
             try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM player_records WHERE uuid = ?")) {
@@ -142,7 +143,7 @@ public final class LegacySource implements MigrationSource {
                         return Optional.empty();
                     }
 
-                    LegacyPlayer.Builder builder = LegacyPlayer.builder(uuid, name.strip())
+                    ImportedPlayer.Builder builder = ImportedPlayer.builder(uuid, name.strip())
                             .skin(skin(result))
                             .balance(nullableDouble(result, "balance"))
                             .nickname(nullableString(result, "nick"))
@@ -171,7 +172,7 @@ public final class LegacySource implements MigrationSource {
             }
         }
 
-        private void readHomes(UUID uuid, LegacyPlayer.Builder builder) throws SQLException {
+        private void readHomes(UUID uuid, ImportedPlayer.Builder builder) throws SQLException {
             String sql = "SELECT name, world, x, y, z, yaw, pitch, created_at FROM player_homes WHERE uuid = ? ORDER BY created_at ASC";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, uuid.toString());
@@ -184,14 +185,14 @@ public final class LegacySource implements MigrationSource {
                         Position position = new Position(world,
                                 result.getDouble("x"), result.getDouble("y"), result.getDouble("z"),
                                 result.getFloat("yaw"), result.getFloat("pitch"));
-                        builder.home(new LegacyPlayer.Home(result.getString("name"), position,
+                        builder.home(new ImportedPlayer.Home(result.getString("name"), position,
                                 instant(result.getLong("created_at"))));
                     }
                 }
             }
         }
 
-        private void readBlocks(UUID uuid, LegacyPlayer.Builder builder) throws SQLException {
+        private void readBlocks(UUID uuid, ImportedPlayer.Builder builder) throws SQLException {
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT blocked_uuid FROM player_blocks WHERE uuid = ?")) {
                 statement.setString(1, uuid.toString());
@@ -206,7 +207,7 @@ public final class LegacySource implements MigrationSource {
             }
         }
 
-        private void readKitClaims(UUID uuid, LegacyPlayer.Builder builder) throws SQLException {
+        private void readKitClaims(UUID uuid, ImportedPlayer.Builder builder) throws SQLException {
             String sql = "SELECT kit, last_claim, one_time_claimed, last_cooldown FROM player_kits WHERE uuid = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, uuid.toString());
@@ -217,12 +218,12 @@ public final class LegacySource implements MigrationSource {
                             continue;
                         }
                         if (result.getInt("one_time_claimed") != 0) {
-                            builder.kitClaim(new LegacyPlayer.KitClaim(kit, null, true));
+                            builder.kitClaim(new ImportedPlayer.KitClaim(kit, null, true));
                             continue;
                         }
                         long cooldown = result.getLong("last_cooldown");
                         if (cooldown > 0) {
-                            builder.kitClaim(new LegacyPlayer.KitClaim(kit,
+                            builder.kitClaim(new ImportedPlayer.KitClaim(kit,
                                     instant(result.getLong("last_claim")).plusSeconds(cooldown), false));
                         }
                     }
@@ -230,7 +231,7 @@ public final class LegacySource implements MigrationSource {
             }
         }
 
-        private @Nullable LegacyPlayer.Inventory readInventory(UUID uuid) throws SQLException {
+        private @Nullable ImportedPlayer.Inventory readInventory(UUID uuid) throws SQLException {
             String sql = "SELECT contents, armor, offhand, enderchest FROM player_inventories WHERE uuid = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, uuid.toString());
@@ -255,49 +256,49 @@ public final class LegacySource implements MigrationSource {
                     ItemStack[] enderChest = new ItemStack[PlayerInventory.ENDERCHEST_SIZE];
                     LegacyItemBlobs.copy(ender, 0, enderChest, 0, Math.min(ender.length, PlayerInventory.ENDERCHEST_SIZE));
 
-                    return new LegacyPlayer.Inventory(contents, enderChest, 0);
+                    return new ImportedPlayer.Inventory(contents, enderChest, 0);
                 }
             }
         }
 
         @Override
-        public LegacyServerData serverData() {
-            return new LegacyServerData(warps(), spawns(), kits());
+        public ImportedServerData serverData() {
+            return new ImportedServerData(warps(), spawns(), kits());
         }
 
-        private List<LegacyServerData.NamedPosition> warps() {
+        private List<ImportedServerData.NamedPosition> warps() {
             YamlConfiguration yaml = yaml("warps.yml");
             ConfigurationSection warps = yaml == null ? null : yaml.getConfigurationSection("warps");
             if (warps == null) {
                 return List.of();
             }
 
-            List<LegacyServerData.NamedPosition> result = new ArrayList<>();
+            List<ImportedServerData.NamedPosition> result = new ArrayList<>();
             for (String key : warps.getKeys(false)) {
-                MigrationLocations.read(warps.getConfigurationSection(key))
-                        .ifPresent(position -> result.add(new LegacyServerData.NamedPosition(key, position)));
+                YamlPositions.read(warps.getConfigurationSection(key))
+                        .ifPresent(position -> result.add(new ImportedServerData.NamedPosition(key, position)));
             }
             return result;
         }
 
-        private List<LegacyServerData.NamedPosition> spawns() {
+        private List<ImportedServerData.NamedPosition> spawns() {
             YamlConfiguration yaml = yaml("spawn.yml");
             if (yaml == null) {
                 return List.of();
             }
-            return MigrationLocations.read(yaml.getConfigurationSection("spawn"))
-                    .map(position -> List.of(new LegacyServerData.NamedPosition(LocationRepository.SPAWN_DEFAULT, position)))
+            return YamlPositions.read(yaml.getConfigurationSection("spawn"))
+                    .map(position -> List.of(new ImportedServerData.NamedPosition(LocationRepository.SPAWN_DEFAULT, position)))
                     .orElse(List.of());
         }
 
-        private List<LegacyServerData.Kit> kits() {
+        private List<ImportedServerData.Kit> kits() {
             YamlConfiguration yaml = yaml("kits.yml");
             ConfigurationSection kits = yaml == null ? null : yaml.getConfigurationSection("kits");
             if (kits == null) {
                 return List.of();
             }
 
-            List<LegacyServerData.Kit> result = new ArrayList<>();
+            List<ImportedServerData.Kit> result = new ArrayList<>();
             for (String name : kits.getKeys(false)) {
                 List<ItemStack> items = new ArrayList<>();
                 List<?> serialized = kits.getList(name + ".items");
@@ -323,7 +324,7 @@ public final class LegacySource implements MigrationSource {
 
                 long cooldown = kits.getLong(name + ".cooldown", 0);
                 Integer cooldownSeconds = cooldown > 0 ? (int) Math.min(cooldown, Integer.MAX_VALUE) : null;
-                result.add(new LegacyServerData.Kit(name, items, kits.getBoolean(name + ".one-time", false), cooldownSeconds));
+                result.add(new ImportedServerData.Kit(name, items, kits.getBoolean(name + ".one-time", false), cooldownSeconds));
             }
             return result;
         }

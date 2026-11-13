@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.migration.util;
+package com.ftxeven.aircore.transfer.importer.util;
 
 import com.ftxeven.aircore.util.MiniText;
 import net.kyori.adventure.text.Component;

@@ -1,10 +1,10 @@
-package com.ftxeven.aircore.migration.transfer;
+package com.ftxeven.aircore.transfer.backend;
 
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.config.StorageConfig;
 import com.ftxeven.aircore.database.DatabaseManager;
-import com.ftxeven.aircore.migration.MigrationOptions;
-import com.ftxeven.aircore.migration.MigrationReport;
+import com.ftxeven.aircore.transfer.TransferOptions;
+import com.ftxeven.aircore.transfer.TransferReport;
 import com.ftxeven.aircore.model.PlayerProfile;
 
 import java.util.List;
@@ -22,13 +22,13 @@ public final class TransferTask {
     private final AirCore plugin;
     private final StorageConfig.Database from;
     private final StorageConfig.Database to;
-    private final MigrationOptions options;
+    private final TransferOptions options;
     private final Consumer<String> feedback;
     private final Logger logger;
-    private final MigrationReport report = new MigrationReport();
+    private final TransferReport report = new TransferReport();
 
     public TransferTask(AirCore plugin, StorageConfig.Database from, StorageConfig.Database to,
-                        MigrationOptions options, Consumer<String> feedback) {
+                        TransferOptions options, Consumer<String> feedback) {
         this.plugin = plugin;
         this.from = from;
         this.to = to;
@@ -91,7 +91,7 @@ public final class TransferTask {
         try {
             copier.copyPlayer(profile);
         } catch (RuntimeException e) {
-            report.failed(MigrationReport.Category.PLAYERS, profile.uuid() + ": " + e.getMessage());
+            report.failed(TransferReport.Category.PLAYERS, profile.uuid() + ": " + e.getMessage());
             logger.log(Level.WARNING, "Transfer failed for " + profile.uuid(), e);
         }
     }
@@ -105,7 +105,7 @@ public final class TransferTask {
             return;
         }
         feedback.accept(report.hasFailures()
-                ? "Some rows failed to transfer. Fix the cause (see the warnings) and run the transfer again before switching."
+                ? "Some rows failed to backend. Fix the cause (see the warnings) and run the backend again before switching."
                 : "Set 'database.driver' to " + to.driver() + " in storage.yml if it isn't already, "
                   + "then restart the server before letting players back in.");
     }

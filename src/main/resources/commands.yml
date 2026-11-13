@@ -252,7 +252,7 @@ commands:
       pay:
         enabled: true
         name: "pay"
-        aliases: [transfer]
+        aliases: [backend]
         usage: "/%label% <player> <amount>"
         tab-complete:
           1: [ONLINE_PLAYERS:20]

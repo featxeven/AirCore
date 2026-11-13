@@ -406,7 +406,7 @@ public final class SqlPlayerRepository implements PlayerRepository {
         }
     }
 
-    // Storage transfer
+    // Storage backend
 
     @Override
     public void importProfile(PlayerProfile profile, @Nullable String normalizedNickname) {

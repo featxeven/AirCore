@@ -3,7 +3,7 @@ package com.ftxeven.aircore.command.admin;
 import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.command.CommandDispatcher;
 import com.ftxeven.aircore.command.CommandHandler;
-import com.ftxeven.aircore.migration.MigrationOptions;
+import com.ftxeven.aircore.transfer.TransferOptions;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.util.Scheduler;
 import net.kyori.adventure.text.Component;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-// Shared shape of the console-only admin commands that rewrite stored data (migrate, transfer)
+// Shared shape of the console-only admin commands that rewrite stored data (migrate, backend)
 abstract class DataTaskCommand implements CommandHandler {
 
     @FunctionalInterface
@@ -63,7 +63,7 @@ abstract class DataTaskCommand implements CommandHandler {
 
     // Flags and guards
 
-    protected final Optional<MigrationOptions> parseOptions(CommandSender sender, List<String> flags) {
+    protected final Optional<TransferOptions> parseOptions(CommandSender sender, List<String> flags) {
         boolean dryRun = false;
         boolean overwrite = false;
         boolean force = false;
@@ -85,7 +85,7 @@ abstract class DataTaskCommand implements CommandHandler {
                     + " Kick everyone first, or add --force.");
             return Optional.empty();
         }
-        return Optional.of(new MigrationOptions(dryRun, overwrite, force));
+        return Optional.of(new TransferOptions(dryRun, overwrite, force));
     }
 
     // Running
