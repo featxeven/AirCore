@@ -1031,3 +1031,9 @@ commands:
         name: "compass"
         aliases: []
         usage: "/%label%"
+
+      hat:
+        enabled: true
+        name: "hat"
+        aliases: []
+        usage: "/%label%"

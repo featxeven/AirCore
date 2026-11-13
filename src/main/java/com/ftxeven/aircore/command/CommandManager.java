@@ -154,6 +154,7 @@ public final class CommandManager {
             register(new VirtualWorkstationCommand(ctx, workstation));
         }
         register(new CompassCommand(ctx));
+        register(new HatCommand(ctx));
     }
 
     private void register(CommandHandler command) {

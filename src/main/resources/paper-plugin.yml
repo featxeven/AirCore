@@ -532,6 +532,9 @@ permissions:
   aircore.command.compass:
     description: Use /compass.
     default: op
+  aircore.command.hat:
+    description: Use /hat.
+    default: op
 
   aircore.command.*:
     description: Grants access to every command.
@@ -668,6 +671,7 @@ permissions:
       aircore.command.endersee.modify: true
       aircore.command.enderchest: true
       aircore.command.compass: true
+      aircore.command.hat: true
 
   # --- Bypasses ---
 

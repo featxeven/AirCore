@@ -1094,6 +1094,16 @@ utilities:
       west: "West"
       north-west: "North-West"
 
+  # --------------------------------------------------
+  # UTILITIES - HAT
+  # --------------------------------------------------
+  hat:
+    success: "<ref:prefix> <gray>You are now wearing <white>%item%</white> on your head."
+
+    errors:
+      no-item: "<ref:prefix> <red>Hold an item to wear it."
+      bound: "<ref:prefix> <red>Your current hat is bound to you and can't be removed."
+
 # --------------------------------------------------
 # DEATH MESSAGES
 # --------------------------------------------------
