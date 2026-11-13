@@ -529,6 +529,9 @@ permissions:
   aircore.command.enderchest:
     description: Use /enderchest.
     default: op
+  aircore.command.compass:
+    description: Use /compass.
+    default: op
 
   aircore.command.*:
     description: Grants access to every command.
@@ -664,6 +667,7 @@ permissions:
       aircore.command.endersee: true
       aircore.command.endersee.modify: true
       aircore.command.enderchest: true
+      aircore.command.compass: true
 
   # --- Bypasses ---
 

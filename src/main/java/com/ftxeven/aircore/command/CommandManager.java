@@ -153,6 +153,7 @@ public final class CommandManager {
         for (VirtualWorkstation workstation : VirtualWorkstation.values()) {
             register(new VirtualWorkstationCommand(ctx, workstation));
         }
+        register(new CompassCommand(ctx));
     }
 
     private void register(CommandHandler command) {

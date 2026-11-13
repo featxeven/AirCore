@@ -1078,6 +1078,22 @@ utilities:
       errors:
         self: "<ref:prefix> <red>You can't view your own enderchest this way."
 
+  # --------------------------------------------------
+  # UTILITIES - COMPASS
+  # --------------------------------------------------
+  compass:
+    facing: "<ref:prefix> <gray>You are facing <white>%direction%</white>. <dark_gray>(<gray><white>%degrees%°</white><dark_gray>)"
+
+    values:
+      north: "North"
+      north-east: "North-East"
+      east: "East"
+      south-east: "South-East"
+      south: "South"
+      south-west: "South-West"
+      west: "West"
+      north-west: "North-West"
+
 # --------------------------------------------------
 # DEATH MESSAGES
 # --------------------------------------------------

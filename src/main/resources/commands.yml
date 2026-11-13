@@ -1025,3 +1025,9 @@ commands:
         usage: "/%label%"
         gui:
           menu: "inventory/enderchest"   # GUI is required for command to work
+
+      compass:
+        enabled: true
+        name: "compass"
+        aliases: []
+        usage: "/%label%"
