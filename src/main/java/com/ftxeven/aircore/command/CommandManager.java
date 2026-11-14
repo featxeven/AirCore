@@ -140,6 +140,7 @@ public final class CommandManager {
         register(new SeenCommand(ctx));
         register(new KillCommand(ctx));
         register(new PingCommand(ctx));
+        register(new NearCommand(ctx));
         register(new InvseeCommand(ctx, plugin.guis()));
         register(new EnderseeCommand(ctx, plugin.guis()));
         register(new EnderchestCommand(ctx, plugin.guis()));

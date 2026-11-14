@@ -827,6 +827,21 @@ commands:
             sources: [ONLINE_PLAYERS:20]
             requires: aircore.command.ping.others
 
+      near:
+        enabled: true
+        name: "near"
+        aliases: [nearby]
+        usage: "/%label% [radius]"
+        usage-others: "/%label% [radius] [player]"
+        tab-complete:
+          1:
+            - sources: [10, 25, 50, 100, 250]
+            - sources: [ONLINE_PLAYERS:20]
+              requires: aircore.command.near.others
+          2:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.near.others
+
       seen:
         enabled: true
         name: "seen"

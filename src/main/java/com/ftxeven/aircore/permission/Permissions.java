@@ -83,6 +83,8 @@ public final class Permissions {
         public static final String MAX_PENDING = BASE + ".teleport.max-pending";
 
         // Misc
+        public static final String NEAR_RADIUS = BASE + ".near.radius";
+        public static final String NEAR_HIDDEN = BASE + ".near.hidden";
         public static final String BLOCK = BASE + ".block";
         public static final String BLOCK_LIMIT = BASE + ".block.limit";
         public static final String AFK_IDLE = BASE + ".afk.idle";

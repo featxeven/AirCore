@@ -99,6 +99,26 @@ utility-defaults:
       teleport-requests: true    # Block /tpa and /tpahere
       payments: false            # Block /pay
 
+  # --- /near settings ---
+  near:
+    default-radius: 100          # Radius used when none is given
+    min-radius: 1                # Smallest radius a player can request
+    max-radius: 500              # Largest radius a player can request; -1 = unlimited
+                                 # Bypass with aircore.bypass.near.radius
+    hard-max-radius: 60000000    # Absolute ceiling nobody can exceed, even with
+                                 # aircore.bypass.near.radius or max-radius: -1
+    max-results: 15              # Maximum players listed; -1 = unlimited
+    sort: DISTANCE               # DISTANCE (closest first) | NAME (alphabetical)
+    ignore-height: false         # true = measure on the horizontal plane only
+    distance-decimals: 0         # Decimals shown in distances (0-6)
+
+    # Players matching these rules are left out of the results.
+    # Never be listed at all with aircore.bypass.near.hidden
+    hide:
+      vanished: true             # Players the viewer can't see (vanish plugins)
+      spectators: true           # Players in spectator mode
+      afk: false                 # AFK players; when false they use the entry-afk format
+
 # --------------------------------------------------
 # WORLD RESTRICTIONS
 # --------------------------------------------------
@@ -112,6 +132,7 @@ world-restrictions:
 #   CUSTOM_TIME      - Ignores a personal time set via /playertime
 #   CUSTOM_WEATHER   - Ignores personal weather set via /playerweather
 #   AFK              - Disables AFK (/afk and idle-timeout), and ends it on entering the world
+#   NEAR             - Disables /near
 #
 # example_arena:
 #   - GOD

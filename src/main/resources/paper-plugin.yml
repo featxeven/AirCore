@@ -431,6 +431,12 @@ permissions:
   aircore.command.ping.others:
     description: Check another player's ping.
     default: op
+  aircore.command.near:
+    description: Use /near.
+    default: op
+  aircore.command.near.others:
+    description: Use /near around another player.
+    default: op
   aircore.command.seen:
     description: Use /seen.
     default: op
@@ -647,6 +653,8 @@ permissions:
       aircore.command.sudo.all: true
       aircore.command.ping: true
       aircore.command.ping.others: true
+      aircore.command.near: true
+      aircore.command.near.others: true
       aircore.command.seen: true
       aircore.command.gamemode: true
       aircore.command.gamemode.others: true
@@ -790,6 +798,9 @@ permissions:
   aircore.bypass.restriction.afk:
     description: Bypass the AFK world restriction.
     default: op
+  aircore.bypass.restriction.near:
+    description: Bypass the NEAR world restriction.
+    default: op
   aircore.bypass.restriction.*:
     description: Bypass all world restrictions.
     default: op
@@ -800,6 +811,7 @@ permissions:
       aircore.bypass.restriction.custom-time: true
       aircore.bypass.restriction.custom-weather: true
       aircore.bypass.restriction.afk: true
+      aircore.bypass.restriction.near: true
 
   aircore.bypass.block:
     description: Bypass being blocked by other players.
@@ -838,6 +850,19 @@ permissions:
       aircore.bypass.blacklist.home: true
       aircore.bypass.blacklist.afk: true
 
+  aircore.bypass.near.radius:
+    description: Exceed the maximum /near radius.
+    default: op
+  aircore.bypass.near.hidden:
+    description: Never be listed in other players' /near results.
+    default: op
+  aircore.bypass.near.*:
+    description: Bypass all /near limits and listing rules.
+    default: op
+    children:
+      aircore.bypass.near.radius: true
+      aircore.bypass.near.hidden: true
+
   # Global
   aircore.bypass.command.*:
     description: Bypass every per-command cooldown registered in commands.yml.
@@ -871,6 +896,7 @@ permissions:
       aircore.bypass.block: true
       aircore.bypass.block.limit: true
       aircore.bypass.command.*: true
+      aircore.bypass.near.*: true
 
   # --- Access ---
 

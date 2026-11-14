@@ -1057,6 +1057,41 @@ utilities:
     other: "<ref:prefix> <gray><white>%target%</white>'s ping: <white>%ping%ms</white>."
 
   # --------------------------------------------------
+  # UTILITIES - NEAR
+  # --------------------------------------------------
+  near:
+    list:
+      header:
+        - "<ref:prefix> <gray>Players within <white>%radius%</white> blocks <white>(%count%)</white><dark_gray>:"
+        - "%players%"
+      header-other:
+        - "<ref:prefix> <gray>Players within <white>%radius%</white> blocks of <white>%target%</white> <white>(%count%)</white><dark_gray>:"
+        - "%players%"
+
+      # How each player is formatted inside %players%.
+      # Placeholders: %player%, %player_realname%, %distance%, %direction%
+      entry: "  <dark_gray>•</dark_gray> <white>%player%</white> <dark_gray>- <yellow>%distance%</yellow><gray>m <dark_gray>(<gray>%direction%<dark_gray>)"
+      entry-afk: "  <dark_gray>•</dark_gray> <white>%player%</white> <gray>[AFK] <dark_gray>- <yellow>%distance%</yellow><gray>m <dark_gray>(<gray>%direction%<dark_gray>)"
+
+      # Appended when max-results cuts the list short.
+      more: "  <dark_gray>... and <white>%remaining%</white> more"
+
+      # Separator between entries.
+      separator: "<newline>"
+
+      # Shown instead of header+entries when nobody is in range.
+      empty: "<ref:prefix> <gray>No players within <white>%radius%</white> blocks."
+      empty-other: "<ref:prefix> <gray>No players within <white>%radius%</white> blocks of <white>%target%</white>."
+
+    values:
+      here: "Here"
+
+    errors:
+      radius-too-small: "<ref:prefix> <red>Radius must be at least <white>%min%</white>."
+      radius-too-large: "<ref:prefix> <red>Radius can't exceed <white>%max%</white>."
+      radius-hard-limit: "<ref:prefix> <red>That radius is beyond the server limit of <white>%max%</white>."
+
+  # --------------------------------------------------
   # UTILITIES - SUDO
   # --------------------------------------------------
   sudo:

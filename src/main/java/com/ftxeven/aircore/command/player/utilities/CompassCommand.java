@@ -13,10 +13,6 @@ public final class CompassCommand extends BaseCommand {
     private static final String KEY = "compass";
     private static final String VALUES = "utilities.compass.values.";
 
-    private static final String[] HEADINGS = {
-            "north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"
-    };
-
     public CompassCommand(Context ctx) {
         super(ctx, KEY);
     }
@@ -30,8 +26,8 @@ public final class CompassCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, String label, String subLabel, String[] args) {
         Player player = (Player) sender;
-        double bearing = bearing(player.getLocation().getYaw());
-        String heading = HEADINGS[(int) Math.round(bearing / 45) % HEADINGS.length];
+        double bearing = Headings.bearing(player.getLocation().getYaw());
+        String heading = Headings.key(bearing);
 
         Map<String, String> placeholders = new LinkedHashMap<>();
         placeholders.put("direction", configs().lang().get(VALUES + heading).getFirst());
@@ -39,9 +35,5 @@ public final class CompassCommand extends BaseCommand {
 
         completeCooldown(sender, args);
         messenger().send(sender, configs().lang().get("utilities.compass.facing"), placeholders);
-    }
-
-    private static double bearing(float yaw) {
-        return ((yaw + 180.0) % 360.0 + 360.0) % 360.0;
     }
 }

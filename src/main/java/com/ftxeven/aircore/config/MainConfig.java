@@ -15,6 +15,8 @@ import java.util.Set;
 
 public final class MainConfig extends BaseConfig {
 
+    private static final int MAX_NEAR_DECIMALS = 6;
+
     private volatile General general;
     private volatile Formatting formatting;
     private volatile ToggleDefaults toggleDefaults;
@@ -88,7 +90,10 @@ public final class MainConfig extends BaseConfig {
 
     private UtilityDefaults readUtilityDefaults(ConfigurationSection sec) {
         sec = orEmpty(sec);
-        return new UtilityDefaults(readBlocking(sec.getConfigurationSection("blocking")));
+        return new UtilityDefaults(
+                readBlocking(sec.getConfigurationSection("blocking")),
+                readNear(sec.getConfigurationSection("near"))
+        );
     }
 
     private Blocking readBlocking(ConfigurationSection sec) {
@@ -108,6 +113,74 @@ public final class MainConfig extends BaseConfig {
             }
         }
         return new BlockActions(Collections.unmodifiableSet(enabled));
+    }
+
+    private Near readNear(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        String where = "'utility-defaults.near' in " + fileName();
+
+        int minRadius = getInt(sec, "min-radius", 1);
+        if (minRadius < 1) {
+            plugin.getLogger().warning("'min-radius' at " + where + " must be at least 1, using 1");
+            minRadius = 1;
+        }
+
+        int hardMaxRadius = getInt(sec, "hard-max-radius", 60_000_000);
+        if (hardMaxRadius < minRadius) {
+            plugin.getLogger().warning("'hard-max-radius' at " + where + " is below 'min-radius', using " + minRadius);
+            hardMaxRadius = minRadius;
+        }
+
+        int maxRadius = getInt(sec, "max-radius", 500);
+        if (maxRadius >= 0 && maxRadius < minRadius) {
+            plugin.getLogger().warning("'max-radius' at " + where + " is below 'min-radius', using " + minRadius);
+            maxRadius = minRadius;
+        }
+        if (maxRadius > hardMaxRadius) {
+            plugin.getLogger().warning("'max-radius' at " + where + " is above 'hard-max-radius', using " + hardMaxRadius);
+            maxRadius = hardMaxRadius;
+        }
+
+        int requestedDefault = getInt(sec, "default-radius", 100);
+        int ceiling = maxRadius >= 0 ? maxRadius : hardMaxRadius;
+        int defaultRadius = Math.min(ceiling, Math.max(minRadius, requestedDefault));
+        if (defaultRadius != requestedDefault) {
+            plugin.getLogger().warning("'default-radius' at " + where + " is outside the allowed radius range, using " + defaultRadius);
+        }
+
+        int maxResults = getInt(sec, "max-results", 15);
+        if (maxResults == 0) {
+            plugin.getLogger().warning("'max-results' at " + where + " can't be 0, using 1 (use -1 for unlimited)");
+            maxResults = 1;
+        }
+
+        int decimals = getInt(sec, "distance-decimals", 0);
+        if (decimals < 0 || decimals > MAX_NEAR_DECIMALS) {
+            int clamped = Math.clamp(decimals, 0, MAX_NEAR_DECIMALS);
+            plugin.getLogger().warning("'distance-decimals' at " + where + " must be between 0 and " + MAX_NEAR_DECIMALS + ", using " + clamped);
+            decimals = clamped;
+        }
+
+        return new Near(
+                defaultRadius,
+                minRadius,
+                maxRadius,
+                hardMaxRadius,
+                maxResults,
+                enumOr(sec, "sort", NearSort.class, NearSort.DISTANCE),
+                getBoolean(sec, "ignore-height", false),
+                decimals,
+                readNearHide(sec.getConfigurationSection("hide"))
+        );
+    }
+
+    private NearHide readNearHide(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        return new NearHide(
+                getBoolean(sec, "vanished", true),
+                getBoolean(sec, "spectators", true),
+                getBoolean(sec, "afk", false)
+        );
     }
 
     private WorldRestrictions readWorldRestrictions(ConfigurationSection sec) {
@@ -151,7 +224,9 @@ public final class MainConfig extends BaseConfig {
 
     public enum DurationMode { DETAILED, SEQUENTIAL, CUSTOM }
 
-    public enum RestrictedFeature { GOD, FLY, SPEED, CUSTOM_TIME, CUSTOM_WEATHER, AFK }
+    public enum RestrictedFeature { GOD, FLY, SPEED, CUSTOM_TIME, CUSTOM_WEATHER, AFK, NEAR }
+
+    public enum NearSort { DISTANCE, NAME }
 
     public enum BlockAction {
         CHAT(true),
@@ -196,7 +271,21 @@ public final class MainConfig extends BaseConfig {
 
     public record Blocking(int maxBlocked, BlockActions actions) {}
 
-    public record UtilityDefaults(Blocking blocking) {}
+    public record NearHide(boolean vanished, boolean spectators, boolean afk) {}
+
+    public record Near(int defaultRadius, int minRadius, int maxRadius, int hardMaxRadius, int maxResults, NearSort sort,
+                       boolean ignoreHeight, int distanceDecimals, NearHide hide) {
+
+        public boolean radiusUnlimited() {
+            return maxRadius < 0;
+        }
+
+        public boolean resultsUnlimited() {
+            return maxResults < 0;
+        }
+    }
+
+    public record UtilityDefaults(Blocking blocking, Near near) {}
 
     public record WorldRestrictions(Map<String, Set<RestrictedFeature>> byWorld) {
 
