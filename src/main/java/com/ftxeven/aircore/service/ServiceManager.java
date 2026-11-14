@@ -4,6 +4,7 @@ import com.ftxeven.aircore.AirCore;
 import com.ftxeven.aircore.module.chat.filter.ProfanityFilter;
 import com.ftxeven.aircore.service.inventory.InventoryService;
 import com.ftxeven.aircore.service.item.HoldingService;
+import com.ftxeven.aircore.service.item.ItemTextService;
 
 public final class ServiceManager {
 
@@ -12,6 +13,7 @@ public final class ServiceManager {
     private final ProfanityFilter profanity;
     private final InventoryService inventories;
     private final HoldingService holding;
+    private final ItemTextService itemText;
     private final ConfirmationService confirmations;
     private final CommandCooldownService commandCooldowns;
     private final LeaderboardService leaderboards;
@@ -22,6 +24,7 @@ public final class ServiceManager {
         profanity = new ProfanityFilter(plugin);
         inventories = new InventoryService(plugin.getLogger(), plugin.database().inventories(), plugin.cache().writes());
         holding = new HoldingService();
+        itemText = new ItemTextService(plugin.configs(), profanity);
         confirmations = new ConfirmationService();
         commandCooldowns = new CommandCooldownService(plugin.cache(), plugin.configs());
         leaderboards = new LeaderboardService(plugin.getLogger(), plugin.configs(), players, () -> plugin.modules().variables());
@@ -32,6 +35,7 @@ public final class ServiceManager {
     public ProfanityFilter profanity() { return profanity; }
     public InventoryService inventories() { return inventories; }
     public HoldingService holding() { return holding; }
+    public ItemTextService itemText() { return itemText; }
     public ConfirmationService confirmations() { return confirmations; }
     public CommandCooldownService commandCooldowns() { return commandCooldowns; }
     public LeaderboardService leaderboards() { return leaderboards; }

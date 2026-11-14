@@ -539,6 +539,12 @@ permissions:
   aircore.command.hat:
     description: Use /hat.
     default: op
+  aircore.command.itemname:
+    description: Use /itemname.
+    default: op
+  aircore.command.itemlore:
+    description: Use /itemlore.
+    default: op
 
   aircore.command.*:
     description: Grants access to every command.
@@ -678,6 +684,8 @@ permissions:
       aircore.command.enderchest: true
       aircore.command.compass: true
       aircore.command.hat: true
+      aircore.command.itemname: true
+      aircore.command.itemlore: true
 
   # --- Bypasses ---
 
@@ -842,6 +850,13 @@ permissions:
   aircore.bypass.blacklist.afk:
     description: Use AFK reasons that match the AFK reason blacklist.
     default: op
+  aircore.bypass.blacklist.itemname:
+    description: Use item names that match the item name blacklist.
+    default: op
+  aircore.bypass.blacklist.itemlore:
+    description: Use lore lines that match the item lore blacklist.
+    default: op
+
   aircore.bypass.blacklist.*:
     description: Bypass all name and reason blacklists.
     default: op
@@ -849,6 +864,8 @@ permissions:
       aircore.bypass.blacklist.nickname: true
       aircore.bypass.blacklist.home: true
       aircore.bypass.blacklist.afk: true
+      aircore.bypass.blacklist.itemname: true
+      aircore.bypass.blacklist.itemlore: true
 
   aircore.bypass.near.radius:
     description: Exceed the maximum /near radius.

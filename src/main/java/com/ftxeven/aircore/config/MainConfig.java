@@ -9,13 +9,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class MainConfig extends BaseConfig {
 
     private static final int MAX_NEAR_DECIMALS = 6;
+
+    // any visible text, spaces included; control characters and the legacy section sign are rejected
+    private static final String ITEM_TEXT_REGEX = "^[^\\p{Cntrl}§]+$";
 
     private volatile General general;
     private volatile Formatting formatting;
@@ -92,7 +97,9 @@ public final class MainConfig extends BaseConfig {
         sec = orEmpty(sec);
         return new UtilityDefaults(
                 readBlocking(sec.getConfigurationSection("blocking")),
-                readNear(sec.getConfigurationSection("near"))
+                readNear(sec.getConfigurationSection("near")),
+                readItemText(sec.getConfigurationSection("item-name"), 50),
+                readItemLore(sec.getConfigurationSection("item-lore"))
         );
     }
 
@@ -181,6 +188,28 @@ public final class MainConfig extends BaseConfig {
                 getBoolean(sec, "spectators", true),
                 getBoolean(sec, "afk", false)
         );
+    }
+
+    private ItemText readItemText(ConfigurationSection sec, int defaultMaxLength) {
+        sec = orEmpty(sec);
+        NameValidation validation = readNameValidation(sec, defaultMaxLength, ITEM_TEXT_REGEX);
+        return new ItemText(
+                validation.maxLength(),
+                validation.validationRegex(),
+                validation.blacklist(),
+                validation.extendProfanityWords(),
+                getBoolean(sec, "italic", false)
+        );
+    }
+
+    private ItemLore readItemLore(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        int maxLines = getInt(sec, "max-lines", 10);
+        if (maxLines == 0) {
+            plugin.getLogger().warning("'max-lines' at 'utility-defaults.item-lore' in " + fileName() + " can't be 0, using 1 (use -1 for unlimited)");
+            maxLines = 1;
+        }
+        return new ItemLore(readItemText(sec, 50), maxLines);
     }
 
     private WorldRestrictions readWorldRestrictions(ConfigurationSection sec) {
@@ -285,7 +314,12 @@ public final class MainConfig extends BaseConfig {
         }
     }
 
-    public record UtilityDefaults(Blocking blocking, Near near) {}
+    public record ItemText(int maxLength, Pattern validationRegex, List<Pattern> blacklist,
+                           boolean extendProfanityWords, boolean italic) {}
+
+    public record ItemLore(ItemText text, int maxLines) {}
+
+    public record UtilityDefaults(Blocking blocking, Near near, ItemText itemName, ItemLore itemLore) {}
 
     public record WorldRestrictions(Map<String, Set<RestrictedFeature>> byWorld) {
 

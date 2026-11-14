@@ -119,6 +119,29 @@ utility-defaults:
       spectators: true           # Players in spectator mode
       afk: false                 # AFK players; when false they use the entry-afk format
 
+  # --- /itemname settings ---
+  item-name:
+    max-length: 50                          # Visible characters, formatting tags excluded; -1 = unlimited
+    validation-regex: "^[^\\p{Cntrl}§]+$"   # Visible text must match; default allows spaces and rejects control characters and §
+    italic: false                           # false = not italic unless the player uses <italic> (vanilla italicizes renamed items)
+
+    # Names matching any of these patterns are never allowed.
+    # Each entry can be a plain word or a Java regex pattern.
+    # Bypass with aircore.bypass.blacklist.itemname
+    blacklist: []
+    extend-profanity-words: false  # Extend filters.profanity words file to the blacklist (from chat module)
+
+  # --- /itemlore settings ---
+  item-lore:
+    max-lines: 10                  # Maximum lore lines per item; -1 = unlimited
+    max-length: 50                 # Visible characters per line; -1 = unlimited
+    validation-regex: "^[^\\p{Cntrl}§]+$"
+    italic: false
+
+    # Bypass with aircore.bypass.blacklist.itemlore
+    blacklist: []
+    extend-profanity-words: false
+
 # --------------------------------------------------
 # WORLD RESTRICTIONS
 # --------------------------------------------------

@@ -150,6 +150,8 @@ public final class CommandManager {
         }
         register(new CompassCommand(ctx));
         register(new HatCommand(ctx));
+        register(new ItemnameCommand(ctx));
+        register(new ItemloreCommand(ctx));
     }
 
     private void register(CommandHandler command) {

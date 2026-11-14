@@ -42,7 +42,7 @@ public final class HomesConfig extends BaseConfig {
 
     private Naming readNaming(ConfigurationSection sec) {
         sec = orEmpty(sec);
-        NameValidation nv = readNameValidation(sec);
+        NameValidation nv = readNameValidation(sec, 16, "^[a-zA-Z0-9_]+$");
         return new Naming(getBoolean(sec, "enabled", true), nv.maxLength(), nv.validationRegex(), nv.blacklist(), nv.extendProfanityWords());
     }
 

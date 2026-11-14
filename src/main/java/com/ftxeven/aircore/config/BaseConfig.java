@@ -267,10 +267,10 @@ public abstract class BaseConfig implements LoadableConfig {
 
     protected record NameValidation(int maxLength, Pattern validationRegex, List<Pattern> blacklist, boolean extendProfanityWords) {}
 
-    protected NameValidation readNameValidation(ConfigurationSection section) {
+    protected NameValidation readNameValidation(ConfigurationSection section, int defaultMaxLength, String defaultRegex) {
         return new NameValidation(
-                getInt(section, "max-length", 16),
-                regexOr(section, "validation-regex", "^[a-zA-Z0-9_]+$"),
+                getInt(section, "max-length", defaultMaxLength),
+                regexOr(section, "validation-regex", defaultRegex),
                 readPatternList(section, "blacklist"),
                 getBoolean(section, "extend-profanity-words", false)
         );

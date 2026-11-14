@@ -92,6 +92,8 @@ public final class Permissions {
         public static final String NICKNAME_BLACKLIST = BASE + ".blacklist.nickname";
         public static final String HOME_BLACKLIST = BASE + ".blacklist.home";
         public static final String AFK_BLACKLIST = BASE + ".blacklist.afk";
+        public static final String ITEM_NAME_BLACKLIST = BASE + ".blacklist.itemname";
+        public static final String ITEM_LORE_BLACKLIST = BASE + ".blacklist.itemlore";
 
         private Bypass() {
         }

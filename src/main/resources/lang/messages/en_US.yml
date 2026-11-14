@@ -1135,6 +1135,38 @@ utilities:
       no-item: "<ref:prefix> <red>Hold an item to wear it."
       bound: "<ref:prefix> <red>Your current hat is bound to you and can't be removed."
 
+  # --------------------------------------------------
+  # UTILITIES - ITEM NAME
+  # --------------------------------------------------
+  itemname:
+    set: "<ref:prefix> <gray>Item renamed to <white>%name%</white>."
+    reset: "<ref:prefix> <gray>Item name reset."
+
+    errors:
+      no-item: "<ref:prefix> <red>Hold an item to rename it."
+      not-set: "<ref:prefix> <red>This item doesn't have a custom name."
+      too-long: "<ref:prefix> <red>Item name too long. <dark_gray>(<gray><white>%length%<gray>/<white>%max%<dark_gray>)"
+      invalid: "<ref:prefix> <red>Invalid item name: <white>%text%</white>."
+      profanity: "<ref:prefix> <red>Your item name contains disallowed words."
+
+  # --------------------------------------------------
+  # UTILITIES - ITEM LORE
+  # --------------------------------------------------
+  itemlore:
+    added: "<ref:prefix> <gray>Added lore line <white>%line%</white>."
+    set: "<ref:prefix> <gray>Lore line <white>%line%</white> updated."
+    removed: "<ref:prefix> <red>Lore line <white>%line%</white> removed."
+    cleared: "<ref:prefix> <gray>Item lore cleared."
+
+    errors:
+      no-item: "<ref:prefix> <red>Hold an item to edit its lore."
+      no-lore: "<ref:prefix> <red>This item has no lore."
+      invalid-line: "<ref:prefix> <red>Line <white>%line%</white> doesn't exist. <dark_gray>(<gray>Lines: <white>%count%<dark_gray>)"
+      limit-reached: "<ref:prefix> <red>Lore line limit reached. <dark_gray>(<gray>Limit: <white>%count%<gray>/<white>%limit%<dark_gray>)"
+      too-long: "<ref:prefix> <red>Lore line too long. <dark_gray>(<gray><white>%length%<gray>/<white>%max%<dark_gray>)"
+      invalid: "<ref:prefix> <red>Invalid lore line: <white>%text%</white>."
+      profanity: "<ref:prefix> <red>Your lore line contains disallowed words."
+
 # --------------------------------------------------
 # DEATH MESSAGES
 # --------------------------------------------------

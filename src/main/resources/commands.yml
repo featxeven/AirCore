@@ -1047,3 +1047,34 @@ commands:
         name: "hat"
         aliases: []
         usage: "/%label%"
+
+      itemname:
+        enabled: true
+        name: "itemname"
+        aliases: [iname]
+        usage: "/%label% <set|reset> [name]"
+        actions:
+          set: "set"
+          reset: "reset"
+        tab-complete:
+          1: [ACTIONS]
+
+      itemlore:
+        enabled: true
+        name: "itemlore"
+        aliases: [ilore]
+        usage: "/%label% <add|set|remove|clear> [line] [text]"
+        actions:
+          add: "add"
+          set: "set"
+          remove: "remove"
+          clear: "clear"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            - sources: [1, 2, 3, 4, 5]
+              conditions:
+                - "%arg_1% == set"
+            - sources: [1, 2, 3, 4, 5]
+              conditions:
+                - "%arg_1% == remove"

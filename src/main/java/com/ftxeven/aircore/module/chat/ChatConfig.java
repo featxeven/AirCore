@@ -367,7 +367,7 @@ public final class ChatConfig extends BaseConfig {
 
     private Nicknames readNicknames(ConfigurationSection sec) {
         sec = orEmpty(sec);
-        var validation = readNameValidation(sec);
+        var validation = readNameValidation(sec, 16, "^[a-zA-Z0-9_]+$");
         return new Nicknames(
                 getString(sec, "prefix", "~"),
                 Math.max(1, validation.maxLength()),
