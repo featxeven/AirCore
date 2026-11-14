@@ -479,6 +479,6 @@ public final class PlayerService {
         if (nickname == null || nickname.isEmpty()) {
             return name;
         }
-        return configs.extras().nicknames().prefix() + nickname;
+        return configs.chat().nicknames().prefix() + nickname;
     }
 }

@@ -243,6 +243,48 @@ display-tags:
 #    format: "<gray><hover:show_text:'<green>%player_ping%ms</green>'>[%player%\\'s ping]</hover></gray>"
 
 # --------------------------------------------------
+# NICKNAMES
+# --------------------------------------------------
+nicknames:
+  # Nickname command is controlled in-game, not from this file.
+  # To disable it, disable the command in commands.yml instead.
+
+  prefix: "<gray>~</gray>"             # Shown before the nickname in chat to distinguish it from a real username; "" = none
+  max-length: 16
+  validation-regex: "^[a-zA-Z0-9_]+$"  # Names not matching this pattern are rejected
+
+  # Nicknames matching any of these patterns are never allowed.
+  # Useful for blocking impersonation of staff titles or reserved names.
+  #
+  # Blacklist is checked after validation-regex passes, so entries only need to
+  # account for characters that validation-regex already allows.
+  #
+  # Each entry can be either a plain word or a Java regex pattern.
+  blacklist: []
+  # - "console"                      # plain text; blocks exactly "console" (case-insensitive)
+  # - "(?i)a[d@][m][i1][n]+"         # regex; blocks admin, 4dmin, adm1n, @dmin, etc.
+
+  extend-profanity-words: false      # Extend filters.profanity words file to the blacklist (from chat module)
+
+# --------------------------------------------------
+# PRIVATE MESSAGES
+# --------------------------------------------------
+private-messages:
+  # Private messaging is controlled in-game via commands, not from this file.
+  # To disable /msg, /reply, and /socialspy, disable the commands in commands.yml instead.
+
+  # --- Behavior ---
+  allow-self-message: false
+  reply-expires-after: 60           # Seconds before the stored /reply target is discarded; -1 = keep indefinitely
+
+  # --- Pipeline ---
+  # Each toggle controls whether that processing step also runs inside private messages
+  apply-cooldown: false             # Use the cooldown from general.cooldown (or slow-mode if active)
+  apply-url-formatting: true        # Wrap URLs with the format defined in urls.format
+  apply-display-tags: true          # Resolve display tags defined in display-tags
+  apply-filters: false              # Run the full filter pipeline; caps, spam, profanity, etc.
+
+# --------------------------------------------------
 # MODERATION
 # --------------------------------------------------
 moderation:
@@ -348,21 +390,3 @@ moderation:
         reset-on-trigger: true
         notify-staff:
           - "<ref:prefix> <yellow>%player% <gray>was auto-kicked at step <white>%step%/%total_steps%</white> <dark_gray>(<white>%count%</white> points)<dark_gray>."
-
-# --------------------------------------------------
-# PRIVATE MESSAGES
-# --------------------------------------------------
-private-messages:
-  # Private messaging is controlled in-game via commands, not from this file.
-  # To disable /msg, /reply, and /socialspy, disable the commands in commands.yml instead.
-
-  # --- Behavior ---
-  allow-self-message: false
-  reply-expires-after: 60           # Seconds before the stored /reply target is discarded; -1 = keep indefinitely
-
-  # --- Pipeline ---
-  # Each toggle controls whether that processing step also runs inside private messages
-  apply-cooldown: false             # Use the cooldown from general.cooldown (or slow-mode if active)
-  apply-url-formatting: true        # Wrap URLs with the format defined in urls.format
-  apply-display-tags: true          # Resolve display tags defined in display-tags
-  apply-filters: false              # Run the full filter pipeline; caps, spam, profanity, etc.

@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.extras;
+package com.ftxeven.aircore.module.events;
 
 import com.ftxeven.aircore.config.LangConfig;
 import com.ftxeven.aircore.service.PlayerService;

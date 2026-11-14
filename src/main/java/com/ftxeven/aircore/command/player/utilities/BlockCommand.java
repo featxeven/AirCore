@@ -1,6 +1,6 @@
-package com.ftxeven.aircore.command.player.extras;
+package com.ftxeven.aircore.command.player.utilities;
 
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
+import com.ftxeven.aircore.service.BlockService;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -15,7 +15,7 @@ public final class BlockCommand extends BlockActionCommand {
     }
 
     @Override
-    protected void apply(BlockHandler blocks, UUID owner, UUID target, Player initiator, Consumer<BlockHandler.Result> callback) {
+    protected void apply(BlockService blocks, UUID owner, UUID target, Player initiator, Consumer<BlockService.Result> callback) {
         blocks.block(owner, target, initiator, callback);
     }
 }

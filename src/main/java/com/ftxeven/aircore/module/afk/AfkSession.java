@@ -1,4 +1,4 @@
-package com.ftxeven.aircore.module.extras.afk;
+package com.ftxeven.aircore.module.afk;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.jetbrains.annotations.Nullable;

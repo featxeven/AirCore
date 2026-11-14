@@ -1,13 +1,13 @@
-package com.ftxeven.aircore.module.extras.afk;
+package com.ftxeven.aircore.module.afk;
 
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.config.MainConfig;
 import com.ftxeven.aircore.core.command.DynamicCommand;
 import com.ftxeven.aircore.module.NameValidator;
 import com.ftxeven.aircore.module.chat.filter.ProfanityFilter;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.service.PlayerService;
+import com.ftxeven.aircore.service.ServiceManager;
 import com.ftxeven.aircore.util.Cooldowns;
 import com.ftxeven.aircore.util.Messenger;
 import com.ftxeven.aircore.util.MiniText;
@@ -36,7 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class AfkHandler {
+public final class AfkModule {
 
     public sealed interface ToggleResult {
         record Enabled() implements ToggleResult {}
@@ -90,12 +90,11 @@ public final class AfkHandler {
     private final Map<UUID, ScheduledTask> idleChecks = new ConcurrentHashMap<>();
     private final Map<UUID, Cooldowns<UUID>> notified = new ConcurrentHashMap<>(); // initiator -> (target -> last notice)
 
-    public AfkHandler(JavaPlugin plugin, ConfigManager configs, Messenger messenger, PlayerService players,
-                      ProfanityFilter profanity) {
+    public AfkModule(JavaPlugin plugin, ConfigManager configs, Messenger messenger, ServiceManager services) {
         this.configs = configs;
         this.messenger = messenger;
-        this.players = players;
-        this.profanity = profanity;
+        this.players = services.players();
+        this.profanity = services.profanity();
         this.actions = new AfkActionRunner(plugin.getLogger(), configs, messenger);
     }
 
@@ -116,7 +115,7 @@ public final class AfkHandler {
     // Reason rules
 
     public ReasonVerdict validateReason(Player player, String reason) {
-        ExtrasConfig.AfkReason settings = configs.extras().afk().reason();
+        AfkConfig.Reason settings = configs.afk().reason();
 
         if (settings.maxLength() > 0 && reason.length() > settings.maxLength()) {
             return new ReasonVerdict.TooLong(reason.length(), settings.maxLength());
@@ -157,8 +156,8 @@ public final class AfkHandler {
 
     // Notify a player who interacted with an AFK target
 
-    public boolean notifyIfAfk(CommandSender initiator, UUID targetUuid, ExtrasConfig.AfkNotifyAction action) {
-        ExtrasConfig.AfkNotify notice = configs.extras().afk().notice();
+    public boolean notifyIfAfk(CommandSender initiator, UUID targetUuid, AfkConfig.NotifyAction action) {
+        AfkConfig.Notice notice = configs.afk().notice();
         if (!notice.applies(action)) {
             return false;
         }
@@ -178,14 +177,14 @@ public final class AfkHandler {
             }
         }
 
-        messenger.send(initiator, configs.lang().get("extras.afk.interaction"), placeholders(targetUuid, session));
+        messenger.send(initiator, configs.lang().get("afk.interaction"), placeholders(targetUuid, session));
         return true;
     }
 
     // Activity triggers
 
     public void handleMove(PlayerMoveEvent event) {
-        ExtrasConfig.AfkActivity activity = configs.extras().afk().activity();
+        AfkConfig.Activity activity = configs.afk().activity();
         if (!activity.move() && !activity.look()) {
             return;
         }
@@ -207,32 +206,32 @@ public final class AfkHandler {
     }
 
     public void handleInteract(PlayerInteractEvent event) {
-        if (event.getAction() == Action.PHYSICAL || !configs.extras().afk().activity().interact()) {
+        if (event.getAction() == Action.PHYSICAL || !configs.afk().activity().interact()) {
             return; // stepping on a pressure plate is movement, not interaction
         }
         onActivity(event.getPlayer());
     }
 
     public void handleInteractEntity(PlayerInteractEntityEvent event) {
-        if (configs.extras().afk().activity().interact()) {
+        if (configs.afk().activity().interact()) {
             onActivity(event.getPlayer());
         }
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (configs.extras().afk().activity().inventory() && event.getWhoClicked() instanceof Player player) {
+        if (configs.afk().activity().inventory() && event.getWhoClicked() instanceof Player player) {
             onActivity(player);
         }
     }
 
     public void handleChatActivity(Player player) {
-        if (configs.extras().afk().activity().chat()) {
+        if (configs.afk().activity().chat()) {
             onActivity(player);
         }
     }
 
     public void handleCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (configs.extras().afk().activity().command() && !isAfkCommand(event.getMessage())) {
+        if (configs.afk().activity().command() && !isAfkCommand(event.getMessage())) {
             onActivity(event.getPlayer()); // /afk itself never counts
         }
     }
@@ -287,7 +286,7 @@ public final class AfkHandler {
         AfkSession session = new AfkSession(Instant.now(), reason, auto, scheduled);
         sessions.put(uuid, session);
         anchors.remove(uuid);
-        announce(player, "extras.afk.enabled", placeholders(uuid, session));
+        announce(player, "afk.enabled", placeholders(uuid, session));
     }
 
     private void endAfk(Player player) {
@@ -298,12 +297,12 @@ public final class AfkHandler {
         }
         actions.cancel(session.scheduledActions());
         markActive(uuid);
-        announce(player, "extras.afk.disabled", placeholders(uuid, session));
+        announce(player, "afk.disabled", placeholders(uuid, session));
     }
 
     private void announce(Player player, String langKey, Map<String, String> placeholders) {
         List<String> lines = configs.lang().get(langKey);
-        if (configs.extras().afk().broadcast()) {
+        if (configs.afk().general().broadcast()) {
             messenger.broadcast(lines, placeholders);
         } else {
             messenger.send(player, lines, placeholders);
@@ -311,7 +310,7 @@ public final class AfkHandler {
     }
 
     private void checkIdle(Player player) {
-        ExtrasConfig.Afk settings = configs.extras().afk();
+        AfkConfig.General settings = configs.afk().general();
         UUID uuid = player.getUniqueId();
         if (!settings.idleEnabled() || sessions.containsKey(uuid)) {
             return;
@@ -349,7 +348,7 @@ public final class AfkHandler {
 
     private String resolveReason(AfkSession session) {
         String reason = session.reason();
-        if (reason == null || reason.isBlank() || !configs.extras().afk().reason().enabled()) {
+        if (reason == null || reason.isBlank() || !configs.afk().reason().enabled()) {
             return configs.lang().get("placeholders.no-reason").getFirst();
         }
         return MiniText.mini().escapeTags(reason);

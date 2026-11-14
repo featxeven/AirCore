@@ -1,11 +1,11 @@
-package com.ftxeven.aircore.module.extras.nickname;
+package com.ftxeven.aircore.module.chat.nickname;
 
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.model.PlayerProfile;
 import com.ftxeven.aircore.module.NameValidator;
+import com.ftxeven.aircore.module.chat.ChatConfig;
 import com.ftxeven.aircore.module.chat.PlayerInputSanitizer;
 import com.ftxeven.aircore.module.chat.filter.ProfanityFilter;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.util.MiniText;
@@ -58,7 +58,7 @@ public final class NicknameHandler {
     }
 
     public FormatVerdict validateFormat(Permissible sender, String requested) {
-        ExtrasConfig.Nicknames rules = configs.extras().nicknames();
+        ChatConfig.Nicknames rules = configs.chat().nicknames();
 
         String sanitized = PlayerInputSanitizer.sanitize(requested, configs.main().formatting().messageFormat(), sender);
 
@@ -123,9 +123,9 @@ public final class NicknameHandler {
 
     public String langKeyFor(NameValidator.Reason reason) {
         return switch (reason) {
-            case TOO_LONG -> "extras.nickname.errors.too-long";
-            case INVALID_FORMAT, BLACKLISTED -> "extras.nickname.errors.invalid";
-            case PROFANITY -> "extras.nickname.errors.profanity";
+            case TOO_LONG -> "chat.nickname.errors.too-long";
+            case INVALID_FORMAT, BLACKLISTED -> "chat.nickname.errors.invalid";
+            case PROFANITY -> "chat.nickname.errors.profanity";
         };
     }
 }

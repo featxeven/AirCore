@@ -348,7 +348,7 @@ public final class ImportWriter {
         int slot = 0;
         for (ItemStack item : imported.items()) {
             if (slot >= Kit.MAIN_SIZE) {
-                report.warn("kit '" + name + "' had more than " + Kit.MAIN_SIZE + " items, the extras were dropped");
+                report.warn("kit '" + name + "' had more than " + Kit.MAIN_SIZE + " items, the events were dropped");
                 break;
             }
             items[slot++] = item;

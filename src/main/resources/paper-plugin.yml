@@ -92,6 +92,12 @@ permissions:
   aircore.command.broadcast:
     description: Use /broadcast.
     default: op
+  aircore.command.nickname:
+    description: Use /nickname.
+    default: op
+  aircore.command.nickname.others:
+    description: Set another player's nickname.
+    default: op
 
   # Economy
   aircore.command.balance:
@@ -322,7 +328,7 @@ permissions:
     description: Use /deletewarp.
     default: op
 
-  # Extras
+  # Utilities
   aircore.command.afk:
     description: Use /afk.
     default: op
@@ -332,14 +338,6 @@ permissions:
   aircore.command.unblock:
     description: Unblock a player.
     default: op
-  aircore.command.nickname:
-    description: Use /nickname.
-    default: op
-  aircore.command.nickname.others:
-    description: Set another player's nickname.
-    default: op
-
-  # Utilities
   aircore.command.heal:
     description: Use /heal.
     default: op
@@ -557,6 +555,8 @@ permissions:
       aircore.command.announcetoggle: true
       aircore.command.announcetoggle.others: true
       aircore.command.broadcast: true
+      aircore.command.nickname: true
+      aircore.command.nickname.others: true
       aircore.command.balance: true
       aircore.command.balance.others: true
       aircore.command.baltop: true
@@ -616,8 +616,6 @@ permissions:
       aircore.command.afk: true
       aircore.command.block: true
       aircore.command.unblock: true
-      aircore.command.nickname: true
-      aircore.command.nickname.others: true
       aircore.command.heal: true
       aircore.command.heal.others: true
       aircore.command.heal.all: true

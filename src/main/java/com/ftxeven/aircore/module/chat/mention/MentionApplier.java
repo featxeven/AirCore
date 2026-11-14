@@ -1,10 +1,11 @@
 package com.ftxeven.aircore.module.chat.mention;
 
+import com.ftxeven.aircore.config.MainConfig;
 import com.ftxeven.aircore.config.MessageComponents;
+import com.ftxeven.aircore.module.afk.AfkConfig;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.chat.ChatConfig;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
-import com.ftxeven.aircore.module.extras.afk.AfkHandler;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
+import com.ftxeven.aircore.service.BlockService;
 import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.util.Messenger;
 import com.ftxeven.aircore.util.MiniText;
@@ -30,10 +31,10 @@ public final class MentionApplier {
     private final Supplier<ChatConfig> config;
     private final Messenger messenger;
     private final PlayerService players;
-    private final BlockHandler blocks;
-    private final AfkHandler afk;
+    private final BlockService blocks;
+    private final AfkModule afk;
 
-    public MentionApplier(Supplier<ChatConfig> config, Messenger messenger, PlayerService players, BlockHandler blocks, AfkHandler afk) {
+    public MentionApplier(Supplier<ChatConfig> config, Messenger messenger, PlayerService players, BlockService blocks, AfkModule afk) {
         this.config = config;
         this.messenger = messenger;
         this.players = players;
@@ -112,7 +113,7 @@ public final class MentionApplier {
                 case PLAYER -> {
                     Player target = match.target();
                     if (eligible.contains(target.getUniqueId())
-                            && !blocks.blocksInteraction(ExtrasConfig.BlockAction.MENTIONS, target.getUniqueId(), sender)
+                            && !blocks.blocksInteraction(MainConfig.BlockAction.MENTIONS, target.getUniqueId(), sender)
                             && targetAllowsMentions(target.getUniqueId())) {
                         targets.putIfAbsent(target.getUniqueId(), target);
                         named.add(target.getUniqueId());
@@ -135,7 +136,7 @@ public final class MentionApplier {
             messenger.send(target, bundle, placeholders, MENTION_BOSSBAR_KEY);
         }
         for (UUID uuid : named) {
-            afk.notifyIfAfk(sender, uuid, ExtrasConfig.AfkNotifyAction.MENTIONS);
+            afk.notifyIfAfk(sender, uuid, AfkConfig.NotifyAction.MENTIONS);
         }
     }
 
@@ -144,7 +145,7 @@ public final class MentionApplier {
             if (recipient.getUniqueId().equals(sender.getUniqueId())) {
                 continue;
             }
-            if (blocks.blocksInteraction(ExtrasConfig.BlockAction.MENTIONS, recipient.getUniqueId(), sender)) {
+            if (blocks.blocksInteraction(MainConfig.BlockAction.MENTIONS, recipient.getUniqueId(), sender)) {
                 continue;
             }
             if (!targetAllowsMentions(recipient.getUniqueId())) {

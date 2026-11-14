@@ -1,12 +1,8 @@
-package com.ftxeven.aircore.module.extras;
+package com.ftxeven.aircore.module.events;
 
 import com.ftxeven.aircore.config.ConfigManager;
-import com.ftxeven.aircore.database.cache.CacheManager;
 import com.ftxeven.aircore.model.PlayerProfile;
 import com.ftxeven.aircore.module.GroupResolver;
-import com.ftxeven.aircore.module.extras.afk.AfkHandler;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
-import com.ftxeven.aircore.module.extras.nickname.NicknameHandler;
 import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.service.ServiceManager;
 import com.ftxeven.aircore.util.Messenger;
@@ -14,49 +10,29 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class ExtrasModule {
+public final class EventsModule {
 
-    private final ExtrasConfig config;
+    private final EventsConfig config;
     private final ConfigManager configs;
     private final Messenger messenger;
     private final GroupResolver groups;
     private final PlayerService players;
 
     private final DeathMessageResolver deathResolver;
-    private final NicknameHandler nicknames;
-    private final BlockHandler blocks;
-    private final AfkHandler afk;
 
-    public ExtrasModule(JavaPlugin plugin, ConfigManager configs, Messenger messenger, GroupResolver groups,
-                        CacheManager cache, ServiceManager services) {
-        this.config = configs.extras();
+    public EventsModule(ConfigManager configs, Messenger messenger, GroupResolver groups, ServiceManager services) {
+        this.config = configs.events();
         this.configs = configs;
         this.messenger = messenger;
         this.groups = groups;
         this.players = services.players();
 
         this.deathResolver = new DeathMessageResolver(configs.lang(), players);
-        this.nicknames = new NicknameHandler(configs, players, services.profanity());
-        this.blocks = new BlockHandler(cache, configs, players);
-        this.afk = new AfkHandler(plugin, configs, messenger, players, services.profanity());
-    }
-
-    public NicknameHandler nicknames() {
-        return nicknames;
-    }
-
-    public BlockHandler blocks() {
-        return blocks;
-    }
-
-    public AfkHandler afk() {
-        return afk;
     }
 
     // Join
@@ -65,8 +41,6 @@ public final class ExtrasModule {
         if (joinEnabled()) {
             event.joinMessage(null);
         }
-        afk.handleJoin(event.getPlayer());
-        blocks.warm(event.getPlayer().getUniqueId());
     }
 
     public void announceJoin(Player player, PlayerProfile profile, boolean firstJoin) {
@@ -80,15 +54,11 @@ public final class ExtrasModule {
     // Quit
 
     public void handleQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        afk.handleQuit(player.getUniqueId());
-        blocks.release(player.getUniqueId());
-
         if (!leaveEnabled()) {
             return;
         }
         event.quitMessage(null);
-        broadcastLeave(player);
+        broadcastLeave(event.getPlayer());
     }
 
     // Death

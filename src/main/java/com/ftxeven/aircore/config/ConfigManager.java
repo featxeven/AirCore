@@ -1,11 +1,12 @@
 package com.ftxeven.aircore.config;
 
+import com.ftxeven.aircore.module.afk.AfkConfig;
 import com.ftxeven.aircore.module.announcements.AnnouncementsConfig;
 import com.ftxeven.aircore.module.chat.ChatConfig;
 import com.ftxeven.aircore.module.economy.EconomyConfig;
 import com.ftxeven.aircore.module.economy.worth.WorthItemsConfig;
 import com.ftxeven.aircore.module.economy.worth.WorthModifiersConfig;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
+import com.ftxeven.aircore.module.events.EventsConfig;
 import com.ftxeven.aircore.module.homes.HomesConfig;
 import com.ftxeven.aircore.module.kits.KitsConfig;
 import com.ftxeven.aircore.module.placeholders.PlaceholdersConfig;
@@ -39,7 +40,8 @@ public final class ConfigManager {
     private final TeleportConfig teleport;
     private final HomesConfig homes;
     private final KitsConfig kits;
-    private final ExtrasConfig extras;
+    private final EventsConfig events;
+    private final AfkConfig afk;
     private final AnnouncementsConfig announcements;
     private final PlaceholdersConfig placeholders;
     private final VariablesConfig variables;
@@ -62,7 +64,8 @@ public final class ConfigManager {
         teleport = register(new TeleportConfig(plugin));
         homes = register(new HomesConfig(plugin));
         kits = register(new KitsConfig(plugin));
-        extras = register(new ExtrasConfig(plugin));
+        events = register(new EventsConfig(plugin));
+        afk = register(new AfkConfig(plugin));
         announcements = register(new AnnouncementsConfig(plugin));
         placeholders = register(new PlaceholdersConfig(plugin));
         variables = register(new VariablesConfig(plugin));
@@ -133,7 +136,8 @@ public final class ConfigManager {
     public TeleportConfig teleport() { return teleport; }
     public HomesConfig homes() { return homes; }
     public KitsConfig kits() { return kits; }
-    public ExtrasConfig extras() { return extras; }
+    public EventsConfig events() { return events; }
+    public AfkConfig afk() { return afk; }
     public AnnouncementsConfig announcements() { return announcements; }
     public PlaceholdersConfig placeholders() { return placeholders; }
     public VariablesConfig variables() { return variables; }

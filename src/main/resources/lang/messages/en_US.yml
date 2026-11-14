@@ -314,6 +314,30 @@ chat:
       enabled-by: "<ref:prefix> <gray><white>%player%</white> enabled announcements for you."
       disabled-by: "<ref:prefix> <gray><white>%player%</white> disabled announcements for you."
 
+  # --------------------------------------------------
+  # CHAT - NICKNAME
+  # --------------------------------------------------
+  nickname:
+    set:
+      self: "<ref:prefix> <gray>Nickname set to <white>%nick%</white>."
+      other: "<ref:prefix> <gray>Set <white>%target_realname%</white>'s nickname to <white>%nick%</white>."
+      by: "<ref:prefix> <gray><white>%player%</white> set your nickname to <white>%nick%</white>."
+
+    reset:
+      self: "<ref:prefix> <gray>Nickname cleared."
+      other: "<ref:prefix> <gray>Cleared <white>%target%</white>'s nickname."
+      by: "<ref:prefix> <red><white>%player%</white> cleared your nickname."
+
+    errors:
+      too-long: "<ref:prefix> <red>Nickname too long. <dark_gray>(<gray><white>%length%<gray>/<white>%max%<dark_gray>)"
+      invalid: "<ref:prefix> <red>Invalid nickname: <white>%name%</white>."
+      profanity: "<ref:prefix> <red>Your nickname contains disallowed words."
+      already-taken: "<ref:prefix> <red>Nickname <white>%nickname%</white> is already taken."
+      none-set: "<ref:prefix> <red>You don't have a nickname set."
+      none-set-for: "<ref:prefix> <red><white>%target%</white> doesn't have a nickname set."
+      same: "<ref:prefix> <red>Your nickname is already set to <white>%nickname%</white>."
+      same-for: "<ref:prefix> <red><white>%target%</white>'s nickname is already set to <white>%nickname%</white>."
+
   errors:
     cooldown: "<ref:prefix> <red>Please wait <white>%timeout%</white> before chatting again."
 
@@ -779,49 +803,25 @@ kits:
     blocked-world-for: "<ref:prefix> <red>Kits cannot be given to <white>%target%</white> in <white>%world%</white>."
 
 # --------------------------------------------------
-# EXTRAS
+# AFK
 # --------------------------------------------------
-extras:
-  # --------------------------------------------------
-  # EXTRAS - AFK
-  # --------------------------------------------------
-  afk:
-    enabled: "<ref:prefix> <white>%player%</white> <gray>is now AFK. <dark_gray>(<gray>Reason: <white>%reason%<dark_gray>)"
-    disabled: "<ref:prefix> <white>%player%</white> <gray>is no longer AFK. <dark_gray>(<gray><white>%duration%</white><dark_gray>)"
-    interaction:
-      - "<ref:prefix> <white>%player%</white> <gray>is AFK and may not respond."
-      - "  <gray>Reason: <white>%reason%"
+afk:
+  enabled: "<ref:prefix> <white>%player%</white> <gray>is now AFK. <dark_gray>(<gray>Reason: <white>%reason%<dark_gray>)"
+  disabled: "<ref:prefix> <white>%player%</white> <gray>is no longer AFK. <dark_gray>(<gray><white>%duration%</white><dark_gray>)"
+  interaction:
+    - "<ref:prefix> <white>%player%</white> <gray>is AFK and may not respond."
+    - "  <gray>Reason: <white>%reason%"
 
-    errors:
-      too-long: "<ref:prefix> <red>AFK reason too long. <dark_gray>(<gray><white>%length%<gray>/<white>%max%<dark_gray>)"
-      profanity: "<ref:prefix> <red>Your AFK reason contains disallowed words."
+  errors:
+    too-long: "<ref:prefix> <red>AFK reason too long. <dark_gray>(<gray><white>%length%<gray>/<white>%max%<dark_gray>)"
+    profanity: "<ref:prefix> <red>Your AFK reason contains disallowed words."
 
+# --------------------------------------------------
+# UTILITIES
+# --------------------------------------------------
+utilities:
   # --------------------------------------------------
-  # EXTRAS - NICKNAME
-  # --------------------------------------------------
-  nickname:
-    set:
-      self: "<ref:prefix> <gray>Nickname set to <white>%nick%</white>."
-      other: "<ref:prefix> <gray>Set <white>%target_realname%</white>'s nickname to <white>%nick%</white>."
-      by: "<ref:prefix> <gray><white>%player%</white> set your nickname to <white>%nick%</white>."
-
-    reset:
-      self: "<ref:prefix> <gray>Nickname cleared."
-      other: "<ref:prefix> <gray>Cleared <white>%target%</white>'s nickname."
-      by: "<ref:prefix> <red><white>%player%</white> cleared your nickname."
-
-    errors:
-      too-long: "<ref:prefix> <red>Nickname too long. <dark_gray>(<gray><white>%length%<gray>/<white>%max%<dark_gray>)"
-      invalid: "<ref:prefix> <red>Invalid nickname: <white>%name%</white>."
-      profanity: "<ref:prefix> <red>Your nickname contains disallowed words."
-      already-taken: "<ref:prefix> <red>Nickname <white>%nickname%</white> is already taken."
-      none-set: "<ref:prefix> <red>You don't have a nickname set."
-      none-set-for: "<ref:prefix> <red><white>%target%</white> doesn't have a nickname set."
-      same: "<ref:prefix> <red>Your nickname is already set to <white>%nickname%</white>."
-      same-for: "<ref:prefix> <red><white>%target%</white>'s nickname is already set to <white>%nickname%</white>."
-
-  # --------------------------------------------------
-  # EXTRAS - BLOCK
+  # UTILITIES - BLOCK
   # --------------------------------------------------
   block:
     blocked: "<ref:prefix> <gray>You blocked <white>%target%</white>. <dark_gray>(<gray>Block limit: <white>%count%<dark_gray>/<white>%limit%<dark_gray>)"
@@ -835,10 +835,6 @@ extras:
       blocked-by: "<ref:prefix> <red>You can't interact with <white>%player%</white> because they blocked you."
       limit-reached: "<ref:prefix> <red>Block limit reached. <dark_gray>(<gray>Limit: <white>%count%<dark_gray>/<white>%limit%<dark_gray>)"
 
-# --------------------------------------------------
-# UTILITIES
-# --------------------------------------------------
-utilities:
   # --------------------------------------------------
   # UTILITIES - GAMEMODE
   # --------------------------------------------------

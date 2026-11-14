@@ -2,6 +2,8 @@ package com.ftxeven.aircore.module.chat.pm;
 
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.config.MainConfig;
+import com.ftxeven.aircore.module.afk.AfkConfig;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.chat.ChatConfig;
 import com.ftxeven.aircore.module.chat.PlayerTextRenderer;
 import com.ftxeven.aircore.module.chat.displaytag.DisplayTagRenderer;
@@ -9,11 +11,9 @@ import com.ftxeven.aircore.module.chat.filter.ChatFilterPipeline;
 import com.ftxeven.aircore.module.chat.filter.FilterVerdict;
 import com.ftxeven.aircore.module.chat.filter.WarningLadder;
 import com.ftxeven.aircore.module.chat.url.UrlFormatter;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
-import com.ftxeven.aircore.module.extras.afk.AfkHandler;
-import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.permission.Permissions;
+import com.ftxeven.aircore.service.BlockService;
+import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.util.Messenger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -35,8 +35,8 @@ public final class PrivateMessageHandler {
     private final ConfigManager configs;
     private final Messenger messenger;
     private final PlayerService players;
-    private final BlockHandler blocks;
-    private final AfkHandler afk;
+    private final BlockService blocks;
+    private final AfkModule afk;
     private final ChatFilterPipeline filters;
     private final WarningLadder infractions;
     private final Predicate<Player> cooldownGate;
@@ -45,8 +45,8 @@ public final class PrivateMessageHandler {
     private final DisplayTagRenderer displayTags;
     private final UrlFormatter urlFormatter;
 
-    public PrivateMessageHandler(ConfigManager configs, Messenger messenger, PlayerService players, BlockHandler blocks,
-                                 AfkHandler afk, ChatFilterPipeline filters, WarningLadder infractions,
+    public PrivateMessageHandler(ConfigManager configs, Messenger messenger, PlayerService players, BlockService blocks,
+                                 AfkModule afk, ChatFilterPipeline filters, WarningLadder infractions,
                                  Predicate<Player> cooldownGate, Consumer<Player> cooldownRecorder, ReplyTracker replies,
                                  DisplayTagRenderer displayTags, UrlFormatter urlFormatter) {
         this.configs = configs;
@@ -81,10 +81,10 @@ public final class PrivateMessageHandler {
                 messenger.send(sender, configs.lang().get("chat.msg.errors.self"));
                 return SendResult.SELF;
             }
-            if (blocks.blocksInteraction(ExtrasConfig.BlockAction.PRIVATE_MESSAGES, target.getUniqueId(), playerSender)) {
+            if (blocks.blocksInteraction(MainConfig.BlockAction.PRIVATE_MESSAGES, target.getUniqueId(), playerSender)) {
                 Map<String, String> placeholders = new LinkedHashMap<>();
                 players.formatDisplayName(placeholders, "player", target.getUniqueId());
-                messenger.send(sender, configs.lang().get("extras.block.errors.blocked-by"), placeholders);
+                messenger.send(sender, configs.lang().get("utilities.block.errors.blocked-by"), placeholders);
                 return SendResult.BLOCKED;
             }
         }
@@ -101,7 +101,7 @@ public final class PrivateMessageHandler {
         }
 
         deliver(sender, target, filtered.get());
-        afk.notifyIfAfk(sender, target.getUniqueId(), ExtrasConfig.AfkNotifyAction.PRIVATE_MESSAGES);
+        afk.notifyIfAfk(sender, target.getUniqueId(), AfkConfig.NotifyAction.PRIVATE_MESSAGES);
         if (playerSender != null && settings.applyCooldown()) {
             cooldownRecorder.accept(playerSender);
         }
@@ -197,7 +197,7 @@ public final class PrivateMessageHandler {
         if (recipient.hasPermission(Permissions.Bypass.CHAT_TOGGLE)) {
             return true;
         }
-        if (blocks.blocksInteraction(ExtrasConfig.BlockAction.PRIVATE_MESSAGES, recipient.getUniqueId(), sender)) {
+        if (blocks.blocksInteraction(MainConfig.BlockAction.PRIVATE_MESSAGES, recipient.getUniqueId(), sender)) {
             return false;
         }
         return targetAllowsMessages(recipient.getUniqueId());

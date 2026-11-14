@@ -1,7 +1,7 @@
 package com.ftxeven.aircore.api.papi;
 
 import com.ftxeven.aircore.config.ConfigManager;
-import com.ftxeven.aircore.module.extras.afk.AfkHandler;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.util.TimeFormatter;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.Nullable;
@@ -11,10 +11,10 @@ import java.util.Locale;
 
 final class AfkPlaceholders {
 
-    private final AfkHandler afk;
+    private final AfkModule afk;
     private final ConfigManager configs;
 
-    AfkPlaceholders(AfkHandler afk, ConfigManager configs) {
+    AfkPlaceholders(AfkModule afk, ConfigManager configs) {
         this.afk = afk;
         this.configs = configs;
     }

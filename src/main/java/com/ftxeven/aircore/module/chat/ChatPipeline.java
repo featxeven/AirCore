@@ -1,6 +1,7 @@
 package com.ftxeven.aircore.module.chat;
 
 import com.ftxeven.aircore.config.ConfigManager;
+import com.ftxeven.aircore.config.MainConfig;
 import com.ftxeven.aircore.model.Position;
 import com.ftxeven.aircore.module.Positions;
 import com.ftxeven.aircore.module.chat.channel.ChannelMembership;
@@ -16,9 +17,8 @@ import com.ftxeven.aircore.module.chat.mention.MentionApplier;
 import com.ftxeven.aircore.module.chat.mention.MentionMatch;
 import com.ftxeven.aircore.module.chat.mention.MentionResolver;
 import com.ftxeven.aircore.module.chat.url.UrlFormatter;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
 import com.ftxeven.aircore.permission.Permissions;
+import com.ftxeven.aircore.service.BlockService;
 import com.ftxeven.aircore.service.ServiceManager;
 import com.ftxeven.aircore.util.Messenger;
 import com.ftxeven.aircore.util.Placeholders;
@@ -53,7 +53,6 @@ public final class ChatPipeline {
     private final ConfigManager configs;
     private final Messenger messenger;
     private final ServiceManager services;
-    private final BlockHandler blocks;
     private final ChannelMembership membership;
     private final ChannelResolver channels;
     private final ChatFilterPipeline filters;
@@ -65,7 +64,7 @@ public final class ChatPipeline {
     private final UrlFormatter urlFormatter;
     private final DisplayTagRenderer displayTags;
 
-    public ChatPipeline(ConfigManager configs, Messenger messenger, ServiceManager services, BlockHandler blocks,
+    public ChatPipeline(ConfigManager configs, Messenger messenger, ServiceManager services,
                         ChannelMembership membership, ChannelResolver channels, ChatFilterPipeline filters,
                         WarningLadder infractions, GroupFormatResolver groupFormats,
                         ChatLineTemplateResolver lineTemplates, MentionResolver mentionResolver,
@@ -73,7 +72,6 @@ public final class ChatPipeline {
         this.configs = configs;
         this.messenger = messenger;
         this.services = services;
-        this.blocks = blocks;
         this.membership = membership;
         this.channels = channels;
         this.filters = filters;
@@ -195,12 +193,13 @@ public final class ChatPipeline {
 
     /** only touches the online list, caches, and config. */
     private List<Player> candidates(Rendered rendered) {
+        BlockService blocks = services.blocks();
         List<Player> pool = new ArrayList<>();
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.getUniqueId().equals(rendered.senderUuid())) {
                 continue;
             }
-            if (blocks.blocksInteraction(ExtrasConfig.BlockAction.CHAT, online.getUniqueId(), rendered.senderUuid(), rendered.senderBypassesBlocks())) {
+            if (blocks.blocksInteraction(MainConfig.BlockAction.CHAT, online.getUniqueId(), rendered.senderUuid(), rendered.senderBypassesBlocks())) {
                 continue;
             }
             if (!allowsChat(online.getUniqueId())) {

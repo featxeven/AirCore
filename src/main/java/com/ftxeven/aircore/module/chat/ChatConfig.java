@@ -25,6 +25,7 @@ public final class ChatConfig extends BaseConfig {
     private volatile Mentions mentions;
     private volatile Urls urls;
     private volatile Map<String, DisplayTag> displayTags;
+    private volatile Nicknames nicknames;
     private volatile Filters filters;
     private volatile Warnings warnings;
     private volatile PrivateMessages privateMessages;
@@ -43,6 +44,7 @@ public final class ChatConfig extends BaseConfig {
         mentions = readMentions(yaml.getConfigurationSection("mentions"));
         urls = readUrls(yaml.getConfigurationSection("urls"));
         displayTags = readDisplayTags(yaml.getConfigurationSection("display-tags"));
+        nicknames = readNicknames(yaml.getConfigurationSection("nicknames"));
 
         ConfigurationSection moderation = orEmpty(yaml.getConfigurationSection("moderation"));
         filters = readFilters(moderation.getConfigurationSection("filters"));
@@ -59,6 +61,7 @@ public final class ChatConfig extends BaseConfig {
     public Mentions mentions() { return mentions; }
     public Urls urls() { return urls; }
     public Map<String, DisplayTag> displayTags() { return displayTags; }
+    public Nicknames nicknames() { return nicknames; }
     public Filters filters() { return filters; }
     public Warnings warnings() { return warnings; }
     public PrivateMessages privateMessages() { return privateMessages; }
@@ -362,6 +365,18 @@ public final class ChatConfig extends BaseConfig {
         return Collections.unmodifiableMap(steps);
     }
 
+    private Nicknames readNicknames(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        var validation = readNameValidation(sec);
+        return new Nicknames(
+                getString(sec, "prefix", "~"),
+                Math.max(1, validation.maxLength()),
+                validation.validationRegex(),
+                validation.blacklist(),
+                validation.extendProfanityWords()
+        );
+    }
+
     private PrivateMessages readPrivateMessages(ConfigurationSection sec) {
         sec = orEmpty(sec);
         return new PrivateMessages(
@@ -461,6 +476,8 @@ public final class ChatConfig extends BaseConfig {
     }
 
     public record Filters(CapsFilter caps, SpamFilter spam, AdvertisingFilter advertising, ProfanityFilter profanity, UnicodeFilter unicode) {}
+
+    public record Nicknames(String prefix, int maxLength, Pattern validationRegex, List<Pattern> blacklist, boolean extendProfanityWords) {}
 
     public record PrivateMessages(boolean allowSelfMessage, int replyExpiresAfter, boolean applyCooldown, boolean applyUrlFormatting, boolean applyDisplayTags, boolean applyFilters) {}
 }

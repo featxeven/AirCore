@@ -2,13 +2,13 @@ package com.ftxeven.aircore.module.economy;
 
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.core.hook.HookRegistry;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.economy.balance.BalanceLedger;
 import com.ftxeven.aircore.module.economy.format.AmountFormatter;
 import com.ftxeven.aircore.module.economy.pay.PayHandler;
 import com.ftxeven.aircore.module.economy.sell.SellHandler;
 import com.ftxeven.aircore.module.economy.vault.VaultEconomyProvider;
 import com.ftxeven.aircore.module.economy.worth.WorthCalculator;
-import com.ftxeven.aircore.module.extras.ExtrasModule;
 import com.ftxeven.aircore.service.ServiceManager;
 import com.ftxeven.aircore.util.Messenger;
 import com.ftxeven.aircore.util.Scheduler;
@@ -36,7 +36,7 @@ public final class EconomyModule {
     private final @Nullable VaultEconomyProvider vault;
 
     public EconomyModule(JavaPlugin plugin, ConfigManager configs, Messenger messenger,
-                         ServiceManager services, ExtrasModule extras, HookRegistry hooks,
+                         ServiceManager services, AfkModule afk, HookRegistry hooks,
                          @Nullable VaultEconomyProvider vault) {
         this.plugin = plugin;
         this.configs = configs;
@@ -49,7 +49,7 @@ public final class EconomyModule {
         TaxCalculator taxCalculator = new TaxCalculator(configs::economy);
 
         this.balances = new BalanceLedger(configs::economy, services.players());
-        this.pay = new PayHandler(configs::economy, services.players(), balances, extras.blocks(), extras.afk(), taxCalculator);
+        this.pay = new PayHandler(configs::economy, services.players(), balances, services.blocks(), afk, taxCalculator);
 
         this.worth = new WorthCalculator(configs::worthItems, configs::worthModifiers, hooks);
         this.sell = new SellHandler(configs::economy, worth, balances, taxCalculator);

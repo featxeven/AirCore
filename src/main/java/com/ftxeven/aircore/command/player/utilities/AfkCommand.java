@@ -1,8 +1,8 @@
-package com.ftxeven.aircore.command.player.extras;
+package com.ftxeven.aircore.command.player.utilities;
 
 import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.core.command.CommandDispatch;
-import com.ftxeven.aircore.module.extras.afk.AfkHandler;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.permission.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -35,7 +35,7 @@ public final class AfkCommand extends BaseCommand {
     @Override
     public void execute(CommandSender sender, String label, String subLabel, String[] args) {
         Player player = (Player) sender;
-        AfkHandler afk = modules().extras().afk();
+        AfkModule afk = modules().afk();
 
         String reason = null;
         if (!afk.isAfk(player.getUniqueId())) {
@@ -45,8 +45,8 @@ public final class AfkCommand extends BaseCommand {
             }
         }
 
-        AfkHandler.ToggleResult result = afk.toggle(player, reason);
-        if (result instanceof AfkHandler.ToggleResult.Restricted(String world)) {
+        AfkModule.ToggleResult result = afk.toggle(player, reason);
+        if (result instanceof AfkModule.ToggleResult.Restricted(String world)) {
             messenger().send(player, configs().lang().get("errors.general.world-restricted"), Map.of("world", world));
             return;
         }
@@ -56,7 +56,7 @@ public final class AfkCommand extends BaseCommand {
     // Reason handling
 
     private boolean reasonEnabled() {
-        return configs().extras().afk().reason().enabled();
+        return configs().afk().reason().enabled();
     }
 
     private @Nullable String joinReason(String[] args) {
@@ -68,18 +68,18 @@ public final class AfkCommand extends BaseCommand {
     }
 
     // tells the player why when the reason is rejected
-    private boolean acceptReason(AfkHandler afk, Player player, String reason) {
+    private boolean acceptReason(AfkModule afk, Player player, String reason) {
         return switch (afk.validateReason(player, reason)) {
-            case AfkHandler.ReasonVerdict.Accepted ignored -> true;
-            case AfkHandler.ReasonVerdict.TooLong(int length, int max) -> {
-                messenger().send(player, configs().lang().get("extras.afk.errors.too-long"), Map.of(
+            case AfkModule.ReasonVerdict.Accepted ignored -> true;
+            case AfkModule.ReasonVerdict.TooLong(int length, int max) -> {
+                messenger().send(player, configs().lang().get("afk.errors.too-long"), Map.of(
                         "length", String.valueOf(length),
                         "max", String.valueOf(max)
                 ));
                 yield false;
             }
-            case AfkHandler.ReasonVerdict.Disallowed ignored -> {
-                messenger().send(player, configs().lang().get("extras.afk.errors.profanity"));
+            case AfkModule.ReasonVerdict.Disallowed ignored -> {
+                messenger().send(player, configs().lang().get("afk.errors.profanity"));
                 yield false;
             }
         };

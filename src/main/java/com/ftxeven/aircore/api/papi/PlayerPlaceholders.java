@@ -3,7 +3,7 @@ package com.ftxeven.aircore.api.papi;
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.model.PlayerProfile;
 import com.ftxeven.aircore.module.chat.channel.ChannelMembership;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
+import com.ftxeven.aircore.service.BlockService;
 import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.util.TimeFormatter;
 import org.bukkit.OfflinePlayer;
@@ -20,9 +20,9 @@ final class PlayerPlaceholders {
     private final PlayerService players;
     private final ConfigManager configs;
     private final ChannelMembership channelMembership;
-    private final BlockHandler blocks;
+    private final BlockService blocks;
 
-    PlayerPlaceholders(PlayerService players, ConfigManager configs, ChannelMembership channelMembership, BlockHandler blocks) {
+    PlayerPlaceholders(PlayerService players, ConfigManager configs, ChannelMembership channelMembership, BlockService blocks) {
         this.players = players;
         this.configs = configs;
         this.channelMembership = channelMembership;

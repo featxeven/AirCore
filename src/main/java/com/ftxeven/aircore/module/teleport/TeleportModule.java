@@ -1,6 +1,7 @@
 package com.ftxeven.aircore.module.teleport;
 
 import com.ftxeven.aircore.config.ConfigManager;
+import com.ftxeven.aircore.config.MainConfig;
 import com.ftxeven.aircore.database.cache.LocationCache;
 import com.ftxeven.aircore.database.repository.LocationRepository;
 import com.ftxeven.aircore.model.NamedLocation;
@@ -8,8 +9,8 @@ import com.ftxeven.aircore.model.Position;
 import com.ftxeven.aircore.model.TeleportType;
 import com.ftxeven.aircore.module.GroupResolver;
 import com.ftxeven.aircore.module.StoredLocations;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
-import com.ftxeven.aircore.module.extras.ExtrasModule;
+import com.ftxeven.aircore.module.afk.AfkConfig;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.teleport.back.BackLocationTracker;
 import com.ftxeven.aircore.module.teleport.countdown.CountdownGate;
 import com.ftxeven.aircore.module.teleport.request.TeleportRequestHandler;
@@ -29,7 +30,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.permissions.Permissible;
-import org.jetbrains.annotations.Nullable;
 
 import java.time.Instant;
 import java.util.*;
@@ -52,7 +52,7 @@ public final class TeleportModule {
     private final ConfigManager configs;
     private final LocationCache locations;
     private final ServiceManager services;
-    private final ExtrasModule extras;
+    private final AfkModule afk;
     private final GroupResolver groups;
     private final Messenger messenger;
 
@@ -62,11 +62,11 @@ public final class TeleportModule {
     private final TeleportRequestHandler requests;
 
     public TeleportModule(ConfigManager configs, LocationCache locations, ServiceManager services,
-                          ExtrasModule extras, GroupResolver groups, Messenger messenger) {
+                          AfkModule afk, GroupResolver groups, Messenger messenger) {
         this.configs = configs;
         this.locations = locations;
         this.services = services;
-        this.extras = extras;
+        this.afk = afk;
         this.groups = groups;
         this.messenger = messenger;
 
@@ -202,7 +202,7 @@ public final class TeleportModule {
     }
 
     private Optional<TeleportRequestHandler.SendResult> blockedFromRequest(Player sender, Player target) {
-        boolean blocked = extras.blocks().blocksInteraction(ExtrasConfig.BlockAction.TELEPORT_REQUESTS, target.getUniqueId(), sender);
+        boolean blocked = services.blocks().blocksInteraction(MainConfig.BlockAction.TELEPORT_REQUESTS, target.getUniqueId(), sender);
         return blocked ? Optional.of(new TeleportRequestHandler.SendResult.Blocked()) : Optional.empty();
     }
 
@@ -215,7 +215,7 @@ public final class TeleportModule {
     }
 
     public void notifyIfAfk(Player sender, Player target) {
-        extras.afk().notifyIfAfk(sender, target.getUniqueId(), ExtrasConfig.AfkNotifyAction.TELEPORT_REQUESTS);
+        afk.notifyIfAfk(sender, target.getUniqueId(), AfkConfig.NotifyAction.TELEPORT_REQUESTS);
     }
 
     public AcceptOutcome acceptRequest(UUID targetUuid, UUID senderUuid, TeleportSession session) {

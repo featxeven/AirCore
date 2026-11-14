@@ -1,14 +1,15 @@
 package com.ftxeven.aircore.module.economy.pay;
 
 import com.ftxeven.aircore.config.ConfigManager;
+import com.ftxeven.aircore.config.MainConfig;
+import com.ftxeven.aircore.module.afk.AfkConfig;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.economy.EconomyConfig;
 import com.ftxeven.aircore.module.economy.TaxCalculator;
 import com.ftxeven.aircore.module.economy.balance.BalanceLedger;
 import com.ftxeven.aircore.module.economy.format.AmountFormatter;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
 import com.ftxeven.aircore.permission.Permissions;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
-import com.ftxeven.aircore.module.extras.afk.AfkHandler;
+import com.ftxeven.aircore.service.BlockService;
 import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.util.Messenger;
 import org.bukkit.Bukkit;
@@ -37,12 +38,12 @@ public final class PayHandler {
     private final Supplier<EconomyConfig> configs;
     private final PlayerService players;
     private final BalanceLedger balances;
-    private final BlockHandler blocks;
-    private final AfkHandler afk;
+    private final BlockService blocks;
+    private final AfkModule afk;
     private final TaxCalculator taxCalculator;
 
-    public PayHandler(Supplier<EconomyConfig> configs, PlayerService players, BalanceLedger balances, BlockHandler blocks,
-                      AfkHandler afk, TaxCalculator taxCalculator) {
+    public PayHandler(Supplier<EconomyConfig> configs, PlayerService players, BalanceLedger balances, BlockService blocks,
+                      AfkModule afk, TaxCalculator taxCalculator) {
         this.configs = configs;
         this.players = players;
         this.balances = balances;
@@ -58,7 +59,7 @@ public final class PayHandler {
             return Optional.of(new Verdict.Self());
         }
 
-        if (blocks.blocksInteraction(ExtrasConfig.BlockAction.PAYMENTS, targetUuid, sender)) {
+        if (blocks.blocksInteraction(MainConfig.BlockAction.PAYMENTS, targetUuid, sender)) {
             return Optional.of(new Verdict.Blocked());
         }
 
@@ -113,7 +114,7 @@ public final class PayHandler {
 
     public void notifyIfAfk(Player sender, UUID targetUuid, Verdict verdict) {
         if (verdict instanceof Verdict.Sent) {
-            afk.notifyIfAfk(sender, targetUuid, ExtrasConfig.AfkNotifyAction.PAYMENTS);
+            afk.notifyIfAfk(sender, targetUuid, AfkConfig.NotifyAction.PAYMENTS);
         }
     }
 
@@ -150,7 +151,7 @@ public final class PayHandler {
             case Verdict.Blocked() -> {
                 Map<String, String> placeholders = new LinkedHashMap<>();
                 players.formatDisplayName(placeholders, "player", targetUuid);
-                messenger.send(sender, configs.lang().get("extras.block.errors.blocked-by"), placeholders);
+                messenger.send(sender, configs.lang().get("utilities.block.errors.blocked-by"), placeholders);
             }
             case Verdict.Disabled() -> {
                 Map<String, String> placeholders = new LinkedHashMap<>();

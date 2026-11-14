@@ -39,7 +39,7 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
                 plugin.services().players(),
                 plugin.configs(),
                 plugin.modules().chat().channelMembership(),
-                plugin.modules().extras().blocks())::resolve);
+                plugin.services().blocks())::resolve);
         sections.put("economy_", new EconomyPlaceholders(
                 plugin.services().players(), plugin.modules().economy())::resolve);
         sections.put("kit_", new KitPlaceholders(
@@ -49,7 +49,7 @@ public final class AirCoreExpansion extends PlaceholderExpansion {
         sections.put("teleport_", new TeleportPlaceholders(
                 plugin.modules().teleport(), plugin.configs())::resolve);
         sections.put("afk_", new AfkPlaceholders(
-                plugin.modules().extras().afk(), plugin.configs())::resolve);
+                plugin.modules().afk(), plugin.configs())::resolve);
         sections.put("leaderboard_", new LeaderboardPlaceholders(
                 plugin.services().leaderboards(), plugin.configs(), plugin.modules().economy(), plugin.services().players())::resolve);
 

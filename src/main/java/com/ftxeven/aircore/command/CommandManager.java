@@ -8,10 +8,6 @@ import com.ftxeven.aircore.command.player.ToggleCommand;
 import com.ftxeven.aircore.command.player.ToggleKey;
 import com.ftxeven.aircore.command.player.chat.*;
 import com.ftxeven.aircore.command.player.economy.*;
-import com.ftxeven.aircore.command.player.extras.AfkCommand;
-import com.ftxeven.aircore.command.player.extras.BlockCommand;
-import com.ftxeven.aircore.command.player.extras.NicknameCommand;
-import com.ftxeven.aircore.command.player.extras.UnblockCommand;
 import com.ftxeven.aircore.command.player.kits.*;
 import com.ftxeven.aircore.command.player.teleport.*;
 import com.ftxeven.aircore.command.player.utilities.*;
@@ -78,6 +74,7 @@ public final class CommandManager {
         register(new MsgCommand(ctx, plugin.modules()::chat));
         register(new ReplyCommand(ctx, plugin.modules()::chat));
         register(new BroadcastCommand(ctx));
+        register(new NicknameCommand(ctx));
 
         // Economy commands
         register(new BalanceCommand(ctx, plugin.modules()::economy));
@@ -122,13 +119,10 @@ public final class CommandManager {
         register(new DeletehomeCommand(ctx, plugin.modules()::homes, plugin.guis()));
         register(new PlayerhomeCommand(ctx, plugin.modules()::homes, plugin.modules()::teleport, plugin.guis(), homeCommand));
 
-        // Extras commands
-        register(new AfkCommand(ctx));
+        // Utility commands
         register(new BlockCommand(ctx));
         register(new UnblockCommand(ctx));
-        register(new NicknameCommand(ctx));
-
-        // Utility commands
+        register(new AfkCommand(ctx));
         register(new HealCommand(ctx));
         register(new FeedCommand(ctx));
         register(new FlyCommand(ctx));
@@ -188,7 +182,7 @@ public final class CommandManager {
 
     private TabCompleteEngine buildTabCompleteEngine(PlayerTargetResolver resolver, Selectors selectors) {
         var sources = TabSources.build(plugin.configs(), durationUnits, selectors, resolver,
-                plugin.modules()::extras, plugin.modules()::kits, plugin.modules()::teleport,
+                plugin.services()::blocks, plugin.modules()::kits, plugin.modules()::teleport,
                 plugin.modules()::homes, plugin.getLogger()::warning);
         var conditions = new ConditionEvaluator(plugin.getLogger()::warning);
         return new TabCompleteEngine(sources, conditions);

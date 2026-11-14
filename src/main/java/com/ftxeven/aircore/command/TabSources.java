@@ -6,10 +6,10 @@ import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.core.command.DurationUnits;
 import com.ftxeven.aircore.core.command.tabcomplete.TabSourceRegistry;
 import com.ftxeven.aircore.model.Home;
-import com.ftxeven.aircore.module.extras.ExtrasModule;
 import com.ftxeven.aircore.module.homes.HomesModule;
 import com.ftxeven.aircore.module.kits.KitsModule;
 import com.ftxeven.aircore.module.teleport.TeleportModule;
+import com.ftxeven.aircore.service.BlockService;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.World;
@@ -44,7 +44,7 @@ public final class TabSources {
     }
 
     public static TabSourceRegistry build(ConfigManager configs, DurationUnits durationUnits, Selectors selectors,
-                                          PlayerTargetResolver resolver, Supplier<ExtrasModule> extrasModule,
+                                          PlayerTargetResolver resolver, Supplier<BlockService> blocks,
                                           Supplier<KitsModule> kitsModule, Supplier<TeleportModule> teleportModule,
                                           Supplier<HomesModule> homesModule, Consumer<String> warn) {
         return TabSourceRegistry.withBuiltins(durationUnits)
@@ -62,7 +62,7 @@ public final class TabSources {
                     if (!(context.sender() instanceof Player viewer)) {
                         return List.of();
                     }
-                    return extrasModule.get().blocks().blockedPlayerNames(viewer.getUniqueId(), param);
+                    return blocks.get().blockedPlayerNames(viewer.getUniqueId(), param);
                 })
                 .register("COORDS_X", (context, param) -> coordinateSuggestions(context.sender(), Block::getX))
                 .register("COORDS_Y", (context, param) -> coordinateSuggestions(context.sender(), Block::getY))

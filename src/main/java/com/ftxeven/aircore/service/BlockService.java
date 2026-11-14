@@ -1,13 +1,12 @@
-package com.ftxeven.aircore.module.extras.block;
+package com.ftxeven.aircore.service;
 
 import com.ftxeven.aircore.config.ConfigManager;
+import com.ftxeven.aircore.config.MainConfig;
 import com.ftxeven.aircore.database.cache.CacheManager;
 import com.ftxeven.aircore.model.PlayerProfile;
-import com.ftxeven.aircore.module.extras.ExtrasConfig;
 import com.ftxeven.aircore.permission.OfflinePermissions;
 import com.ftxeven.aircore.permission.PermissionTiers;
 import com.ftxeven.aircore.permission.Permissions;
-import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.util.Scheduler;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
@@ -20,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-public final class BlockHandler {
+public final class BlockService {
 
     public enum Result { BLOCKED, ALREADY_BLOCKED, LIMIT_REACHED, EXEMPT, UNBLOCKED, NOT_BLOCKED, SELF }
 
@@ -28,7 +27,7 @@ public final class BlockHandler {
     private final ConfigManager configs;
     private final PlayerService players;
 
-    public BlockHandler(CacheManager cache, ConfigManager configs, PlayerService players) {
+    public BlockService(CacheManager cache, ConfigManager configs, PlayerService players) {
         this.cache = cache;
         this.configs = configs;
         this.players = players;
@@ -57,7 +56,7 @@ public final class BlockHandler {
     }
 
     public int configuredMaxBlocked() {
-        return configs.extras().block().maxBlocked();
+        return configs.main().utilityDefaults().blocking().maxBlocked();
     }
 
     public int maxBlocked(Permissible permissible) {
@@ -102,26 +101,26 @@ public final class BlockHandler {
 
     public String langKeyFor(Result result) {
         return switch (result) {
-            case BLOCKED -> "extras.block.blocked";
-            case ALREADY_BLOCKED -> "extras.block.already-blocked";
-            case LIMIT_REACHED -> "extras.block.errors.limit-reached";
-            case EXEMPT -> "extras.block.errors.cannot";
-            case UNBLOCKED -> "extras.block.unblocked";
-            case NOT_BLOCKED -> "extras.block.not-blocked";
-            case SELF -> "extras.block.errors.self";
+            case BLOCKED -> "utilities.block.blocked";
+            case ALREADY_BLOCKED -> "utilities.block.already-blocked";
+            case LIMIT_REACHED -> "utilities.block.errors.limit-reached";
+            case EXEMPT -> "utilities.block.errors.cannot";
+            case UNBLOCKED -> "utilities.block.unblocked";
+            case NOT_BLOCKED -> "utilities.block.not-blocked";
+            case SELF -> "utilities.block.errors.self";
         };
     }
 
     /** For callers already on the initiator's own thread */
-    public boolean blocksInteraction(ExtrasConfig.BlockAction action, UUID owner, Player initiator) {
+    public boolean blocksInteraction(MainConfig.BlockAction action, UUID owner, Player initiator) {
         return blocksInteraction(action, owner, initiator.getUniqueId(), initiator.hasPermission(Permissions.Bypass.BLOCK));
     }
 
-    public boolean blocksInteraction(ExtrasConfig.BlockAction action, UUID owner, UUID initiator, boolean bypasses) {
+    public boolean blocksInteraction(MainConfig.BlockAction action, UUID owner, UUID initiator, boolean bypasses) {
         if (owner.equals(initiator)) {
             return false;
         }
-        if (!configs.extras().block().actions().applies(action)) {
+        if (!configs.main().utilityDefaults().blocking().actions().applies(action)) {
             return false;
         }
         if (bypasses) {

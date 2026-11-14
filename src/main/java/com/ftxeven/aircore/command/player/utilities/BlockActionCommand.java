@@ -1,9 +1,9 @@
-package com.ftxeven.aircore.command.player.extras;
+package com.ftxeven.aircore.command.player.utilities;
 
 import com.ftxeven.aircore.command.BaseCommand;
-import com.ftxeven.aircore.module.extras.block.BlockHandler;
 import com.ftxeven.aircore.permission.PermissionTiers;
 import com.ftxeven.aircore.permission.Permissions;
+import com.ftxeven.aircore.service.BlockService;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -52,20 +52,20 @@ public abstract class BlockActionCommand extends BaseCommand {
         });
     }
 
-    protected abstract void apply(BlockHandler blocks, UUID owner, UUID target, Player initiator, Consumer<BlockHandler.Result> callback);
+    protected abstract void apply(BlockService blocks, UUID owner, UUID target, Player initiator, Consumer<BlockService.Result> callback);
 
-    private BlockHandler blocks() {
-        return modules().extras().blocks();
+    private BlockService blocks() {
+        return services().blocks();
     }
 
-    private static boolean showsBlockCount(BlockHandler.Result result) {
-        return result == BlockHandler.Result.BLOCKED
-                || result == BlockHandler.Result.UNBLOCKED
-                || result == BlockHandler.Result.LIMIT_REACHED;
+    private static boolean showsBlockCount(BlockService.Result result) {
+        return result == BlockService.Result.BLOCKED
+                || result == BlockService.Result.UNBLOCKED
+                || result == BlockService.Result.LIMIT_REACHED;
     }
 
-    private void respond(Player player, BlockHandler.Result result, UUID targetUuid, String[] args) {
-        BlockHandler blocks = blocks();
+    private void respond(Player player, BlockService.Result result, UUID targetUuid, String[] args) {
+        BlockService blocks = blocks();
 
         Map<String, String> placeholders = new LinkedHashMap<>();
         services().players().formatDisplayName(placeholders, "target", targetUuid);
@@ -75,7 +75,7 @@ public abstract class BlockActionCommand extends BaseCommand {
             placeholders.put("limit", PermissionTiers.display(blocks.maxBlocked(player), configs().lang()));
         }
 
-        if (result == BlockHandler.Result.BLOCKED || result == BlockHandler.Result.UNBLOCKED) {
+        if (result == BlockService.Result.BLOCKED || result == BlockService.Result.UNBLOCKED) {
             completeCooldown(player, args);
         }
 

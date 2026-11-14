@@ -44,16 +44,19 @@ public final class PlayerListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        modules.extras().handleJoin(event);
+        modules.events().handleJoin(event);
 
         Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
 
+        services.blocks().warm(uuid);
+        modules.afk().handleJoin(player);
         modules.variables().preload(player);
-        modules.homes().handleJoin(player.getUniqueId());
+        modules.homes().handleJoin(uuid);
 
         services.inventories().handleJoin(player);
         services.players().handleJoin(player, (profile, firstJoin) -> {
-            modules.extras().announceJoin(player, profile, firstJoin);
+            modules.events().announceJoin(player, profile, firstJoin);
             modules.kits().handleJoin(player, firstJoin);
             modules.economy().handleJoin(player);
             modules.teleport().handleJoin(player, firstJoin);
@@ -89,12 +92,14 @@ public final class PlayerListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        modules.extras().handleQuit(event);
+        modules.events().handleQuit(event);
+        modules.afk().handleQuit(uuid);
 
         services.inventories().handleQuit(player); // in case this player was being viewed
         services.inventories().handleViewerDisconnect(uuid); // in case this player was the viewer
         services.players().handleQuit(player);
         services.holding().handleQuit(player);
+        services.blocks().release(uuid);
         guis.guis().disconnect(uuid);
 
         modules.variables().handleQuit(player);
@@ -110,7 +115,7 @@ public final class PlayerListener implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
-        modules.extras().handleDeath(event);
+        modules.events().handleDeath(event);
         modules.variables().handleDeath(event.getEntity());
         modules.kits().handleDeath(event.getEntity().getUniqueId());
         modules.teleport().handleDeath(event.getEntity());
@@ -148,7 +153,7 @@ public final class PlayerListener implements Listener {
         Player player = event.getPlayer();
         Scheduler.runEntity(player, () -> {
             services.players().reapplyWorldRestrictions(player);
-            modules.extras().afk().handleWorldChange(player);
+            modules.afk().handleWorldChange(player);
         });
     }
 
@@ -195,36 +200,36 @@ public final class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkMove(PlayerMoveEvent event) {
-        modules.extras().afk().handleMove(event);
+        modules.afk().handleMove(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkTeleport(PlayerTeleportEvent event) {
-        modules.extras().afk().handleTeleport(event);
+        modules.afk().handleTeleport(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkInteract(PlayerInteractEvent event) {
-        modules.extras().afk().handleInteract(event);
+        modules.afk().handleInteract(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkInteractEntity(PlayerInteractEntityEvent event) {
-        modules.extras().afk().handleInteractEntity(event);
+        modules.afk().handleInteractEntity(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkInventoryClick(InventoryClickEvent event) {
-        modules.extras().afk().handleInventoryClick(event);
+        modules.afk().handleInventoryClick(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkCommand(PlayerCommandPreprocessEvent event) {
-        modules.extras().afk().handleCommandPreprocess(event);
+        modules.afk().handleCommandPreprocess(event);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAfkChat(AsyncChatEvent event) {
-        modules.extras().afk().handleChatActivity(event.getPlayer());
+        modules.afk().handleChatActivity(event.getPlayer());
     }
 }

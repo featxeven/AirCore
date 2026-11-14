@@ -1,0 +1,88 @@
+# AirCore - modules/afk
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# AFK is controlled in-game via command, not from this file.
+# To disable it, disable the command in commands.yml instead.
+
+# --------------------------------------------------
+# GENERAL
+# --------------------------------------------------
+general:
+  broadcast: true              # Announce to everyone when a player becomes/stops being AFK.
+  idle-timeout: -1             # Seconds without activity before a player is automatically marked AFK; -1 = disabled
+  # Bypass with aircore.bypass.afk.idle
+
+# --------------------------------------------------
+# ACTIVITY
+# --------------------------------------------------
+# What counts as a player being active: any enabled trigger ends AFK and resets the idle-timeout timer.
+activity:
+  move: true                  # Changing position
+  move-threshold: 0.15        # How many blocks of movement count as activity
+  look: true                  # Turning the camera (cursor movement)
+  look-threshold: 10          # How many degrees of rotation count as activity
+  interact: true              # Block or entity interaction
+  inventory: true             # Clicking inside an inventory
+  chat: true                  # Sending a public chat message
+  command: true               # Running a command (/afk itself never counts)
+
+# --------------------------------------------------
+# REASON
+# --------------------------------------------------
+# A reason players can attach when going AFK, e.g. "/afk cooking dinner".
+reason:
+  enabled: true
+  max-length: 100                  # -1 = unlimited
+
+  # AFK reasons matching any of these patterns are never allowed.
+  # Each entry can be a plain word or a Java regex pattern.
+  blacklist: []
+  # - "brb"                        # plain text; blocks the word "brb" appearing anywhere
+  # - "(?i)a[d@][m][i1][n]+"       # regex; blocks admin, 4dmin, adm1n, @dmin, etc. anywhere in the reason
+
+  extend-profanity-words: false    # Extends filters.profanity words file (from the chat module) to reason validation.
+
+# --------------------------------------------------
+# NOTIFY
+# --------------------------------------------------
+# Lets a player who interacts with someone AFK know they may not respond.
+notify:
+  enabled: true
+  cooldown: 30            # Seconds before the same player is told again about the same AFK
+                          # target, across every action below combined; -1 = always show
+
+  actions:
+    private-messages: true        # /msg, /reply
+    mentions: true                # @player mentions in chat
+    teleport-requests: true       # /tpa, /tpahere
+    payments: true                # /pay
+
+# --------------------------------------------------
+# ACTIONS-AFTER
+# --------------------------------------------------
+# Runs one or more actions once a player has been continuously AFK for the given number of seconds.
+# Bypass with aircore.bypass.afk.actions
+#
+# Placeholders available inside 'commands': %player%, %duration%, %duration_raw%, %reason%
+actions-after: []
+  # - seconds: 120
+  #   chat: "<ref:prefix> <gray>You've been AFK for 2 minutes."
+  #
+  # - seconds: 300
+  #   title:
+  #     text: "<red><bold>STILL THERE?"
+  #     fade-in: 10
+  #     stay: 60
+  #     fade-out: 10
+  #   subtitle: "<gray>You will be kicked soon."
+  #   sound:
+  #     key: "block.note_block.pling"
+  #     volume: 1.0
+  #     pitch: 1.0
+  #
+  # - seconds: 600
+  #   conditions:
+  #     - "%server_online% >= 50"    # optional, e.g. only kick while the server is busy
+  #   command:
+  #     run-as: CONSOLE
+  #     command: "kick %player% You have been kicked for being AFK too long."

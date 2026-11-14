@@ -246,7 +246,7 @@ public final class TeleportMessages {
             case TeleportRequestHandler.SendResult.Blocked() -> {
                 Map<String, String> placeholders = new LinkedHashMap<>();
                 players.formatDisplayName(placeholders, "player", target.getUniqueId());
-                messenger.send(sender, configs.lang().get("extras.block.errors.blocked-by"), placeholders);
+                messenger.send(sender, configs.lang().get("utilities.block.errors.blocked-by"), placeholders);
             }
 
             case TeleportRequestHandler.SendResult.TargetToggledOff() -> {

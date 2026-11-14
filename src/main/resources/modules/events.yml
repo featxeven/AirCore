@@ -1,0 +1,63 @@
+# AirCore - modules/events
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# When set to false, the entire events module is disabled.
+# Only turn this off if you want to handle join/leave/death events with a different plugin entirely.
+enabled: true
+
+# --------------------------------------------------
+# JOIN
+# --------------------------------------------------
+join:
+  enabled: true
+
+  # --- MOTD ---
+  # Sent privately to the joining player.
+  # first-join fires only on a player's very first connection.
+  # returning uses per-group entries; _DEFAULT_ applies when no group matches.
+  motd:
+    first-join:
+      - " "
+      - "<green>Welcome <yellow>%player%</yellow> to the server!"
+      - "<gray>Type <white>/help</white> to get started."
+      - " "
+
+    returning:
+      _DEFAULT_:
+        - " "
+        - "<green>Welcome back, <yellow>%player%</yellow>!"
+        - " "
+
+  # --- Broadcast ---
+  # Sent to all online players.
+  # first-join is a single message; returning supports per-group entries.
+  broadcast:
+    first-join: "<yellow>%player% <gray>joined for the first time! <dark_gray>(Member <yellow>#%join_number%<dark_gray>)"
+
+    returning:
+      _DEFAULT_: "<gray>[<green>+<gray>] <white>%player%</white> joined the game."
+      # vip: "<gray>[<green>+<gray>] <dark_green><bold>VIP</bold> <green>%player% <gray>joined the game."
+
+# --------------------------------------------------
+# LEAVE
+# --------------------------------------------------
+leave:
+  enabled: true
+
+  # --- Broadcast ---
+  # Sent to all online players when a player disconnects. Supports PlaceholderAPI.
+  # _DEFAULT_ is used when the player's group has no entry here.
+  broadcast:
+
+    _DEFAULT_: "<gray>[<red>-<gray>] <white>%player%</white> left the game."
+    # vip: "<gray>[<red>-<gray>] <dark_green><bold>VIP</bold> <green>%player% <gray>left the game."
+
+# --------------------------------------------------
+# DEATH
+# --------------------------------------------------
+death:
+  # When false, vanilla death messages are used instead.
+  enabled: true
+
+  disabled-worlds: []
+  # - "disabled_world"     # Worlds where vanilla death messages are used instead

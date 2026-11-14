@@ -1,11 +1,11 @@
-package com.ftxeven.aircore.command.player.extras;
+package com.ftxeven.aircore.command.player.chat;
 
 import com.ftxeven.aircore.command.BaseCommand;
 import com.ftxeven.aircore.command.player.PlayerTargetResolver;
 import com.ftxeven.aircore.core.command.CommandDispatch;
 import com.ftxeven.aircore.core.command.CommandDispatch.Availability;
 import com.ftxeven.aircore.module.NameValidator;
-import com.ftxeven.aircore.module.extras.nickname.NicknameHandler;
+import com.ftxeven.aircore.module.chat.nickname.NicknameHandler;
 import com.ftxeven.aircore.permission.Permissions;
 import org.bukkit.command.CommandSender;
 
@@ -57,7 +57,7 @@ public final class NicknameCommand extends BaseCommand {
     }
 
     private NicknameHandler nicknames() {
-        return modules().extras().nicknames();
+        return modules().chat().nicknames();
     }
 
     private void handleSet(CommandSender sender, String label, String subLabel, String[] args) {
@@ -79,12 +79,12 @@ public final class NicknameCommand extends BaseCommand {
             UUID targetUuid = target.uuid();
             switch (nicknames().finishSet(targetUuid, validFormat)) {
                 case NicknameHandler.Verdict.AlreadyTaken(String existingNickname) ->
-                        messenger().send(sender, configs().lang().get("extras.nickname.errors.already-taken"), Map.of("nickname", existingNickname));
+                        messenger().send(sender, configs().lang().get("chat.nickname.errors.already-taken"), Map.of("nickname", existingNickname));
                 case NicknameHandler.Verdict.Unchanged(String currentNickname) -> sendUnchanged(sender, targetUuid, currentNickname);
                 case NicknameHandler.Verdict.Allow(String nickname) -> {
                     completeCooldown(sender, args);
                     announce(sender, targetUuid, isSelf(sender, targetUuid),
-                            "extras.nickname.set.self", "extras.nickname.set.other", "extras.nickname.set.by",
+                            "chat.nickname.set.self", "chat.nickname.set.other", "chat.nickname.set.by",
                             Map.of("nick", nickname));
                 }
                 case NicknameHandler.Verdict.Invalid ignored -> {
@@ -105,7 +105,7 @@ public final class NicknameCommand extends BaseCommand {
 
             completeCooldown(sender, args);
             announce(sender, targetUuid, isSelf(sender, targetUuid),
-                    "extras.nickname.reset.self", "extras.nickname.reset.other", "extras.nickname.reset.by",
+                    "chat.nickname.reset.self", "chat.nickname.reset.other", "chat.nickname.reset.by",
                     Map.of());
         });
     }
@@ -123,9 +123,9 @@ public final class NicknameCommand extends BaseCommand {
 
     private void sendUnchanged(CommandSender sender, UUID targetUuid, String currentNickname) {
         if (isSelf(sender, targetUuid)) {
-            messenger().send(sender, configs().lang().get("extras.nickname.errors.same"), Map.of("nickname", currentNickname));
+            messenger().send(sender, configs().lang().get("chat.nickname.errors.same"), Map.of("nickname", currentNickname));
         } else {
-            messenger().send(sender, configs().lang().get("extras.nickname.errors.same-for"), targetPlaceholders(targetUuid, currentNickname));
+            messenger().send(sender, configs().lang().get("chat.nickname.errors.same-for"), targetPlaceholders(targetUuid, currentNickname));
         }
     }
 
@@ -140,7 +140,7 @@ public final class NicknameCommand extends BaseCommand {
         Map<String, String> placeholders = switch (reason) {
             case TOO_LONG -> Map.of(
                     "length", String.valueOf(plain.length()),
-                    "max", String.valueOf(configs().extras().nicknames().maxLength())
+                    "max", String.valueOf(configs().chat().nicknames().maxLength())
             );
             case INVALID_FORMAT, BLACKLISTED -> Map.of("name", tagged);
             case PROFANITY -> Map.of();
@@ -150,9 +150,9 @@ public final class NicknameCommand extends BaseCommand {
 
     private void sendNoneSet(CommandSender sender, UUID targetUuid) {
         if (isSelf(sender, targetUuid)) {
-            messenger().send(sender, configs().lang().get("extras.nickname.errors.none-set"), Map.of());
+            messenger().send(sender, configs().lang().get("chat.nickname.errors.none-set"), Map.of());
         } else {
-            messenger().send(sender, configs().lang().get("extras.nickname.errors.none-set-for"), targetPlaceholders(targetUuid));
+            messenger().send(sender, configs().lang().get("chat.nickname.errors.none-set-for"), targetPlaceholders(targetUuid));
         }
     }
 }

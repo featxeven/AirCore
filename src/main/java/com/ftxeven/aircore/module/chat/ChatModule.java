@@ -1,6 +1,6 @@
 package com.ftxeven.aircore.module.chat;
 
-import com.ftxeven.aircore.core.gui.input.InputRegistry; // FIX
+import com.ftxeven.aircore.core.gui.input.InputRegistry;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.module.chat.channel.ChannelMembership;
 import com.ftxeven.aircore.module.chat.channel.ChannelResolver;
@@ -16,15 +16,16 @@ import com.ftxeven.aircore.module.chat.filter.ChatFilterPipeline;
 import com.ftxeven.aircore.module.chat.filter.WarningLadder;
 import com.ftxeven.aircore.config.ConfigManager;
 import com.ftxeven.aircore.module.GroupResolver;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.chat.format.ChatLineTemplateResolver;
 import com.ftxeven.aircore.module.chat.format.GroupFormatResolver;
 import com.ftxeven.aircore.module.chat.input.PlayerInputFormatter;
 import com.ftxeven.aircore.module.chat.mention.MentionApplier;
 import com.ftxeven.aircore.module.chat.mention.MentionResolver;
+import com.ftxeven.aircore.module.chat.nickname.NicknameHandler;
 import com.ftxeven.aircore.module.chat.pm.PrivateMessageHandler;
 import com.ftxeven.aircore.module.chat.pm.ReplyTracker;
 import com.ftxeven.aircore.module.chat.url.UrlFormatter;
-import com.ftxeven.aircore.module.extras.ExtrasModule;
 import com.ftxeven.aircore.service.ServiceManager;
 import com.ftxeven.aircore.permission.Permissions;
 import com.ftxeven.aircore.util.Cooldowns;
@@ -64,11 +65,12 @@ public final class ChatModule implements Listener {
     private final DisplayTagRenderer displayTagRenderer;
     private final DisplayTagClickHandler displayTagClickHandler;
     private final PlayerInputFormatter playerInput;
+    private final NicknameHandler nicknames;
     private final ChatPipeline pipeline;
     private final Cooldowns<UUID> cooldowns = new Cooldowns<>();
 
     public ChatModule(JavaPlugin plugin, ConfigManager configs, Messenger messenger, GroupResolver groups,
-                      ServiceManager services, ExtrasModule extras, PluginGuiManager guiManager) {
+                      ServiceManager services, AfkModule afk, PluginGuiManager guiManager) {
         this.plugin = plugin;
         this.configs = configs;
         this.messenger = messenger;
@@ -81,6 +83,7 @@ public final class ChatModule implements Listener {
         this.infractions = new WarningLadder(configs::chat, messenger, services.players());
         this.filters = new ChatFilterPipeline(configs::chat, services.profanity());
         this.playerInput = new PlayerInputFormatter(configs);
+        this.nicknames = new NicknameHandler(configs, services.players(), services.profanity());
 
         Map<String, DisplayTagHandler> displayTagHandlers = Map.of(
                 "item", new ItemDisplayTagHandler(configs::lang),
@@ -93,12 +96,12 @@ public final class ChatModule implements Listener {
         this.displayTagClickHandler = new DisplayTagClickHandler(displayTagClicks, configs::chat, messenger, guiManager);
 
         this.privateMessages = new PrivateMessageHandler(
-                configs, messenger, services.players(), extras.blocks(), extras.afk(), filters, infractions,
+                configs, messenger, services.players(), services.blocks(), afk, filters, infractions,
                 this::checkCooldown, this::recordCooldown, new ReplyTracker(), displayTagRenderer, urlFormatter);
 
         MentionResolver mentionResolver = new MentionResolver(configs::chat, services.players());
-        MentionApplier mentionApplier = new MentionApplier(configs::chat, messenger, services.players(), extras.blocks(), extras.afk());
-        this.pipeline = new ChatPipeline(configs, messenger, services, extras.blocks(), channelMembership, channels,
+        MentionApplier mentionApplier = new MentionApplier(configs::chat, messenger, services.players(), services.blocks(), afk);
+        this.pipeline = new ChatPipeline(configs, messenger, services, channelMembership, channels,
                 filters, infractions, groupFormats, lineTemplates, mentionResolver, mentionApplier, urlFormatter, displayTagRenderer);
 
         registerChatListener();
@@ -119,6 +122,8 @@ public final class ChatModule implements Listener {
     public PrivateMessageHandler privateMessages() {
         return privateMessages;
     }
+
+    public NicknameHandler nicknames() { return nicknames; }
 
     public ChannelResolver channelResolver() {
         return channels;

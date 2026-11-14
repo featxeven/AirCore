@@ -1,11 +1,12 @@
 package com.ftxeven.aircore.module;
 
 import com.ftxeven.aircore.AirCore;
+import com.ftxeven.aircore.module.GroupResolver.VaultGroups;
+import com.ftxeven.aircore.module.afk.AfkModule;
 import com.ftxeven.aircore.module.announcements.AnnouncementsModule;
 import com.ftxeven.aircore.module.chat.ChatModule;
 import com.ftxeven.aircore.module.economy.EconomyModule;
-import com.ftxeven.aircore.module.extras.ExtrasModule;
-import com.ftxeven.aircore.module.GroupResolver.VaultGroups;
+import com.ftxeven.aircore.module.events.EventsModule;
 import com.ftxeven.aircore.module.homes.HomesModule;
 import com.ftxeven.aircore.module.kits.KitsModule;
 import com.ftxeven.aircore.module.placeholders.PlaceholdersModule;
@@ -21,10 +22,11 @@ public final class ModuleManager {
 
     private GroupResolver groups;
     private PlaceholdersModule placeholders;
+    private EventsModule events;
+    private AfkModule afk;
     private ChatModule chat;
     private AnnouncementsModule announcements;
     private VariablesModule variables;
-    private ExtrasModule extras;
     private KitsModule kits;
     private HomesModule homes;
     private EconomyModule economy;
@@ -46,12 +48,13 @@ public final class ModuleManager {
         }
 
         return loadModule("placeholders", () -> placeholders = new PlaceholdersModule(plugin, plugin.configs().placeholders()))
-                && loadModule("extras", () -> extras = new ExtrasModule(plugin, plugin.configs(), plugin.messenger(), groups, plugin.cache(), plugin.services()))
+                && loadModule("events", () -> events = new EventsModule(plugin.configs(), plugin.messenger(), groups, plugin.services()))
+                && loadModule("afk", () -> afk = new AfkModule(plugin, plugin.configs(), plugin.messenger(), plugin.services()))
                 && loadModule("kits", () -> kits = new KitsModule(plugin, plugin.configs(), plugin.cache(), plugin.services()))
-                && loadModule("chat", () -> chat = new ChatModule(plugin, plugin.configs(), plugin.messenger(), groups, plugin.services(), extras, plugin.guis()))
+                && loadModule("chat", () -> chat = new ChatModule(plugin, plugin.configs(), plugin.messenger(), groups, plugin.services(), afk, plugin.guis()))
                 && loadModule("homes", () -> homes = new HomesModule(plugin.configs(), plugin.cache().homes(), () -> chat))
-                && loadModule("economy", () -> economy = new EconomyModule(plugin, plugin.configs(), plugin.messenger(), plugin.services(), extras, plugin.hooks(), plugin.vaultEconomy()))
-                && loadModule("teleport", () -> teleport = new TeleportModule(plugin.configs(), plugin.cache().locations(), plugin.services(), extras, groups, plugin.messenger()))
+                && loadModule("economy", () -> economy = new EconomyModule(plugin, plugin.configs(), plugin.messenger(), plugin.services(), afk, plugin.hooks(), plugin.vaultEconomy()))
+                && loadModule("teleport", () -> teleport = new TeleportModule(plugin.configs(), plugin.cache().locations(), plugin.services(), afk, groups, plugin.messenger()))
                 && loadModule("announcements", () -> {
             announcements = new AnnouncementsModule(plugin, plugin.configs(), plugin.messenger(), plugin.database().persistentBossbar(), plugin.services());
             announcements.start();
@@ -79,8 +82,9 @@ public final class ModuleManager {
 
     public GroupResolver groups() { return groups; }
     public PlaceholdersModule placeholders() { return placeholders; }
+    public EventsModule events() { return events; }
+    public AfkModule afk() { return afk; }
     public ChatModule chat() { return chat; }
-    public ExtrasModule extras() { return extras; }
     public AnnouncementsModule announcements() { return announcements; }
     public VariablesModule variables() { return variables; }
     public KitsModule kits() { return kits; }

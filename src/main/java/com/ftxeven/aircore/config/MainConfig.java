@@ -7,7 +7,9 @@ import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,7 @@ public final class MainConfig extends BaseConfig {
     private volatile General general;
     private volatile Formatting formatting;
     private volatile ToggleDefaults toggleDefaults;
+    private volatile UtilityDefaults utilityDefaults;
     private volatile WorldRestrictions worldRestrictions;
 
     public MainConfig(JavaPlugin plugin) {
@@ -27,12 +30,14 @@ public final class MainConfig extends BaseConfig {
         general = readGeneral(yaml.getConfigurationSection("general"));
         formatting = readFormatting(yaml.getConfigurationSection("formatting"));
         toggleDefaults = readToggleDefaults(yaml.getConfigurationSection("toggle-defaults"));
+        utilityDefaults = readUtilityDefaults(yaml.getConfigurationSection("utility-defaults"));
         worldRestrictions = readWorldRestrictions(yaml.getConfigurationSection("world-restrictions"));
     }
 
     public General general() { return general; }
     public Formatting formatting() { return formatting; }
     public ToggleDefaults toggleDefaults() { return toggleDefaults; }
+    public UtilityDefaults utilityDefaults() { return utilityDefaults; }
     public WorldRestrictions worldRestrictions() { return worldRestrictions; }
 
     // Section readers
@@ -81,6 +86,30 @@ public final class MainConfig extends BaseConfig {
         );
     }
 
+    private UtilityDefaults readUtilityDefaults(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        return new UtilityDefaults(readBlocking(sec.getConfigurationSection("blocking")));
+    }
+
+    private Blocking readBlocking(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        return new Blocking(
+                getInt(sec, "max-blocked", 20),
+                readBlockActions(sec.getConfigurationSection("actions"))
+        );
+    }
+
+    private BlockActions readBlockActions(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        Set<BlockAction> enabled = EnumSet.noneOf(BlockAction.class);
+        for (BlockAction action : BlockAction.values()) {
+            if (getBoolean(sec, action.key(), action.enabledByDefault())) {
+                enabled.add(action);
+            }
+        }
+        return new BlockActions(Collections.unmodifiableSet(enabled));
+    }
+
     private WorldRestrictions readWorldRestrictions(ConfigurationSection sec) {
         if (sec == null) {
             return new WorldRestrictions(Map.of());
@@ -124,6 +153,28 @@ public final class MainConfig extends BaseConfig {
 
     public enum RestrictedFeature { GOD, FLY, SPEED, CUSTOM_TIME, CUSTOM_WEATHER, AFK }
 
+    public enum BlockAction {
+        CHAT(true),
+        PRIVATE_MESSAGES(true),
+        MENTIONS(true),
+        TELEPORT_REQUESTS(true),
+        PAYMENTS(false);
+
+        private final boolean enabledByDefault;
+
+        BlockAction(boolean enabledByDefault) {
+            this.enabledByDefault = enabledByDefault;
+        }
+
+        public boolean enabledByDefault() {
+            return enabledByDefault;
+        }
+
+        public String key() {
+            return name().toLowerCase(Locale.ROOT).replace('_', '-');
+        }
+    }
+
     public record General(String lang, String itemsLang, boolean notifyUpdates, boolean consoleFeedback,
                           boolean strictArgs, boolean allowNicknameLookup) {}
 
@@ -135,6 +186,17 @@ public final class MainConfig extends BaseConfig {
             boolean msgToggle, boolean socialSpy, boolean chatToggle, boolean mentionToggle, boolean announceToggle,
             boolean payToggle, boolean payConfirmToggle, boolean tpToggle, boolean tpAutoAccept, boolean tpConfirmToggle
     ) {}
+
+    public record BlockActions(Set<BlockAction> enabled) {
+
+        public boolean applies(BlockAction action) {
+            return enabled.contains(action);
+        }
+    }
+
+    public record Blocking(int maxBlocked, BlockActions actions) {}
+
+    public record UtilityDefaults(Blocking blocking) {}
 
     public record WorldRestrictions(Map<String, Set<RestrictedFeature>> byWorld) {
 

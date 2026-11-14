@@ -8,6 +8,7 @@ import com.ftxeven.aircore.service.item.HoldingService;
 public final class ServiceManager {
 
     private final PlayerService players;
+    private final BlockService blocks;
     private final ProfanityFilter profanity;
     private final InventoryService inventories;
     private final HoldingService holding;
@@ -17,6 +18,7 @@ public final class ServiceManager {
 
     public ServiceManager(AirCore plugin) {
         players = new PlayerService(plugin.cache(), plugin.database(), plugin.configs());
+        blocks = new BlockService(plugin.cache(), plugin.configs(), players);
         profanity = new ProfanityFilter(plugin);
         inventories = new InventoryService(plugin.getLogger(), plugin.database().inventories(), plugin.cache().writes());
         holding = new HoldingService();
@@ -26,6 +28,7 @@ public final class ServiceManager {
     }
 
     public PlayerService players() { return players; }
+    public BlockService blocks() { return blocks; }
     public ProfanityFilter profanity() { return profanity; }
     public InventoryService inventories() { return inventories; }
     public HoldingService holding() { return holding; }

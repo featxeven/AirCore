@@ -81,6 +81,25 @@ toggle-defaults:
   tpconfirmtoggle: true         # Requires confirmation before sending teleport requests
 
 # --------------------------------------------------
+# UTILITY DEFAULTS
+# --------------------------------------------------
+# Default settings applied to utility commands.
+utility-defaults:
+  # Commands are controlled in-game, not from this file.
+  # To disable it, disable the commands in commands.yml instead.
+
+  # --- /(un)block settings ---
+  blocking:
+    max-blocked: 20              # Maximum number of players a player can block; -1 = unlimited
+
+    actions:
+      chat: true                 # Hide public chat messages
+      private-messages: true     # Block /msg and /reply
+      mentions: true             # Suppress @ mentions
+      teleport-requests: true    # Block /tpa and /tpahere
+      payments: false            # Block /pay
+
+# --------------------------------------------------
 # WORLD RESTRICTIONS
 # --------------------------------------------------
 # Prevents certain player features from being active in specific worlds

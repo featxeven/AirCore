@@ -223,6 +223,28 @@ commands:
         aliases: [bc]
         usage: "/%label% <message>"
 
+      nickname:
+        enabled: true
+        name: "nickname"
+        aliases: [nick]
+        usage: "/%label% <set|reset> [nick]"
+        usage-others: "/%label% <set|reset> [nick] [player]"
+        actions:
+          set: "set"
+          reset: "reset"
+        tab-complete:
+          1: [ACTIONS]
+          2:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.nickname.others
+            conditions:
+              - "%arg_1% == reset"
+          3:
+            sources: [ONLINE_PLAYERS:20]
+            requires: aircore.command.nickname.others
+            conditions:
+              - "%arg_1% == set"
+
   # --------------------------------------------------
   # ECONOMY
   # --------------------------------------------------
@@ -621,32 +643,11 @@ commands:
           1: [KIT_IDS:ALL]
 
   # --------------------------------------------------
-  # EXTRAS
+  # UTILITIES
   # --------------------------------------------------
-  extras:
+  utilities:
     enabled: true
     bundle:
-      nickname:
-        enabled: true
-        name: "nickname"
-        aliases: [nick]
-        usage: "/%label% <set|reset> [nick]"
-        usage-others: "/%label% <set|reset> [nick] [player]"
-        actions:
-          set: "set"
-          reset: "reset"
-        tab-complete:
-          1: [ACTIONS]
-          2:
-            sources: [ONLINE_PLAYERS:20]
-            requires: aircore.command.nickname.others
-            conditions:
-              - "%arg_1% == reset"
-          3:
-            sources: [ONLINE_PLAYERS:20]
-            requires: aircore.command.nickname.others
-            conditions:
-              - "%arg_1% == set"
 
       block:
         enabled: true
@@ -670,12 +671,6 @@ commands:
         aliases: []
         usage: "/%label% [reason]"
 
-  # --------------------------------------------------
-  # UTILITIES
-  # --------------------------------------------------
-  utilities:
-    enabled: true
-    bundle:
       heal:
         enabled: true
         name: "heal"
