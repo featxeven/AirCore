@@ -95,12 +95,13 @@ public final class PlayerListener implements Listener {
         modules.events().handleQuit(event);
         modules.afk().handleQuit(uuid);
 
+        guis.guis().disconnect(uuid);
+
         services.inventories().handleQuit(player); // in case this player was being viewed
         services.inventories().handleViewerDisconnect(uuid); // in case this player was the viewer
         services.players().handleQuit(player);
         services.holding().handleQuit(player);
         services.blocks().release(uuid);
-        guis.guis().disconnect(uuid);
 
         modules.variables().handleQuit(player);
         modules.chat().handleQuit(uuid);

@@ -85,6 +85,7 @@ public final class GuiRenderer {
     }
 
     public void render(Player viewer, GuiSession session) {
+        session.settle();
         prepare(viewer, session);
         draw(viewer, session);
     }

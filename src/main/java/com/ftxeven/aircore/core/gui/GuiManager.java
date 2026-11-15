@@ -220,6 +220,9 @@ public final class GuiManager {
     // refresh()/resume(), below) funnels into
     public void open(Player viewer, GuiConfig definition, Map<String, String> placeholders, OpenOptions options) {
         GuiSession previous = sessions.get(viewer.getUniqueId());
+        if (previous != null) {
+            previous.settle();
+        }
         boolean reopen = options.kind() == OpenOptions.Kind.REOPEN && previous != null;
         boolean fireActions = options.kind() == OpenOptions.Kind.ENTRY;
         List<String> originChain = reopen ? previous.originChain() : options.ancestorChain();
@@ -452,7 +455,9 @@ public final class GuiManager {
 
         LiveContainer live = session.liveContainer();
         if (live != null) {
+            session.settle();
             handleLiveContainerClick(event, viewer, session, live);
+            scheduleReconcile(viewer, session, live);
             return;
         }
 
@@ -627,7 +632,7 @@ public final class GuiManager {
                 event.setCancelled(true);
                 return;
             }
-            handleShiftIntoContainer(event, viewer, session, live);
+            handleShiftIntoContainer(event, session, live);
         }
     }
 
@@ -645,10 +650,7 @@ public final class GuiManager {
                 live.placeDirect(session, slot, incoming);
                 clearIncomingSource(event, viewer);
             }
-            return;
         }
-
-        scheduleReconcile(viewer, session, live);
     }
 
     private void clearIncomingSource(InventoryClickEvent event, Player viewer) {
@@ -667,7 +669,7 @@ public final class GuiManager {
         };
     }
 
-    private void handleShiftIntoContainer(InventoryClickEvent event, Player viewer, GuiSession session, LiveContainer live) {
+    private void handleShiftIntoContainer(InventoryClickEvent event, GuiSession session, LiveContainer live) {
         ItemStack source = event.getCurrentItem();
         if (source == null || source.getType().isAir()) {
             return;
@@ -680,8 +682,6 @@ public final class GuiManager {
         if (bottom != null) {
             bottom.setItem(event.getSlot(), leftover != null && leftover.getAmount() > 0 ? leftover : null);
         }
-
-        scheduleReconcile(viewer, session, live);
     }
 
     private void scheduleReconcile(Player viewer, GuiSession session, LiveContainer live) {

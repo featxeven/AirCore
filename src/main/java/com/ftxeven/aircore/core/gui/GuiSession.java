@@ -120,6 +120,12 @@ public final class GuiSession {
         return liveContainer;
     }
 
+    public void settle() {
+        if (liveContainer != null) {
+            liveContainer.reconcile(this);
+        }
+    }
+
     public long openTick() { return openTick; }
 
     public List<String> originChain() { return originChain; }
@@ -139,6 +145,7 @@ public final class GuiSession {
     public boolean active() { return active; }
 
     public void deactivate() {
+        settle();
         active = false;
         if (refreshTask != null) {
             refreshTask.cancel();
