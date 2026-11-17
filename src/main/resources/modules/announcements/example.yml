@@ -35,12 +35,12 @@ announcements: []
 #    schedule:
 #      type: STARTUP
 #
-#    sequence: ORDERED   # required, irrelevant with one entry
+#    sequence: ORDERED   # optional (defaults to ORDERED), irrelevant with one entry
 #
 #    entries:
 #      - bossbar:
 #          persist: true          # survives restarts
-#          sync-on-join: true     # shown to anyone joining after this fired
+#          on-join: true          # shown to anyone joining after this fired
 #          text: "<green>Modded Survival <gray>| <white>discord.gg/example"
 #          duration: -1
 #          color: GREEN
@@ -56,7 +56,7 @@ announcements: []
 #    schedule:
 #      type: INTERVAL
 #      interval: 1800
-#      delay: 45              # Staggered against welcome-tip above so they don't trigger if intervals collide.
+#      delay: 45              # Staggered against welcome_tip above so the two don't fire at the same moment.
 #
 #    # A player who fails any condition here simply does not receive it that cycle.
 #    conditions:
@@ -102,7 +102,7 @@ announcements: []
 #        - "05/07"         # recurring yearly - kickoff of the summer PvP weekend, every year
 #        - "22/12/26"      # one-off - special end-of-year PvP weekend, 2026 only
 #
-#    sequence: ORDERED   # Irrelevant here since there's only one entry, but still required.
+#    sequence: ORDERED   # optional (defaults to ORDERED), irrelevant with one entry
 #
 #    entries:
 #      - chat:
@@ -112,9 +112,9 @@ announcements: []
 #
 #        bossbar:
 #          persist: true
-#          sync-on-join: true
+#          on-join: true
 #          text: "<red>PvP Weekend Active!"
-#          duration: -1
+#          duration: 172800      # 2 days, in seconds. The bar ends by itself, also for players who join later.
 #          color: RED
 #          overlay: NOTCHED_6
 #          progress: 1.0
@@ -148,9 +148,6 @@ announcements: []
 #    entries:
 #      - chat: "<gray>[<red>PvP Weekend<gray>] <white>Friendly fire is now OFF. Thanks for playing!"
 #
-#        bossbar:
-#          clear: true
-#
 #        command:
 #          run-as: CONSOLE
 #          command: "pvpmanager zone disable spawn"
@@ -158,7 +155,7 @@ announcements: []
 #
 #  # Manual-only, trigger-only announcement using passed-in arguments
 #  # type: MANUAL means this never fires on its own - only via:
-#  #   /announcement trigger staff_alert "Restarting in 5 minutes"
+#  #   /aircore announcement trigger staff_alert "Restarting in 5 minutes"
 #  staff_alert:
 #    enabled: true
 #
