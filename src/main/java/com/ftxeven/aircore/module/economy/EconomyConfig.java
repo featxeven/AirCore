@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.Map;
 
 public final class EconomyConfig extends BaseConfig {
 
@@ -96,7 +97,12 @@ public final class EconomyConfig extends BaseConfig {
 
     private Sell readSell(ConfigurationSection sec) {
         sec = orEmpty(sec);
-        return new Sell(getBoolean(sec, "skip-invalid-items", false));
+        return new Sell(getBoolean(sec, "skip-invalid-items", false), readSort(sec.getConfigurationSection("sort")));
+    }
+
+    private Sort readSort(ConfigurationSection sec) {
+        sec = orEmpty(sec);
+        return new Sort(readLabelMap(sec.getConfigurationSection("worth")));
     }
 
     // Section types
@@ -121,5 +127,7 @@ public final class EconomyConfig extends BaseConfig {
 
     public record Gui(Sell sell) {}
 
-    public record Sell(boolean skipInvalidItems) {}
+    public record Sell(boolean skipInvalidItems, Sort sort) {}
+
+    public record Sort(Map<String, String> worth) {}
 }

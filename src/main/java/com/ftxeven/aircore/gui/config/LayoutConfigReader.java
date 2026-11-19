@@ -45,9 +45,11 @@ public final class LayoutConfigReader {
                 slots(sec, "entry-slots", inventorySize, context),
                 slots(sec, "disposal-slots", inventorySize, context),
                 slots(sec, "sell-slots", inventorySize, context),
+                slots(sec, "worth-slots", inventorySize, context),
                 template(sec, "home", shared, expander, context),
                 template(sec, "icon", shared, expander, context),
                 template(sec, "entry", shared, expander, context),
+                template(sec, "worth", shared, expander, context),
                 sec.isSet("leaderboard") ? expander.expand(sec.getString("leaderboard", ""), context + " leaderboard") : null,
                 readAvailableSlots(sec.getConfigurationSection("available-slots"), shared, expander, context + " available-slots")
         );

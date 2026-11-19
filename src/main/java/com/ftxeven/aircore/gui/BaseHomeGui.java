@@ -17,7 +17,6 @@ import com.ftxeven.aircore.gui.render.GuiPlaceholders;
 import com.ftxeven.aircore.model.Home;
 import com.ftxeven.aircore.module.homes.HomesModule;
 import com.ftxeven.aircore.service.ServiceManager;
-import com.ftxeven.aircore.util.Placeholders;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -98,47 +97,21 @@ public abstract class BaseHomeGui implements GuiRenderer.DynamicRenderer {
         drawEntries(viewer, session, List.of(entry), layout.homeSlots());
     }
 
-    // Filter option sources
-
-    protected LinkedHashMap<String, String> worldOptions() {
-        return GuiCyclers.worlds(configs);
-    }
-
-    protected LinkedHashMap<String, String> iconOptions() {
-        return GuiCyclers.icons(configs);
-    }
-
-    protected LinkedHashMap<String, String> sortOptions() {
-        return GuiCyclers.sorts(configs);
-    }
-
-    // Filter / sort attribute selection
-
-    protected String selected(GuiSession session, String attributeKey, LinkedHashMap<String, String> options) {
-        String value = session.attribute(attributeKey, String.class);
-        if (value != null && (value.equals(FilterConfig.ALL_ID) || options.containsKey(value))) {
-            return value;
-        }
-        String resolved = options.isEmpty() ? FilterConfig.ALL_ID : options.keySet().iterator().next();
-        session.attribute(attributeKey, resolved);
-        return resolved;
-    }
-
     // Filter selection -> query value
 
     protected Optional<String> resolveWorldFilter(GuiSession session, LayoutConfig.Cycler filters) {
-        if (filters.isExcluded("world")) {
+        if (filters.isExcluded(GuiCyclers.HOME_WORLD.id())) {
             return Optional.empty();
         }
-        String world = selected(session, ATTR_FILTER_WORLD, worldOptions());
+        String world = GuiCyclers.selected(session, configs, GuiCyclers.HOME_WORLD);
         return world.equals(FilterConfig.ALL_ID) ? Optional.empty() : Optional.of(world);
     }
 
     protected Optional<Set<String>> resolveIconFilter(GuiSession session, LayoutConfig.Cycler filters) {
-        if (filters.isExcluded("icon")) {
+        if (filters.isExcluded(GuiCyclers.HOME_ICON.id())) {
             return Optional.empty();
         }
-        String selectedId = selected(session, ATTR_FILTER_ICON, iconOptions());
+        String selectedId = GuiCyclers.selected(session, configs, GuiCyclers.HOME_ICON);
         if (selectedId.equals(FilterConfig.ALL_ID)) {
             return Optional.empty();
         }
@@ -149,11 +122,10 @@ public abstract class BaseHomeGui implements GuiRenderer.DynamicRenderer {
     // Sorting
 
     protected HomeSort currentSort(GuiSession session, LayoutConfig.Cycler sorts) {
-        if (sorts.isExcluded("home")) {
+        if (sorts.isExcluded(GuiCyclers.HOME_SORT.id())) {
             return HomeSort.ALPHABETICAL;
         }
-        String key = selected(session, ATTR_SORT_HOME, sortOptions());
-        return GuiCyclers.resolveSort(key);
+        return GuiCyclers.homeSort(GuiCyclers.selected(session, configs, GuiCyclers.HOME_SORT));
     }
 
     // Query building
@@ -182,14 +154,8 @@ public abstract class BaseHomeGui implements GuiRenderer.DynamicRenderer {
 
     protected void writeFilterCyclers(GuiSession session, LayoutConfig.Cycler filters, Supplier<HomeFacetCounts> facets) {
         HomeFacetCounts counts = facets.get();
-
-        LinkedHashMap<String, String> worldOptions = worldOptions();
-        String selectedWorld = selected(session, ATTR_FILTER_WORLD, worldOptions);
-        writeCycler(session, "filter_WORLD", "world", filters, worldOptions, selectedWorld, worldFilterCounts(counts.byWorld()), LayoutConfig.Cycler.Format.FILTER_DEFAULT);
-
-        LinkedHashMap<String, String> iconOptions = iconOptions();
-        String selectedIcon = selected(session, ATTR_FILTER_ICON, iconOptions);
-        writeCycler(session, "filter_ICON", "icon", filters, iconOptions, selectedIcon, iconFilterCounts(counts.byIcon()), LayoutConfig.Cycler.Format.FILTER_DEFAULT);
+        GuiCyclers.write(session, configs, filters, GuiCyclers.HOME_WORLD, worldFilterCounts(counts.byWorld()));
+        GuiCyclers.write(session, configs, filters, GuiCyclers.HOME_ICON, iconFilterCounts(counts.byIcon()));
     }
 
     // buckets raw per-world counts under the filter entry each world belongs to, folding any
@@ -225,35 +191,7 @@ public abstract class BaseHomeGui implements GuiRenderer.DynamicRenderer {
     }
 
     protected void writeSortCycler(GuiSession session, LayoutConfig.Cycler sorts) {
-        LinkedHashMap<String, String> options = sortOptions();
-        String selectedSort = selected(session, ATTR_SORT_HOME, options);
-        writeCycler(session, "sort_HOME", "home", sorts, options, selectedSort, null, LayoutConfig.Cycler.Format.SORT_DEFAULT);
-    }
-
-    protected void writeCycler(GuiSession session, String placeholderKey, String dimension, LayoutConfig.Cycler cycler,
-                               LinkedHashMap<String, String> options, String selectedOption, @Nullable Map<String, Long> counts,
-                               LayoutConfig.Cycler.Format fallback) {
-        if (options.isEmpty()) {
-            return;
-        }
-
-        LayoutConfig.Cycler.Format format = cycler.format(dimension, fallback);
-
-        Map<String, String> placeholders = session.placeholders();
-        placeholders.put(placeholderKey, options.getOrDefault(selectedOption, selectedOption));
-        placeholders.put(placeholderKey + "_id", selectedOption);
-
-        StringBuilder list = new StringBuilder();
-        for (Map.Entry<String, String> option : options.entrySet()) {
-            String template = option.getKey().equals(selectedOption) ? format.selected() : format.unselected();
-            long count = counts != null ? counts.getOrDefault(option.getKey(), 0L) : 0L;
-            String line = Placeholders.apply(null, template, Map.of("name", option.getValue(), "count", String.valueOf(count)));
-            if (!list.isEmpty()) {
-                list.append('\n');
-            }
-            list.append(line);
-        }
-        placeholders.put(placeholderKey + "_list", list.toString());
+        GuiCyclers.write(session, configs, sorts, GuiCyclers.HOME_SORT, null);
     }
 
     // Query clamping

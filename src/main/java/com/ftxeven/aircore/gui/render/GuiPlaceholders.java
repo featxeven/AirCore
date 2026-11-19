@@ -9,6 +9,7 @@ import com.ftxeven.aircore.model.Position;
 import com.ftxeven.aircore.module.economy.EconomyModule;
 import com.ftxeven.aircore.module.economy.format.AmountFormatter;
 import com.ftxeven.aircore.module.economy.sell.SellHandler;
+import com.ftxeven.aircore.module.economy.worth.WorthCalculator;
 import com.ftxeven.aircore.service.PlayerService;
 import com.ftxeven.aircore.service.LeaderboardService.Entry;
 import com.ftxeven.aircore.service.LeaderboardService.Snapshot;
@@ -157,5 +158,10 @@ public final class GuiPlaceholders {
         }
         formatter.formatInto(placeholders, amountKey, 0);
         formatter.formatOptionalInto(placeholders, taxKey, 0, "placeholders.empty.tax");
+    }
+
+    public static void formatWorth(Map<String, String> placeholders, AmountFormatter formatter, WorthCalculator.Entry entry) {
+        formatter.formatInto(placeholders, "worth", entry.worth());
+        formatter.formatInto(placeholders, "worth_stack", entry.stackWorth());
     }
 }

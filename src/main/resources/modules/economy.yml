@@ -92,3 +92,11 @@ gui:
     skip-invalid-items: false     # When true, selling multiple items at once sells every
                                   # sellable one and skips invalid ones instead of aborting
                                   # the wholesale.
+
+    # --- Sort options ---
+    # Order here controls the cycle order in GUIs.
+    sort:
+      worth:
+        default: "Default"
+        lowest_value: "Lowest Value"
+        highest_value: "Highest Value"

@@ -5,16 +5,18 @@ import com.ftxeven.aircore.core.gui.action.ActionContext;
 import com.ftxeven.aircore.core.gui.action.DeferredNavigationAction;
 import com.ftxeven.aircore.gui.BaseHomeGui;
 import com.ftxeven.aircore.gui.BaseLeaderboardGui;
+import com.ftxeven.aircore.gui.BaseWorthGui;
 import com.ftxeven.aircore.gui.PluginGuiManager;
 import com.ftxeven.aircore.gui.impl.HomeSearchGui;
 import com.ftxeven.aircore.gui.impl.LeaderboardSearchGui;
+import com.ftxeven.aircore.gui.impl.WorthSearchGui;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * [search] type:home|leaderboard gui:<id>, page:, target:, filter:<dim>:<value>, sort:<dim>:<value>,
+ * [search] type:home|leaderboard|worth gui:<id>, page:, target:, filter:<dim>:<value>, sort:<dim>:<value>,
  * restore:<...>, query:<answer>>
  */
 public final class SearchAction extends DeferredNavigationAction {
@@ -36,6 +38,7 @@ public final class SearchAction extends DeferredNavigationAction {
         return switch (type) {
             case "home" -> homeDestination(context, args);
             case "leaderboard" -> leaderboardDestination(context, args);
+            case "worth" -> worthDestination(context, args);
             default -> {
                 GuiActions.warnUnknownType(context, VERB, type);
                 yield null;
@@ -50,7 +53,12 @@ public final class SearchAction extends DeferredNavigationAction {
 
     private @Nullable Destination homeDestination(ActionContext context, Map<String, String> args) {
         String guiId = searchGui(context, args, HomeSearchGui.ROLE);
-        return guiId != null ? new HomeDestination(guiId) : null;
+        return guiId != null ? new QueryDestination(guiId, "homes.search", BaseHomeGui.ATTR_SEARCH_QUERY) : null;
+    }
+
+    private @Nullable Destination worthDestination(ActionContext context, Map<String, String> args) {
+        String guiId = searchGui(context, args, WorthSearchGui.ROLE);
+        return guiId != null ? new QueryDestination(guiId, "worth.search", BaseWorthGui.ATTR_SEARCH_QUERY) : null;
     }
 
     private @Nullable Destination leaderboardDestination(ActionContext context, Map<String, String> args) {
@@ -111,16 +119,11 @@ public final class SearchAction extends DeferredNavigationAction {
         return guiId;
     }
 
-    private record HomeDestination(String guiId) implements Destination {
-        @Override
-        public String inputKey() {
-            return "homes.search";
-        }
-
+    private record QueryDestination(String guiId, String inputKey, String attribute) implements Destination {
         @Override
         public Map<String, Object> attributesFor(String answer) {
             String query = normalize(answer);
-            return query != null ? Map.of(BaseHomeGui.ATTR_SEARCH_QUERY, query) : Map.of();
+            return query != null ? Map.of(attribute, query) : Map.of();
         }
     }
 

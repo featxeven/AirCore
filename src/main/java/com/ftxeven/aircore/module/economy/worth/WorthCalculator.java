@@ -1,6 +1,7 @@
 package com.ftxeven.aircore.module.economy.worth;
 
 import com.ftxeven.aircore.core.hook.HookRegistry;
+import org.bukkit.Material;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +14,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,6 +45,20 @@ public final class WorthCalculator {
     public record Appraisal(boolean sellable, double total, Set<String> invalidKeys) {
         private static Appraisal merge(double total, Set<String> invalidKeys) {
             return new Appraisal(invalidKeys.isEmpty(), total, Set.copyOf(invalidKeys));
+        }
+    }
+
+    public record Entry(String key, double worth, int stackSize) {
+        public double stackWorth() {
+            return worth * stackSize;
+        }
+
+        public boolean matches(String query) {
+            return normalize(key).contains(normalize(query));
+        }
+
+        private static String normalize(String text) {
+            return text.trim().replace('_', ' ').toLowerCase(Locale.ROOT);
         }
     }
 
@@ -88,6 +104,21 @@ public final class WorthCalculator {
     private String keyOf(ItemStack stack) {
         String pluginId = hooks.identify(stack);
         return pluginId != null ? pluginId : stack.getType().getKey().getKey().toLowerCase(Locale.ROOT);
+    }
+
+    // Catalog
+
+    public List<Entry> catalog(WorthSort sort) {
+        Map<String, Double> materials = items.get().materials();
+        List<Entry> entries = new ArrayList<>(materials.size());
+        materials.forEach((key, worth) -> entries.add(new Entry(key, worth, stackSizeOf(key))));
+        sort.sort(entries);
+        return entries;
+    }
+
+    private static int stackSizeOf(String key) {
+        Material material = Material.matchMaterial(key);
+        return material != null ? Math.max(1, material.getMaxStackSize()) : 1;
     }
 
     // Modifiers

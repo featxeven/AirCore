@@ -1,0 +1,73 @@
+# AirCore - economy/sell/search.yml
+# Docs: https://airdevelopment.gitbook.io/docs/
+
+# This is an example GUI. You can safely delete it and create your own.
+
+# 'role' binds this file to the worth logic. Rename/relocate this file freely,
+# just keep the 'role:' line.
+role: worth-search
+
+settings:
+  title: "<gradient:#5AD1F2:#736EFE><bold>Search</bold></gradient> <dark_gray>- <white>\"%query%\" <dark_gray>(%page%/%pages%)"
+  rows: 6
+
+# --------------------------------------------------
+# LAYOUT
+# --------------------------------------------------
+layout:
+  sorts:
+    # Sort options excluded from this GUI.
+    excluded: [] # value
+
+    format:
+      value: # %sort_VALUE_list%
+        selected: "<aqua>> <white>%name%"
+        unselected: "<dark_gray>  %name%"
+
+  # Slots where items are rendered.
+  worth-slots: [9-44]
+
+  # How each item is rendered inside worth-slots. %material% is the key from data/worth/items.yml.
+  worth:
+    lore:
+      - "<gray>Worth per unit: %worth%"
+      - "=is:stackable <gray>Worth per stack: %worth_stack%"
+    item-flags:
+      - HIDE_ATTRIBUTES
+
+# --------------------------------------------------
+# ITEMS
+# Define the static items rendered in this GUI.
+# --------------------------------------------------
+items:
+  filler:
+    template: filler
+    slots: [1-3, 5-8, 46-52]
+
+  no-results:
+    template: worth-no-results
+    slots: 22
+
+  back:
+    slots: 0
+    material: SPRUCE_DOOR
+    display-name: "<white><bold>Back</bold>"
+    lore:
+      - "<gray>Return to the previous menu."
+    actions:
+      any:
+        - "[open] context:true"
+        - "[sound] $click"
+
+  sort-value:
+    template: sell-sort-value
+    slots: 4
+
+  # --- Footer ---
+  previous-page:
+    template: previous-page
+    slots: 45
+
+  next-page:
+    template: next-page
+    slots: 53

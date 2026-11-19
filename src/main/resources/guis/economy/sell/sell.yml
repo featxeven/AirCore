@@ -28,7 +28,7 @@ layout:
 items:
   filler:
     template: filler
-    slots: [45-47, 49, 51-52]
+    slots: [45-47, 51-52]
 
   confirm-selected:
     slots: 48
@@ -43,6 +43,20 @@ items:
       any:
         - "[item] type:sell scope:selected gui:economy/sell/confirm_selected"
         - "=can:sell [sound] $click"
+
+  worth:
+    slots: 49
+    material: BOOK
+    display-name: "<yellow><bold>Item Worth</bold>"
+    lore:
+      - "<gray>Browse the worth of every item"
+      - "<gray>that can be sold."
+      - " "
+      - "<yellow>Click <gray>to open"
+    actions:
+      any:
+        - "[preview] type:worth gui:economy/sell/worth page:1"
+        - "[sound] $click"
 
   confirm-all:
     slots: 50

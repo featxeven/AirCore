@@ -67,7 +67,7 @@ public final class HoldingContainerRenderer implements LiveContainer {
 
     @Override
     public boolean canModify() {
-        return true;
+        return !slots.isEmpty();
     }
 
     @Override

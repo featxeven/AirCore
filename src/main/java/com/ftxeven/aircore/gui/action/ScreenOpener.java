@@ -8,6 +8,7 @@ import com.ftxeven.aircore.core.gui.flag.FlagGate;
 import com.ftxeven.aircore.core.gui.nav.GuiContext;
 import com.ftxeven.aircore.core.gui.nav.ScreenKey;
 import com.ftxeven.aircore.core.gui.nav.ScreenState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,10 +20,19 @@ public final class ScreenOpener {
     }
 
     public static void open(ActionContext context, String guiId, Map<String, Object> attributes) {
-        open(context, guiId, attributes, Map.of(), FlagGate.NO_FLAGS);
+        open(context, guiId, attributes, null);
+    }
+
+    public static void open(ActionContext context, String guiId, Map<String, Object> attributes, @Nullable String page) {
+        open(context, guiId, attributes, page, Map.of(), FlagGate.NO_FLAGS);
     }
 
     public static void open(ActionContext context, String guiId, Map<String, Object> attributes,
+                            Map<String, String> extraPlaceholders, Function<String, String> flagResolver) {
+        open(context, guiId, attributes, null, extraPlaceholders, flagResolver);
+    }
+
+    public static void open(ActionContext context, String guiId, Map<String, Object> attributes, @Nullable String page,
                             Map<String, String> extraPlaceholders, Function<String, String> flagResolver) {
         GuiSession current = context.session();
         ScreenKey currentScreen = current.screenKey();
@@ -30,7 +40,8 @@ public final class ScreenOpener {
         GuiContext backLink = new GuiContext(currentScreen, current.originChain(), current.flagResolver(), current.navBack());
 
         ScreenState currentLive = ScreenState.liveStateOf(current);
-        ScreenState forward = ForwardNavigation.resolveForwardState(context, forwardScreen, currentLive, ForwardNavigation.parse("", context));
+        ForwardNavigation.Parsed navigation = ForwardNavigation.parse(page != null ? "page:" + page : "", context);
+        ScreenState forward = ForwardNavigation.resolveForwardState(context, forwardScreen, currentLive, navigation);
 
         Map<String, String> placeholders = new LinkedHashMap<>(current.placeholders());
         placeholders.putAll(extraPlaceholders);

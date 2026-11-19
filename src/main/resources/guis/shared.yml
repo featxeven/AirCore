@@ -237,6 +237,39 @@ templates:
     cooldown-message: "<ref:prefix> <red>Wait <white>%timeout%</white> before refreshing this GUI again!"
 
   # ---------------------------------------------------
+  # WORTH (used by economy/sell/worth, economy/sell/search)
+  # ---------------------------------------------------
+
+  sell-sort-value:
+    material: HOPPER
+    display-name: "<aqua><bold>Sort</bold>"
+    lore:
+      - "<dark_gray>Order"
+      - " "
+      - "<gray>Sorting: <white>%sort_VALUE%"
+      - " "
+      - "%sort_VALUE_list%"
+      - " "
+      - "<aqua>Click <gray>to cycle"
+    actions:
+      left:
+        - "[sort] type:worth by:value to:next"
+        - "[sound] $click"
+      right:
+        - "[sort] type:worth by:value to:previous"
+        - "[sound] $click"
+
+  worth-no-results:
+    priority:
+      - conditions:
+          - "%current% == 0"
+        material: BARRIER
+        display-name: "<red><bold>No matches"
+        lore:
+          - "<gray>No sellable item matches"
+          - "<white>%query%</white><gray>."
+
+  # ---------------------------------------------------
   # LEADERBOARDS (used by leaderboards/baltop, leaderboards/search)
   # ---------------------------------------------------
 

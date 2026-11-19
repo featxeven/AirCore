@@ -146,6 +146,8 @@ public final class PluginGuiManager {
         SellGui sell = new SellGui(configs, services, modules::economy, this);
         builtinRoles.put(SellGui.ROLE, sell);
         builtinRoles.put(SellGui.CONFIRM_ROLE, sell);
+        builtinRoles.put(WorthGui.ROLE, new WorthGui(configs, services, modules::economy, this));
+        builtinRoles.put(WorthSearchGui.ROLE, new WorthSearchGui(configs, services, modules::economy, this));
 
         bindRoles();
     }

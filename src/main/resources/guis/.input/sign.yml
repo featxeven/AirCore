@@ -28,3 +28,8 @@ contexts:
     search:
       lines:
         1: "^ Type search ^"
+
+  worth:
+    search:
+      lines:
+        1: "^ Type search ^"

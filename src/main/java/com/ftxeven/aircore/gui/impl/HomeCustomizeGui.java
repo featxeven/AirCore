@@ -93,9 +93,6 @@ public final class HomeCustomizeGui extends BaseHomeGui {
     }
 
     private void writeIconFilterCycler(GuiSession session, LayoutConfig.Cycler filters) {
-        LinkedHashMap<String, String> options = GuiCyclers.icons(configs);
-        String selectedIcon = selected(session, ATTR_FILTER_ICON, options);
-
         Map<String, Long> counts = new LinkedHashMap<>();
         for (FilterConfig.HomeIconFilter filter : configs.filter().homeIconFilters().values()) {
             if (filter instanceof FilterConfig.HomeIconFilter.All) {
@@ -104,6 +101,6 @@ public final class HomeCustomizeGui extends BaseHomeGui {
                 counts.put(filter.id(), (long) filter.matchIds().size());
             }
         }
-        writeCycler(session, "filter_ICON", "icon", filters, options, selectedIcon, counts, LayoutConfig.Cycler.Format.FILTER_DEFAULT);
+        GuiCyclers.write(session, configs, filters, GuiCyclers.HOME_ICON, counts);
     }
 }

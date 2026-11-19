@@ -25,17 +25,20 @@ public record LayoutConfig(
         @Nullable Set<Integer> entrySlots,
         @Nullable Set<Integer> disposalSlots,
         @Nullable Set<Integer> sellSlots,
+        @Nullable Set<Integer> worthSlots,
         @Nullable ItemConfig.Template home,
         @Nullable ItemConfig.Template icon,
         @Nullable ItemConfig.Template entry,
+        @Nullable ItemConfig.Template worth,
         @Nullable String leaderboard,
         @Nullable AvailableSlots availableSlots
 ) {
     public static final LayoutConfig EMPTY = new LayoutConfig(
             null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null, null, null, null,
+            null, null);
 
-    public static final Set<String> TEMPLATE_KEYS = Set.of("home", "icon", "entry");
+    public static final Set<String> TEMPLATE_KEYS = Set.of("home", "icon", "entry", "worth");
 
     public LayoutConfig {
         itemSlots = itemSlots != null ? orderedCopy(itemSlots) : null;
@@ -51,6 +54,7 @@ public record LayoutConfig(
         entrySlots = entrySlots != null ? orderedCopy(entrySlots) : null;
         disposalSlots = disposalSlots != null ? orderedCopy(disposalSlots) : null;
         sellSlots = sellSlots != null ? orderedCopy(sellSlots) : null;
+        worthSlots = worthSlots != null ? orderedCopy(worthSlots) : null;
     }
 
     private static Set<Integer> orderedCopy(Set<Integer> slots) {
@@ -73,6 +77,7 @@ public record LayoutConfig(
     public Set<Integer> entrySlots() { return entrySlots != null ? entrySlots : Set.of(); }
     public Set<Integer> disposalSlots() { return disposalSlots != null ? disposalSlots : Set.of(); }
     public Set<Integer> sellSlots() { return sellSlots != null ? sellSlots : Set.of(); }
+    public Set<Integer> worthSlots() { return worthSlots != null ? worthSlots : Set.of(); }
 
     public AvailableSlots availableSlots() { return availableSlots != null ? availableSlots : AvailableSlots.DISABLED; }
 

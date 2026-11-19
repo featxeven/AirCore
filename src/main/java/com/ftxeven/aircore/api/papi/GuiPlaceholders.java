@@ -14,16 +14,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 
 final class GuiPlaceholders {
 
     private static final String SEARCH_QUERY_SUFFIX = "-search-query";
-    private static final String FILTER_PREFIX = "filter_";
-    private static final String SORT_PREFIX = "sort_";
     private static final String ID_SUFFIX = "_id";
 
     private final PluginGuiManager guis;
@@ -42,13 +38,10 @@ final class GuiPlaceholders {
             return "";
         }
 
-        if (key.startsWith(FILTER_PREFIX)) {
-            return cyclerValue(session, key.substring(FILTER_PREFIX.length()),
-                    GuiCyclers::filterAttribute, dimension -> GuiCyclers.filterOptions(configs, dimension));
-        }
-        if (key.startsWith(SORT_PREFIX)) {
-            return cyclerValue(session, key.substring(SORT_PREFIX.length()),
-                    GuiCyclers::sortAttribute, dimension -> GuiCyclers.sortOptions(configs, dimension));
+        for (GuiCyclers.Kind kind : GuiCyclers.Kind.values()) {
+            if (key.startsWith(kind.keyPrefix())) {
+                return cyclerValue(session, kind, key.substring(kind.keyPrefix().length()));
+            }
         }
 
         return switch (key) {
@@ -108,23 +101,18 @@ final class GuiPlaceholders {
         return home != null ? home.name() : "";
     }
 
-    private @Nullable String cyclerValue(GuiSession session, String rest, Function<String, String> attributeOf,
-                                         Function<String, LinkedHashMap<String, String>> optionsOf) {
+    private @Nullable String cyclerValue(GuiSession session, GuiCyclers.Kind kind, String rest) {
         boolean idOnly = rest.endsWith(ID_SUFFIX);
-        String dimension = idOnly ? rest.substring(0, rest.length() - ID_SUFFIX.length()) : rest;
+        String id = idOnly ? rest.substring(0, rest.length() - ID_SUFFIX.length()) : rest;
 
-        String attributeKey = attributeOf.apply(dimension);
-        if (attributeKey == null) {
-            return null; // not a recognized dimension
+        GuiCyclers.Dimension dimension = GuiCyclers.find(kind, id);
+        if (dimension == null) {
+            return null;
         }
-        String selected = session.attribute(attributeKey, String.class);
+        String selected = session.attribute(dimension.attribute(), String.class);
         if (selected == null) {
             return "";
         }
-        if (idOnly) {
-            return selected;
-        }
-        LinkedHashMap<String, String> options = optionsOf.apply(dimension);
-        return options != null ? options.getOrDefault(selected, selected) : selected;
+        return idOnly ? selected : dimension.options(configs).getOrDefault(selected, selected);
     }
 }

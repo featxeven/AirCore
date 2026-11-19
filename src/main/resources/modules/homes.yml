@@ -39,6 +39,8 @@ behaviour:
 # GUI
 # --------------------------------------------------
 gui:
+
+  # --- Sort options ---
   # Order here controls the cycle order in GUIs (%sort_HOME_list%).
   sort:
     newest: "Newest"

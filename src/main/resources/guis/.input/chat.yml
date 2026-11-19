@@ -23,3 +23,7 @@ contexts:
   leaderboards:
     search:
       prompt: "%prefix% <gray>Type a query to search for a player, or type <red>%cancel_key% <gray>to go back."
+
+  worth:
+    search:
+      prompt: "%prefix% <gray>Type a query to search for an item, or type <red>%cancel_key% <gray>to go back."

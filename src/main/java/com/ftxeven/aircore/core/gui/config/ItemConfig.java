@@ -31,6 +31,11 @@ public record ItemConfig(
         public Template {
             priority = priority.stream().map(List::copyOf).toList();
         }
+
+        // this template with its material replaced, for entries whose material comes from data
+        public Template withMaterial(String material) {
+            return new Template(fields.withMaterial(material), priority);
+        }
     }
 
     public record PriorityTier(List<String> conditions, Fields fields, List<List<PriorityTier>> priority) {
@@ -87,6 +92,12 @@ public record ItemConfig(
                     firstNonNull(override.actions, actions),
                     firstNonNull(override.animation, animation)
             );
+        }
+
+        public Fields withMaterial(@Nullable String material) {
+            return new Fields(material, displayName, lore, amount, glow, hideTooltip, unbreakable,
+                    customModelData, itemModel, tooltipStyle, itemFlags, enchants, damage,
+                    leatherColor, potionColor, cooldown, cooldownMessage, actions, animation);
         }
 
         private static <T> T firstNonNull(T override, T base) {

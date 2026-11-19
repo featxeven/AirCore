@@ -46,6 +46,10 @@ public abstract class BaseHoldingGui implements GuiRenderer.DynamicRenderer {
         return container;
     }
 
+    protected void retainHolding(Player viewer, GuiSession session) {
+        attachSlots(viewer, session, Set.of());
+    }
+
     protected int heldCount(Player viewer) {
         return holding().count(viewer.getUniqueId(), kind);
     }

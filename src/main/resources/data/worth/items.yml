@@ -920,7 +920,6 @@ materials:
   sugar_cane: 0.5
   kelp: 0.5
   seagrass: 0.3
-  tall_seagrass: 0.3
   vine: 0.3
   lily_pad: 0.5
   moss_carpet: 0.3
@@ -1043,7 +1042,6 @@ materials:
   packed_ice: 1
   blue_ice: 2
   snow_block: 0.5
-  powder_snow: 0.5
 
   #  ----Colored Blocks ----
   # Wool
@@ -1607,9 +1605,7 @@ materials:
   resin_bricks: 1.2
   chiseled_resin_bricks: 1.2
   resin_brick_slab: 0.6
-  resin_stairs: 1.2
   resin_brick_stairs: 1.2
-  resin_wall: 1.2
   resin_brick_wall: 1.2
 
   # Tuff Family
@@ -1773,9 +1769,8 @@ materials:
   sulfur_stairs: 0.6
   sulfur_slab: 0.3
   sulfur_wall: 0.6
-  sulfur_bricks_stairs: 0.7
-  sulfur_bricks_slab: 0.35
-  sulfur_bricks_wall: 0.7
+  sulfur_brick_stairs: 0.7
+  sulfur_brick_slab: 0.35
   polished_sulfur_stairs: 0.7
   polished_sulfur_slab: 0.35
   polished_sulfur_wall: 0.7
@@ -1789,9 +1784,9 @@ materials:
   cinnabar_stairs: 0.6
   cinnabar_slab: 0.3
   cinnabar_wall: 0.6
-  cinnabar_bricks_stairs: 0.7
-  cinnabar_bricks_slab: 0.35
-  cinnabar_bricks_wall: 0.7
+  cinnabar_brick_stairs: 0.7
+  cinnabar_brick_slab: 0.35
+  cinnabar_brick_wall: 0.7
   polished_cinnabar_stairs: 0.7
   polished_cinnabar_slab: 0.35
   polished_cinnabar_wall: 0.7

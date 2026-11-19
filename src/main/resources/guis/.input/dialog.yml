@@ -77,3 +77,31 @@ contexts:
         cancel:
           text: "<red>Cancel"
           width: 100
+
+  worth:
+    search:
+      # on-cancel: CLOSE
+      title: "Search"
+      external-title: "AirCore"
+      width: 200
+      can-close: true
+
+      body:
+        entries:
+          - type: text
+            text: "Type a query to search for an item."
+
+      input:
+        label: "Item name"
+        label-visible: true
+        initial-value: ""
+        max-length: 32
+        width: 150
+
+      buttons:
+        submit:
+          text: "<green>Search"
+          width: 100
+        cancel:
+          text: "<red>Cancel"
+          width: 100

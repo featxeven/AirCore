@@ -6,6 +6,7 @@ import com.ftxeven.aircore.model.Kit;
 import com.ftxeven.aircore.model.NamedLocation;
 import com.ftxeven.aircore.module.economy.EconomyModule;
 import com.ftxeven.aircore.module.economy.sell.SellHandler;
+import com.ftxeven.aircore.module.economy.worth.WorthCalculator;
 import com.ftxeven.aircore.module.kits.KitsModule;
 import com.ftxeven.aircore.module.teleport.TeleportModule;
 import com.ftxeven.aircore.service.item.HoldingKind;
@@ -145,6 +146,15 @@ public final class GuiFlags {
     public static Function<String, String> forPay(Player sender, EconomyModule economy, UUID targetUuid, double amount) {
         return builder(sender)
                 .can((flag, arg) -> flag.equals("pay") ? economy.pay().preview(sender, targetUuid, amount).isEmpty() : null)
+                .build();
+    }
+
+    // Worth
+
+    // is:stackable - true when the entry's item stacks to more than one
+    public static Function<String, String> forWorth(Player viewer, WorthCalculator.Entry entry) {
+        return builder(viewer)
+                .is((flag, arg) -> flag.equals("stackable") ? entry.stackSize() > 1 : null)
                 .build();
     }
 
