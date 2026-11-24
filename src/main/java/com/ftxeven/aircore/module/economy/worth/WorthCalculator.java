@@ -48,7 +48,7 @@ public final class WorthCalculator {
         }
     }
 
-    public record Entry(String key, double worth, int stackSize) {
+    public record Entry(String key, double worth, int stackSize, Set<String> categories) {
         public double stackWorth() {
             return worth * stackSize;
         }
@@ -109,9 +109,10 @@ public final class WorthCalculator {
     // Catalog
 
     public List<Entry> catalog(WorthSort sort) {
-        Map<String, Double> materials = items.get().materials();
+        WorthItemsConfig config = items.get();
+        Map<String, Double> materials = config.materials();
         List<Entry> entries = new ArrayList<>(materials.size());
-        materials.forEach((key, worth) -> entries.add(new Entry(key, worth, stackSizeOf(key))));
+        materials.forEach((key, worth) -> entries.add(new Entry(key, worth, stackSizeOf(key), config.categoriesOf(key))));
         sort.sort(entries);
         return entries;
     }

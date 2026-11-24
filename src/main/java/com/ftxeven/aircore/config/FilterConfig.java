@@ -4,6 +4,7 @@ import com.ftxeven.aircore.core.gui.config.AliasExpander;
 import com.ftxeven.aircore.core.gui.config.ItemConfig;
 import com.ftxeven.aircore.core.gui.config.ItemConfigReader;
 import com.ftxeven.aircore.permission.Permissions;
+import com.ftxeven.aircore.util.Glob;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.permissions.Permissible;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,6 +29,7 @@ public final class FilterConfig extends BaseConfig {
     private volatile Map<String, String> homeWorlds;
     private volatile Map<String, HomeIconFilter> homeIconFilters;
     private volatile Map<String, HomeIcon> homeIcons;
+    private volatile Map<String, WorthCategory> worthCategories;
 
     public FilterConfig(JavaPlugin plugin) {
         super(plugin, "data/filter.yml");
@@ -45,6 +47,9 @@ public final class FilterConfig extends BaseConfig {
         readHomeIcons(homesSec.getConfigurationSection("icons"), filters, icons);
         homeIconFilters = Collections.unmodifiableMap(filters);
         homeIcons = Collections.unmodifiableMap(icons);
+
+        ConfigurationSection worthSec = orEmpty(yaml.getConfigurationSection("worth"));
+        worthCategories = readWorthCategories(worthSec.getConfigurationSection("categories"));
     }
 
     public Map<String, String> homeWorlds() {
@@ -61,6 +66,14 @@ public final class FilterConfig extends BaseConfig {
 
     public Optional<HomeIcon> homeIcon(String id) {
         return Optional.ofNullable(homeIcons.get(id));
+    }
+
+    public Map<String, WorthCategory> worthCategories() {
+        return worthCategories;
+    }
+
+    public Optional<WorthCategory> worthCategory(String id) {
+        return Optional.ofNullable(worthCategories.get(id));
     }
 
     public String homeIconLabel(@Nullable String iconId) {
@@ -150,6 +163,32 @@ public final class FilterConfig extends BaseConfig {
         return sec != null ? itemReader.readFields(sec, expander, context) : null;
     }
 
+    private Map<String, WorthCategory> readWorthCategories(@Nullable ConfigurationSection sec) {
+        if (sec == null) {
+            return Map.of();
+        }
+        Map<String, WorthCategory> categories = new LinkedHashMap<>();
+        for (String key : sec.getKeys(false)) {
+            ConfigurationSection entry = orEmpty(sec.getConfigurationSection(key));
+            String label = entry.getString("label", key);
+
+            if (key.equals(ALL_ID)) {
+                categories.put(key, new WorthCategory.All(label));
+                continue;
+            }
+            categories.put(key, new WorthCategory.Group(key, label,
+                    readGlobs(entry, "materials"), readGlobs(entry, "exclude")));
+        }
+        return Collections.unmodifiableMap(categories);
+    }
+
+    private List<Glob> readGlobs(ConfigurationSection sec, String path) {
+        return readStringOrList(sec, path).stream()
+                .filter(raw -> !raw.isBlank())
+                .map(Glob::compile)
+                .toList();
+    }
+
     // Section types
 
     public sealed interface HomeIconFilter {
@@ -184,6 +223,38 @@ public final class FilterConfig extends BaseConfig {
                 return true;
             }
             return bundleId != null && Permissions.Access.hasHomeBundle(sender, bundleId);
+        }
+    }
+
+    public sealed interface WorthCategory {
+        String id();
+        String label();
+
+        boolean matches(String key);
+
+        record All(String label) implements WorthCategory {
+            @Override public String id() { return ALL_ID; }
+            @Override public boolean matches(String key) { return true; }
+        }
+
+        record Group(String id, String label, List<Glob> include, List<Glob> exclude) implements WorthCategory {
+            public Group {
+                include = List.copyOf(include);
+                exclude = List.copyOf(exclude);
+            }
+
+            @Override public boolean matches(String key) {
+                return anyMatch(include, key) && !anyMatch(exclude, key);
+            }
+
+            private static boolean anyMatch(List<Glob> globs, String key) {
+                for (Glob glob : globs) {
+                    if (glob.matches(key)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
     }
 }

@@ -80,3 +80,201 @@ homes:
           icon:
             material: JUNGLE_LOG
             display-name: "<yellow>Icon: <dark_green><bold>Jungle</bold>"
+
+# --------------------------------------------------
+# WORTH FILTERS
+# --------------------------------------------------
+worth:
+  # --- Category filter ---
+  # Optional. Group items under your own categories to filter the worth GUI by them.
+  categories:
+    # Not a real category. Used to "show everything".
+    all:
+      label: "All"
+
+    combat:
+      label: "Combat"
+      materials:
+        - "*_sword"
+        - "*_spear"
+        - "*_helmet"
+        - "*_chestplate"
+        - "*_leggings"
+        - "*_boots"
+        - "bow"
+        - "crossbow"
+        - "trident"
+        - "mace"
+        - "arrow"
+
+    tools:
+      label: "Tools"
+      materials:
+        - "*_pickaxe"
+        - "*_axe"
+        - "*_shovel"
+        - "*_hoe"
+        - "shears"
+        - "fishing_rod"
+
+    blocks:
+      label: "Blocks"
+      materials:
+        # Wood
+        - "*_planks"
+        - "*_log"
+        - "*_wood"
+        - "*_stem"
+        - "*_hyphae"
+        - "*_fence"
+        - "*_fence_gate"
+        - "*_door"
+        - "*_trapdoor"
+        # Stone families
+        - "*_stairs"
+        - "*_slab"
+        - "*_wall"
+        - "*_bricks"
+        - "*_sandstone"
+        - "polished_*"
+        - "chiseled_*"
+        - "cracked_*"
+        - "cut_*"
+        - "smooth_*"
+        - "stone"
+        - "cobblestone"
+        - "cobbled_deepslate"
+        - "blackstone"
+        - "sandstone"
+        - "bricks"
+        - "deepslate_tiles"
+        - "obsidian"
+        - "crying_obsidian"
+        - "sulfur"
+        - "cinnabar"
+        # Colored
+        - "*_wool"
+        - "*_terracotta"
+        - "*_concrete"
+        - "*_concrete_powder"
+        - "*_stained_glass"
+        - "*_stained_glass_pane"
+        - "tinted_glass"
+        # Copper & metal
+        - "*_copper"
+        - "*copper_block"
+        - "*copper_grate"
+        - "*copper_bulb"
+        - "*_bars"
+        - "*_chain"
+        - "gold_block"
+        - "emerald_block"
+        - "netherite_block"
+        - "lapis_block"
+        - "diamond_block"
+        - "iron_block"
+        - "coal_block"
+        - "amethyst_block"
+        # Other
+        - "quartz_block"
+        - "smooth_quartz"
+        - "prismarine"
+        - "purpur_block"
+        - "purpur_pillar"
+        - "mud_bricks"
+        - "packed_mud"
+        - "bamboo_block"
+        - "bamboo_mosaic"
+        - "resin_block"
+      exclude:
+        - "raw_*"
+
+    ores:
+      label: "Ores"
+      materials:
+        - "*_ore"
+        - "*_ingot"
+        - "raw_*"
+        - "diamond"
+        - "emerald"
+        - "ancient_debris"
+
+    farming:
+      label: "Farming"
+      materials:
+        # Crops & plants
+        - "*_seeds"
+        - "wheat"
+        - "carrot"
+        - "potato"
+        - "baked_potato"
+        - "poisonous_potato"
+        - "beetroot"
+        - "melon"
+        - "melon_slice"
+        - "pumpkin"
+        - "sugar_cane"
+        - "nether_wart"
+        - "cocoa_beans"
+        - "sweet_berries"
+        - "glow_berries"
+        - "kelp"
+        - "dried_kelp"
+        - "dried_kelp_block"
+        - "cactus"
+        - "bamboo"
+        - "hay_block"
+        - "bone_meal"
+        # Mob drps
+        - "beef"
+        - "chicken"
+        - "porkchop"
+        - "mutton"
+        - "rabbit"
+        - "cod"
+        - "salmon"
+        - "tropical_fish"
+        - "pufferfish"
+        - "cooked_*"
+        - "egg"
+        - "blue_egg"
+        - "brown_egg"
+        - "turtle_egg"
+        - "sniffer_egg"
+        - "leather"
+        - "rabbit_hide"
+        - "feather"
+        - "honeycomb"
+        - "honey_bottle"
+        - "ink_sac"
+        - "glow_ink_sac"
+        - "armadillo_scute"
+        - "rotten_flesh"
+        - "bone"
+        - "string"
+        - "spider_eye"
+        - "gunpowder"
+        - "slime_ball"
+        - "ender_pearl"
+        - "blaze_rod"
+        - "magma_cream"
+        - "ghast_tear"
+        - "phantom_membrane"
+        - "shulker_shell"
+        - "breeze_rod"
+        - "wind_charge"
+        - "gold_nugget"
+        - "prismarine_shard"
+        - "prismarine_crystals"
+        - "nautilus_shell"
+
+    redstone:
+      label: "Redstone"
+      materials:
+        - "redstone*"
+        - "piston"
+        - "sticky_piston"
+        - "repeater"
+        - "comparator"
+      exclude:
+        - "redstone_ore"

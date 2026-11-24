@@ -70,9 +70,10 @@ public final class GuiCyclers {
     public static final Dimension HOME_SORT = new Dimension("home", Kind.SORT, "home", BaseHomeGui.ATTR_SORT_HOME, GuiCyclers::homeSorts);
 
     // Worth
+    public static final Dimension WORTH_CATEGORY = new Dimension("worth", Kind.FILTER, "category", BaseWorthGui.ATTR_FILTER_CATEGORY, GuiCyclers::worthCategories);
     public static final Dimension WORTH_SORT = new Dimension("worth", Kind.SORT, "value", BaseWorthGui.ATTR_SORT_VALUE, GuiCyclers::worthSorts);
 
-    private static final List<Dimension> DIMENSIONS = List.of(HOME_WORLD, HOME_ICON, HOME_SORT, WORTH_SORT);
+    private static final List<Dimension> DIMENSIONS = List.of(HOME_WORLD, HOME_ICON, HOME_SORT, WORTH_CATEGORY, WORTH_SORT);
 
     // Lookup
 
@@ -230,6 +231,12 @@ public final class GuiCyclers {
             "highest_value", WorthSort.HIGHEST_VALUE,
             "lowest_value", WorthSort.LOWEST_VALUE
     );
+
+    public static LinkedHashMap<String, String> worthCategories(ConfigManager configs) {
+        LinkedHashMap<String, String> options = new LinkedHashMap<>();
+        configs.filter().worthCategories().forEach((id, category) -> options.put(id, category.label()));
+        return options;
+    }
 
     public static LinkedHashMap<String, String> worthSorts(ConfigManager configs) {
         return new LinkedHashMap<>(configs.economy().gui().sell().sort().worth());

@@ -21,6 +21,11 @@ custom: []
 #  - worth: 500
 #    names:
 #      - "Excalibur"
+#    # Any rule can also list categories, defined in the filter config under worth > categories.
+#    # Custom items have no single material for the wildcards to match, so this is how they
+#    # show up in the worth GUI filter.
+#    categories:
+#      - "combat"
 #
 #  # By lore line - matches if any lore line contains the given text (case-insensitive).
 #  - worth: 300

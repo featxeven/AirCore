@@ -240,7 +240,27 @@ templates:
   # WORTH (used by economy/sell/worth, economy/sell/search)
   # ---------------------------------------------------
 
-  sell-sort-value:
+  worth-filter-category:
+    material: BAMBOO_HANGING_SIGN
+    display-name: "<aqua><bold>Category</bold>"
+    lore:
+      - "<dark_gray>Filter by Category"
+      - " "
+      - "<gray>Showing: <white>%filter_CATEGORY%"
+      - " "
+      - "%filter_CATEGORY_list%"
+      - " "
+      - "<aqua>Click <gray>to cycle"
+    actions:
+      left:
+        - "[sound] $click"
+        - "[filter] type:worth by:category to:next"
+      right:
+        - "[sound] $click"
+        - "[filter] type:worth by:category to:previous"
+    cooldown: 0.2
+
+  worth-sort-value:
     material: HOPPER
     display-name: "<aqua><bold>Sort</bold>"
     lore:

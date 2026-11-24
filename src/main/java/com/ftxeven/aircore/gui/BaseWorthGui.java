@@ -1,6 +1,7 @@
 package com.ftxeven.aircore.gui;
 
 import com.ftxeven.aircore.config.ConfigManager;
+import com.ftxeven.aircore.config.FilterConfig;
 import com.ftxeven.aircore.core.gui.GuiSession;
 import com.ftxeven.aircore.core.gui.config.ItemConfig;
 import com.ftxeven.aircore.core.gui.render.RenderEntry;
@@ -20,10 +21,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class BaseWorthGui extends BaseHoldingGui {
 
+    public static final String ATTR_FILTER_CATEGORY = "filter-category";
     public static final String ATTR_SORT_VALUE = "sort-value";
     public static final String ATTR_SEARCH_QUERY = "worth-search-query";
 
@@ -44,11 +47,13 @@ public abstract class BaseWorthGui extends BaseHoldingGui {
 
         LayoutConfig layout = layout(session);
         List<WorthCalculator.Entry> catalog = catalog(session, layout);
-        PageResult<WorthCalculator.Entry> page = paginate(session, layout, visibleEntries(session, catalog));
+        List<WorthCalculator.Entry> searched = visibleEntries(session, catalog);
+        PageResult<WorthCalculator.Entry> page = paginate(session, layout, withinCategory(session, layout.filters(), searched));
 
         Map<String, String> placeholders = session.placeholders();
         placeholders.put("current", String.valueOf(page.totalResults()));
         placeholders.put("total", String.valueOf(catalog.size()));
+        GuiCyclers.write(session, configs, layout.filters(), GuiCyclers.WORTH_CATEGORY, categoryCounts(searched));
         GuiCyclers.write(session, configs, layout.sorts(), GuiCyclers.WORTH_SORT, null);
     }
 
@@ -62,7 +67,8 @@ public abstract class BaseWorthGui extends BaseHoldingGui {
             return;
         }
 
-        PageResult<WorthCalculator.Entry> page = paginate(session, layout, visibleEntries(session, catalog(session, layout)));
+        List<WorthCalculator.Entry> searched = visibleEntries(session, catalog(session, layout));
+        PageResult<WorthCalculator.Entry> page = paginate(session, layout, withinCategory(session, layout.filters(), searched));
         List<RenderEntry> entries = new ArrayList<>(page.items().size());
         for (WorthCalculator.Entry entry : page.items()) {
             Map<String, String> specific = new LinkedHashMap<>();
@@ -75,6 +81,37 @@ public abstract class BaseWorthGui extends BaseHoldingGui {
 
     protected LayoutConfig layout(GuiSession session) {
         return guis.layouts().layout(session.definition());
+    }
+
+    // Filter selection -> entries
+
+    protected Optional<FilterConfig.WorthCategory> resolveCategoryFilter(GuiSession session, LayoutConfig.Cycler filters) {
+        if (filters.isExcluded(GuiCyclers.WORTH_CATEGORY.id())) {
+            return Optional.empty();
+        }
+        String selectedId = GuiCyclers.selected(session, configs, GuiCyclers.WORTH_CATEGORY);
+        if (selectedId.equals(FilterConfig.ALL_ID)) {
+            return Optional.empty();
+        }
+        return configs.filter().worthCategory(selectedId);
+    }
+
+    protected List<WorthCalculator.Entry> withinCategory(GuiSession session, LayoutConfig.Cycler filters, List<WorthCalculator.Entry> entries) {
+        return resolveCategoryFilter(session, filters)
+                .map(category -> entries.stream().filter(entry -> inCategory(category, entry)).toList())
+                .orElse(entries);
+    }
+
+    private static boolean inCategory(FilterConfig.WorthCategory category, WorthCalculator.Entry entry) {
+        return category.matches(entry.key()) || entry.categories().contains(category.id());
+    }
+
+    private Map<String, Long> categoryCounts(List<WorthCalculator.Entry> searched) {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (FilterConfig.WorthCategory category : configs.filter().worthCategories().values()) {
+            counts.put(category.id(), searched.stream().filter(entry -> inCategory(category, entry)).count());
+        }
+        return counts;
     }
 
     // Sorting

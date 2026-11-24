@@ -6,16 +6,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalDouble;
+import java.util.Set;
 
 public final class WorthItemsConfig extends BaseConfig {
 
     private volatile Map<String, Double> materials;
     private volatile List<WorthRule> custom;
+    private volatile Map<String, Set<String>> categoryTags;
 
     public WorthItemsConfig(JavaPlugin plugin) {
         super(plugin, "data/worth/items.yml");
@@ -24,7 +28,9 @@ public final class WorthItemsConfig extends BaseConfig {
     @Override
     protected void read(ConfigurationSection yaml) {
         materials = readMaterials(yaml.getConfigurationSection("materials"));
-        custom = readCustom(yaml.getList("custom"));
+        List<WorthRule> rules = readCustom(yaml.getList("custom"));
+        custom = rules;
+        categoryTags = indexCategories(rules);
     }
 
     public Map<String, Double> materials() { return materials; }
@@ -34,6 +40,10 @@ public final class WorthItemsConfig extends BaseConfig {
     public OptionalDouble findMaterial(String key) {
         Double value = materials.get(key.toLowerCase(Locale.ROOT));
         return value != null ? OptionalDouble.of(value) : OptionalDouble.empty();
+    }
+
+    public Set<String> categoriesOf(String key) {
+        return categoryTags.getOrDefault(key.toLowerCase(Locale.ROOT), Set.of());
     }
 
     // Section readers
@@ -105,7 +115,22 @@ public final class WorthItemsConfig extends BaseConfig {
             return null;
         }
 
-        return new WorthRule(match, worth);
+        return new WorthRule(match, worth, new LinkedHashSet<>(stringList(map, "categories")));
+    }
+
+    private Map<String, Set<String>> indexCategories(List<WorthRule> rules) {
+        Map<String, Set<String>> index = new HashMap<>();
+        for (WorthRule rule : rules) {
+            if (rule.categories().isEmpty()) {
+                continue;
+            }
+            for (String material : rule.match().materials()) {
+                index.computeIfAbsent(material.toLowerCase(Locale.ROOT), key -> new LinkedHashSet<>())
+                        .addAll(rule.categories());
+            }
+        }
+        index.replaceAll((key, categories) -> Set.copyOf(categories));
+        return Map.copyOf(index);
     }
 
     private List<String> stringList(Map<?, ?> map, String key) {
